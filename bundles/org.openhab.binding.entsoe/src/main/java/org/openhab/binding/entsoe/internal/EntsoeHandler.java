@@ -12,10 +12,11 @@
  */
 package org.openhab.binding.entsoe.internal;
 
-import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.*;
+import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.CHANNEL_1;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -24,6 +25,8 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * The {@link EntsoeHandler} is responsible for handling commands, which are
@@ -37,6 +40,12 @@ public class EntsoeHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(EntsoeHandler.class);
 
     private @Nullable EntsoeConfiguration config;
+
+    private @Nullable HttpClientFactory factory;
+
+    public void setFactory(HttpClientFactory factory) {
+        this.factory = factory;
+    }
 
     public EntsoeHandler(Thing thing) {
         super(thing);
@@ -59,8 +68,20 @@ public class EntsoeHandler extends BaseThingHandler {
     }
 
     @Override
+    public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
+        super.handleConfigurationUpdate(configurationParameters);
+    }
+
+    @Override
+    public void thingUpdated(Thing thing) {
+        super.thingUpdated(thing);
+    }
+
+    @Override
     public void initialize() {
         config = getConfigAs(EntsoeConfiguration.class);
+
+        // final EntsoeClient client = new EntsoeClient(factory.getCommonHttpClient());
 
         // TODO: Initialize the handler.
         // The framework requires you to return from this method quickly, i.e. any network access must be done in

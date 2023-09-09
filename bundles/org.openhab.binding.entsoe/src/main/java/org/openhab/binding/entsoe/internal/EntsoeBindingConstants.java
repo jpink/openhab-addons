@@ -22,12 +22,15 @@ import org.openhab.core.thing.ThingTypeUID;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
+@SuppressWarnings("SpellCheckingInspection")
 public class EntsoeBindingConstants {
 
     private static final String BINDING_ID = "entsoe";
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
+    public static final ThingTypeUID THING_TYPE_CHEAP = new ThingTypeUID(BINDING_ID, "cheap");
+
+    public static final ThingTypeUID THING_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
 
     // List of all Channel ids
     public static final String CHANNEL_1 = "channel1";

@@ -33,9 +33,10 @@ import org.osgi.service.component.annotations.Component;
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.entsoe", service = ThingHandlerFactory.class)
+@SuppressWarnings("SpellCheckingInspection")
 public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_SAMPLE);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_CHEAP, THING_TYPE_PRICE);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -46,7 +47,7 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (THING_TYPE_SAMPLE.equals(thingTypeUID)) {
+        if (THING_TYPE_PRICE.equals(thingTypeUID)) {
             return new EntsoeHandler(thing);
         }
 

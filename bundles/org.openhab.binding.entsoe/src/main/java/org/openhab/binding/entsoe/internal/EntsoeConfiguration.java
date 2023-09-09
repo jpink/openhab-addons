@@ -23,9 +23,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public class EntsoeConfiguration {
 
     /**
-     * Sample configuration parameters. Replace with your own.
+     * A security token to access ENTSO-E Transparency Platform RESTful API.
      */
-    public String hostname = "";
+    public String securityToken = "";
     public String password = "";
     public int refreshInterval = 600;
 }
