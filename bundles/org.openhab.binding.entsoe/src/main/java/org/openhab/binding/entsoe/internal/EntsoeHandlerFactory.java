@@ -18,12 +18,14 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link EntsoeHandlerFactory} is responsible for creating things and thing
@@ -35,6 +37,12 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.entsoe", service = ThingHandlerFactory.class)
 @SuppressWarnings("SpellCheckingInspection")
 public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
+
+    private final HttpClientFactory factory;
+
+    public EntsoeHandlerFactory(final @Reference HttpClientFactory factory) {
+        this.factory = factory;
+    }
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_CHEAP, THING_TYPE_PRICE);
 
@@ -48,7 +56,7 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_PRICE.equals(thingTypeUID)) {
-            return new EntsoeHandler(thing);
+            return new EntsoeHandler(thing, factory);
         }
 
         return null;

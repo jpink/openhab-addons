@@ -16,10 +16,12 @@ import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.CHANNEL
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
+import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * The {@link EntsoeHandler} is responsible for handling commands, which are
@@ -41,14 +44,20 @@ public class EntsoeHandler extends BaseThingHandler {
 
     private @Nullable EntsoeConfiguration config;
 
-    private @Nullable HttpClientFactory factory;
+    private final HttpClientFactory factory;
 
-    public void setFactory(HttpClientFactory factory) {
+    private @Nullable EntsoeClient client;
+
+    public EntsoeHandler(Thing thing, HttpClientFactory factory)
+    {
+        super(thing);
         this.factory = factory;
     }
 
-    public EntsoeHandler(Thing thing) {
-        super(thing);
+    @Override
+    public void dispose() {
+        // TODO Cancel schedule
+        super.dispose();
     }
 
     @Override
@@ -81,21 +90,20 @@ public class EntsoeHandler extends BaseThingHandler {
     public void initialize() {
         config = getConfigAs(EntsoeConfiguration.class);
 
-        // final EntsoeClient client = new EntsoeClient(factory.getCommonHttpClient());
+        UUID token;
+        try {
+            token = UUID.fromString(config.token);
+        } catch (IllegalArgumentException ex) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Invalid Secure Token!");
+            return;
+        }
 
-        // TODO: Initialize the handler.
-        // The framework requires you to return from this method quickly, i.e. any network access must be done in
-        // the background initialization below.
-        // Also, before leaving this method a thing status from one of ONLINE, OFFLINE or UNKNOWN must be set. This
-        // might already be the real thing status in case you can decide it directly.
-        // In case you can not decide the thing status directly (e.g. for long running connection handshake using WAN
-        // access or similar) you should set status UNKNOWN here and then decide the real status asynchronously in the
-        // background.
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NOT_YET_READY, "Waiting for refresh");
 
-        // set the thing status to UNKNOWN temporarily and let the background task decide for the real status.
-        // the framework is then able to reuse the resources from the thing handler initialization.
-        // we set this upfront to reliably check status updates in unit tests.
-        updateStatus(ThingStatus.UNKNOWN);
+        client = new EntsoeClient(factory.getCommonHttpClient(), token, config.area);
+
+        // TODO Set resolution and time range in thing properties.
+        // TODO Schedule
 
         // Example for background initialization:
         scheduler.execute(() -> {
@@ -107,19 +115,5 @@ public class EntsoeHandler extends BaseThingHandler {
                 updateStatus(ThingStatus.OFFLINE);
             }
         });
-
-        // These logging types should be primarily used by bindings
-        // logger.trace("Example trace message");
-        // logger.debug("Example debug message");
-        // logger.warn("Example warn message");
-        //
-        // Logging to INFO should be avoided normally.
-        // See https://www.openhab.org/docs/developer/guidelines.html#f-logging
-
-        // Note: When initialization can NOT be done set the status with more details for further
-        // analysis. See also class ThingStatusDetail for all available status details.
-        // Add a description to give user information to understand why thing does not work as expected. E.g.
-        // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-        // "Can not access device as username and/or password are invalid");
     }
 }

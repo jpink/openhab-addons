@@ -22,10 +22,17 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public class EntsoeConfiguration {
 
-    /**
-     * A security token to access ENTSO-E Transparency Platform RESTful API.
-     */
-    public String securityToken = "";
-    public String password = "";
-    public int refreshInterval = 600;
+    /** A security token. */
+    public String token = "";
+
+    /** An area EIC code */
+    public String area = "";
+
+    public String unit = "c/kWh";
+
+    public Float transfer = 0F;
+
+    public Float tax = 0F;
+
+    public Float margin = 0F;
 }

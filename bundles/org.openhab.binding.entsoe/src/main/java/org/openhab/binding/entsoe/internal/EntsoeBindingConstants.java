@@ -25,7 +25,7 @@ import org.openhab.core.thing.ThingTypeUID;
 @SuppressWarnings("SpellCheckingInspection")
 public class EntsoeBindingConstants {
 
-    private static final String BINDING_ID = "entsoe";
+    public static final String BINDING_ID = "entsoe";
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_CHEAP = new ThingTypeUID(BINDING_ID, "cheap");

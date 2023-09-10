@@ -1,24 +1,29 @@
 package org.openhab.binding.entsoe.internal;
 
-import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.client.dto.Area;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
-import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.config.discovery.DiscoveryResultBuilder;
+import org.openhab.core.config.discovery.DiscoveryService;
+import org.openhab.core.i18n.LocaleProvider;
+import org.openhab.core.i18n.TranslationProvider;
+import org.openhab.core.thing.ThingUID;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.util.Set;
 
+import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.THING_TYPE_PRICE;
+
+@Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + EntsoeBindingConstants.BINDING_ID)
+@SuppressWarnings("SpellCheckingInspection")
 public class EntsoeDiscoveryService extends AbstractDiscoveryService {
-    /**
-     * Creates a new instance of this class with the specified parameters.
-     *
-     * @param supportedThingTypes                 the list of Thing types which are supported (can be null)
-     * @param timeout                             the discovery timeout in seconds after which the discovery
-     *                                            service automatically stops its forced discovery process (>= 0).
-     * @param backgroundDiscoveryEnabledByDefault defines, whether the default for this discovery service is to
-     *                                            enable background discovery or not.
-     * @throws IllegalArgumentException if the timeout < 0
-     */
-    public EntsoeDiscoveryService(@Nullable Set<ThingTypeUID> supportedThingTypes, int timeout, boolean backgroundDiscoveryEnabledByDefault) throws IllegalArgumentException {
-        super(supportedThingTypes, timeout, backgroundDiscoveryEnabledByDefault);
+    public EntsoeDiscoveryService(
+            @Reference LocaleProvider localeProvider,
+            @Reference TranslationProvider i18nProvider
+    ) throws IllegalArgumentException {
+        super(Set.of(THING_TYPE_PRICE), 10, false);
+        this.localeProvider = localeProvider;
+        this.i18nProvider = i18nProvider;
     }
 
     /**
@@ -29,6 +34,15 @@ public class EntsoeDiscoveryService extends AbstractDiscoveryService {
      */
     @Override
     protected void startScan() {
-
+        var locale = localeProvider.getLocale();
+        var area = Area.of(locale);
+        if (area == null) return;
+        var country = locale.getCountry();
+        var builder = DiscoveryResultBuilder
+                .create(new ThingUID(THING_TYPE_PRICE, country))
+                .withProperty("area", area.code)
+                .withRepresentationProperty("area");
+        if ("FI".equals(country)) builder.withProperty("tax", 2.79372F); // TODO move to resource bundle
+        thingDiscovered(builder.build());
     }
 }
