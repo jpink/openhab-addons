@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.i18n.TimeZoneProvider;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -35,13 +36,17 @@ import org.osgi.service.component.annotations.Reference;
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.entsoe", service = ThingHandlerFactory.class)
-@SuppressWarnings("SpellCheckingInspection")
 public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
+    public final HttpClientFactory httpClientFactory;
 
-    private final HttpClientFactory factory;
+    public final TimeZoneProvider timeZoneProvider;
 
-    public EntsoeHandlerFactory(final @Reference HttpClientFactory factory) {
-        this.factory = factory;
+    public EntsoeHandlerFactory(
+            final @Reference HttpClientFactory httpClientFactory,
+            final @Reference TimeZoneProvider timeZoneProvider
+    ) {
+        this.httpClientFactory = httpClientFactory;
+        this.timeZoneProvider = timeZoneProvider;
     }
 
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_CHEAP, THING_TYPE_PRICE);
@@ -56,7 +61,7 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_PRICE.equals(thingTypeUID)) {
-            return new EntsoeHandler(thing, factory);
+            return new EntsoeHandler(thing, this);
         }
 
         return null;

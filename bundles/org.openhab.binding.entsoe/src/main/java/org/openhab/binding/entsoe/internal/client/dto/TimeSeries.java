@@ -5,6 +5,9 @@ import java.util.Currency;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class TimeSeries {
+    @XStreamAlias("in_Domain.mRID")
+    public String domain;
+
     @XStreamAlias("Period")
     public Period period;
 

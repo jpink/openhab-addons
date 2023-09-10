@@ -35,7 +35,7 @@
 				<description>To request access token (UUID), register on the Transparency Platform and email to transparency@entsoe.eu with "Restful API access" in the subject and the email address what you used in registration in the body. You should get response in 3 working days and there is more instructions.</description>
 			</parameter>
 
-			<parameter name="area" type="text" required="true" groupName="entsoe">
+			<parameter name="area" type="text" required="true" groupName="entsoe" min="2" max="16">
 				<label>Area Code</label>
 				<description>An area EIC code. The discovery service try to select this based on your country.</description>
 				<options>

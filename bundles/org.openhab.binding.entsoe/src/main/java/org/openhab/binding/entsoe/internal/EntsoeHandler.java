@@ -13,10 +13,13 @@
 package org.openhab.binding.entsoe.internal;
 
 import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.CHANNEL_1;
+import static java.util.Collections.emptyList;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
+import org.openhab.binding.entsoe.internal.client.dto.Area;
+import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -28,8 +31,17 @@ import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.UUID;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Currency;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The {@link EntsoeHandler} is responsible for handling commands, which are
@@ -39,81 +51,195 @@ import java.util.UUID;
  */
 @NonNullByDefault
 public class EntsoeHandler extends BaseThingHandler {
+    private static final String MWH = "MWh";
+    private static final String KWH = "kWh";
 
+    public static long countInitialMinutes(long resolution, int now) {
+        return (60 - now) % resolution;
+    }
+
+    private @Nullable EntsoeClient apiClient;
+    private @Nullable EntsoeConfiguration configuration;
+    private @Nullable ZonedDateTime created;
+    private @Nullable Currency currency;
+    private @Nullable Float current;
+    private @Nullable ScheduledFuture<?> currentPriceUpdateJob;
+    private @Nullable ScheduledFuture<?> getDayAheadPricesJob;
+    private final HttpClientFactory httpClientFactory;
     private final Logger logger = LoggerFactory.getLogger(EntsoeHandler.class);
+    private @Nullable String measure;
+    private List<Float> prices = emptyList();
+    private @Nullable Duration resolution;
+    private @Nullable ZonedDateTime start;
+    private final ZoneId zone;
 
-    private @Nullable EntsoeConfiguration config;
-
-    private final HttpClientFactory factory;
-
-    private @Nullable EntsoeClient client;
-
-    public EntsoeHandler(Thing thing, HttpClientFactory factory)
+    public EntsoeHandler(Thing thing, EntsoeHandlerFactory handlerFactory)
     {
         super(thing);
-        this.factory = factory;
+        httpClientFactory = handlerFactory.httpClientFactory;
+        zone = handlerFactory.timeZoneProvider.getTimeZone();
+    }
+
+    private void bug(Throwable t) {
+        logger.error("Please report the following bug!", t);
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+    }
+
+    private void cancel(@Nullable ScheduledFuture<?> job) {
+        if (job != null) job.cancel(true);
+    }
+
+    private void countPrices(List<Float> prices) {
+        var config = getConfiguration();
+        if (MWH.equals(measure)) {
+            if (KWH.equals(config.unit)) prices = prices.stream().map((price) -> price / 10F).toList();
+        } else if (KWH.equals(measure)) {
+            if (MWH.equals(config.unit)) prices = prices.stream().map((price) -> price * 10F).toList();
+        } else throw new UnsupportedOperationException("Source unit " + measure);
+        var additions = config.transfer + config.tax + config.margin;
+        if (additions != 0F) prices = prices.stream().map((price) -> price + additions).toList();
+        this.prices = prices;
     }
 
     @Override
     public void dispose() {
-        // TODO Cancel schedule
-        super.dispose();
+        cancel(currentPriceUpdateJob);
+        cancel(getDayAheadPricesJob);
+        apiClient = null;
+        configuration = null;
+        currency = null;
+        currentPriceUpdateJob = null;
+        getDayAheadPricesJob = null;
+        measure = null;
+        prices = emptyList();
+        resolution = null;
+        start = null;
+    }
+
+    private EntsoeClient getClient() throws InvalidArea, InvalidToken {
+        var client = apiClient;
+        if (client == null) {
+            logger.trace("Creating ENTSO-E API client.");
+            var config = getConfiguration();
+            client = new EntsoeClient(httpClientFactory.getCommonHttpClient(), config.token, config.area);
+            apiClient = client;
+        }
+        return client;
+    }
+
+    private EntsoeConfiguration getConfiguration() {
+        var config = configuration;
+        if (config == null) {
+            logger.trace("Transforming configuration.");
+            config = getConfigAs(EntsoeConfiguration.class);
+            configuration = config;
+        }
+        return config;
     }
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (CHANNEL_1.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) {
-                // TODO: handle data refresh
-            }
-
-            // TODO: handle command
-
-            // Note: if communication with thing fails for some reason,
-            // indicate that by setting the status with detail information:
-            // updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-            // "Could not control device at IP address x.x.x.x");
+            if (command instanceof RefreshType) handleGetDayAheadPrices();
         }
     }
 
-    @Override
-    public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
-        super.handleConfigurationUpdate(configurationParameters);
+    private void handleGetDayAheadPrices() {
+        try {
+            var now = ZonedDateTime.now();
+            var document = getClient().getDayAheadPrices(now, now.plusDays(1));
+            try {
+                var timeSeries = document.timeSeries;
+                var period = timeSeries.period;
+                start = period.timeInterval.start.withZoneSameInstant(zone);
+                if (currentPriceUpdateJob == null) {
+                    var properties = editProperties();
+                    currency = timeSeries.currency;
+                    properties.put("currency", currency.getDisplayName());
+                    String domain = timeSeries.domain;
+                    try { domain = Area.valueOf(timeSeries.domain).meaning; }
+                    catch (IllegalArgumentException ignored) {}
+                    properties.put("domain", domain);
+                    var measure = timeSeries.measure.replace('H', 'h').replace('K', 'k');
+                    this.measure = measure;
+                    properties.put("measure", measure);
+                    resolution = period.resolution;
+                    properties.put("resolution", resolution.toMinutes() + " min");
+                    properties.put("start", start.format(DateTimeFormatter.ISO_TIME));
+                    updateProperties(properties);
+                    scheduleCurrentPriceUpdateJob(resolution);
+                }
+                created = document.created.withZoneSameInstant(zone);
+                countPrices(period.getPrices());
+                updateStatus(ThingStatus.ONLINE);
+                handleUpdateCurrentPrice();
+            } catch (Exception e) { bug(e); }
+        } catch (ExecutionException | InvalidParameter | TooLong | TooShort | UnknownResponse e) {
+            bug(e);
+        } catch (InterruptedException e) {
+            logger.debug("Request cancelled!");
+            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
+        } catch (InvalidArea e) {
+            logger.error("Invalid area!", e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
+        } catch (InvalidToken e) {
+            logger.error("Invalid token!", e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
+        } catch (TimeoutException e) {
+            logger.debug("Request timeout!");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+        } catch (TooMany e) {
+            logger.debug("Too many requests!");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "too-many");
+        } catch (Unauthorized e) {
+            logger.error("Unauthorized!");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
+        }
     }
 
-    @Override
-    public void thingUpdated(Thing thing) {
-        super.thingUpdated(thing);
+    private void handleUpdateCurrentPrice() {
+        var now = ZonedDateTime.now(zone);
+        var time = start;
+        var resolution = this.resolution;
+        Float current = null;
+        if (time != null && resolution != null) {
+            var minutes = resolution.toMinutes();
+            for (var price : prices) {
+                if (time.compareTo(now) < 0) current = price;
+                time = time.plusMinutes(minutes);
+            }
+            if (time.compareTo(now) < 0) {
+                start = null;
+                current = null;
+                prices = emptyList();
+            }
+        }
+        this.current = current;
     }
 
     @Override
     public void initialize() {
-        config = getConfigAs(EntsoeConfiguration.class);
+        updateStatus(ThingStatus.UNKNOWN);
 
-        UUID token;
-        try {
-            token = UUID.fromString(config.token);
-        } catch (IllegalArgumentException ex) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Invalid Secure Token!");
-            return;
-        }
+        getDayAheadPricesJob =
+                scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
 
-        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.NOT_YET_READY, "Waiting for refresh");
+        // Can't schedule current price update job yet, because the resolution isn't known.
+    }
 
-        client = new EntsoeClient(factory.getCommonHttpClient(), token, config.area);
+    private void scheduleCurrentPriceUpdateJob(Duration resolution) {
+        cancel(currentPriceUpdateJob);
+        var resolutionInMinutes = resolution.toMinutes();
+        currentPriceUpdateJob = scheduler.scheduleAtFixedRate(
+                this::handleUpdateCurrentPrice,
+                countInitialMinutes(resolutionInMinutes, LocalTime.now().getMinute()),
+                resolutionInMinutes,
+                TimeUnit.MINUTES
+        );
+    }
 
-        // TODO Set resolution and time range in thing properties.
-        // TODO Schedule
-
-        // Example for background initialization:
-        scheduler.execute(() -> {
-            boolean thingReachable = true; // <background task with long running initialization here>
-            // when done do:
-            if (thingReachable) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE);
-            }
-        });
+    @Override
+    protected void updateStatus(ThingStatus status, ThingStatusDetail statusDetail, @Nullable String offlineKey) {
+        super.updateStatus(status, statusDetail, "@text/offline." + offlineKey);
     }
 }

@@ -13,17 +13,16 @@
 package org.openhab.binding.entsoe.internal.client;
 
 import java.time.Duration;
-import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.entsoe.internal.client.dto.PublicationMarket;
+import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ import com.thoughtworks.xstream.XStream;
  * @author Jukka Papinkivi - Initial contribution
  */
 public class EntsoeClient {
-    public static final String BASE_URL = "https://web-api.tp.entsoe.eu/api?securityToken=";
+    public static final String BASE = "https://web-api.tp.entsoe.eu/api?securityToken=";
     private static final String DAY_AHEAD_PRICES_DOCUMENT = "&documentType=A44";
     private static final Duration DAY_AHEAD_PRICES_MIN = Duration.ofDays(1);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
@@ -50,8 +49,12 @@ public class EntsoeClient {
      * @param securityToken Web Api Security Token
      * @param area <A href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area EIC code</A>
      */
-    public static String buildDayAheadPricesEndpoint(UUID securityToken, String area) {
-        return BASE_URL + securityToken + DAY_AHEAD_PRICES_DOCUMENT + "&in_Domain=" + area + "&out_Domain=" + area;
+    public static String buildDayAheadPricesEndpoint(UUID securityToken, String area) throws InvalidArea {
+        return switch (area.length()) {
+            case 2, 16 ->
+                    BASE + securityToken + DAY_AHEAD_PRICES_DOCUMENT + "&in_Domain=" + area + "&out_Domain=" + area;
+            default -> throw new InvalidArea(area);
+        };
     }
 
     /**
@@ -68,6 +71,14 @@ public class EntsoeClient {
         return (PublicationMarket) XSTREAM.fromXML(content);
     }
 
+    public static UUID parseToken(String text) throws InvalidToken {
+        try {
+            return UUID.fromString(text);
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidToken(ex);
+        }
+    }
+
     public static ZonedDateTime toUTC(ZonedDateTime dateTime) {
         return dateTime.withZoneSameInstant(ZoneOffset.UTC);
     }
@@ -82,20 +93,20 @@ public class EntsoeClient {
     private final String dayAheadPricesEndpoint;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public EntsoeClient(HttpClient client, UUID securityToken, String area) {
+    public EntsoeClient(HttpClient client, String token, String area) throws InvalidArea, InvalidToken {
+        this(client, parseToken(token), area);
+    }
+
+    public EntsoeClient(HttpClient client, UUID token, String area) throws InvalidArea {
         this.client = client;
-        dayAheadPricesEndpoint = buildDayAheadPricesEndpoint(securityToken, area);
+        dayAheadPricesEndpoint = buildDayAheadPricesEndpoint(token, area);
         logger.debug("Created for `{}` area.", area);
     }
 
-    public String buildDayAheadPricesUrl(ZonedDateTime periodStart, ZonedDateTime periodEnd) {
+    public String buildDayAheadPricesUrl(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws TooLong, TooShort {
         var duration = Duration.between(periodStart, periodEnd);
-        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0) {
-            throw new IllegalArgumentException("Time interval " + duration + " must be at least a one day!");
-        }
-        if (MAX_RANGE.compareTo(duration) < 0) {
-            throw new IllegalArgumentException("Time interval " + duration + " is limited to a one year!");
-        }
+        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0) throw new TooShort(duration, DAY_AHEAD_PRICES_MIN);
+        if (MAX_RANGE.compareTo(duration) < 0) throw new TooLong(duration, MAX_RANGE);
         return dayAheadPricesEndpoint + "&periodStart=" + format(periodStart) + "&periodEnd=" + format(periodEnd);
     }
 
@@ -104,42 +115,29 @@ public class EntsoeClient {
      *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
      *      Day Ahead Prices [12.1.D]</a>
      */
-    public PublicationMarket getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
-            throws ExecutionException {
+    public PublicationMarket getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws
+            ExecutionException,
+            InterruptedException,
+            InvalidParameter,
+            TimeoutException,
+            TooLong,
+            TooMany,
+            TooShort,
+            Unauthorized,
+            UnknownResponse {
         logger.debug("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);
         var url = buildDayAheadPricesUrl(periodStart, periodEnd);
         logger.trace("GET {}", url);
-        try {
-            var response = client.GET(url);
-            var status = response.getStatus();
-            var content = response.getContentAsString();
-            logger.trace(content);
-            return switch (status) {
-                case 200 ->
-                    //TODO No matching data found, if reason code is 999.
-                        parsePublicationMarket(content);
-                case 400 -> {
-                    logger.error("URL `{}` has invalid query parameters!", url);
-                    yield null;
-                }
-                case 401 -> {
-                    logger.error("Unauthorized. Missing or invalid security token!");
-                    yield null;
-                }
-                case 429 -> {
-                    logger.warn("Too many requests - max allowed 400 per minutes from each unique IP");
-                    yield null;
-                }
-                default -> {
-                    logger.error("GET `{}` responded unknown status {} with content: {}", url, status, content);
-                    yield null;
-                }
-            };
-        } catch (InterruptedException ex) {
-            logger.debug("GET {} interrupted!", url);
-        } catch (TimeoutException ex) {
-            logger.debug("GET {} timeout!", url);
-        }
-        return null;
+        var response = client.GET(url);
+        var status = response.getStatus();
+        var content = response.getContentAsString();
+        logger.trace(content);
+        return switch (status) {
+            case 200 -> parsePublicationMarket(content); //TODO No matching data found, if reason code is 999.
+            case 400 -> throw new InvalidParameter(url);
+            case 401 -> throw new Unauthorized();
+            case 429 -> throw new TooMany();
+            default -> throw new UnknownResponse(url, status, content);
+        };
     }
 }

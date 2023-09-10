@@ -15,15 +15,14 @@ import java.util.Set;
 import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.THING_TYPE_PRICE;
 
 @Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + EntsoeBindingConstants.BINDING_ID)
-@SuppressWarnings("SpellCheckingInspection")
 public class EntsoeDiscoveryService extends AbstractDiscoveryService {
     public EntsoeDiscoveryService(
-            @Reference LocaleProvider localeProvider,
-            @Reference TranslationProvider i18nProvider
+            @Reference TranslationProvider i18nProvider,
+            @Reference LocaleProvider localeProvider
     ) throws IllegalArgumentException {
         super(Set.of(THING_TYPE_PRICE), 10, false);
-        this.localeProvider = localeProvider;
         this.i18nProvider = i18nProvider;
+        this.localeProvider = localeProvider;
     }
 
     /**
