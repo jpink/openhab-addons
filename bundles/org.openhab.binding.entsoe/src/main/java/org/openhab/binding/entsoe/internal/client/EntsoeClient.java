@@ -18,9 +18,13 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import com.thoughtworks.xstream.XStreamException;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
+import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
 import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,7 @@ import com.thoughtworks.xstream.XStream;
  * @see <a href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html">User
  *         guide</a>
  */
+@NonNullByDefault
 public class EntsoeClient {
     public static final String BASE = "https://web-api.tp.entsoe.eu/api?securityToken=";
     private static final String DAY_AHEAD_PRICES_DOCUMENT = "&documentType=A44";
@@ -119,7 +124,7 @@ public class EntsoeClient {
      *         "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
      *         Day Ahead Prices [12.1.D]</a>
      */
-    public Publication getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
+    public @NonNull MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
             throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,
             TooShort, Unauthorized, UnknownResponse {
         logger.debug("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);
@@ -129,19 +134,20 @@ public class EntsoeClient {
         var status = response.getStatus();
         var content = response.getContentAsString();
         logger.trace(content);
-        return switch (status) {
+        switch (status) {
             case 200 -> {
-                var document = parseDocument(content);
-                if (document instanceof Publication)
-                    yield (Publication) document;
-                else
-                    yield null;
+                try {
+                    var document = parseDocument(content);
+                    return document instanceof Acknowledgement ? (Acknowledgement) document : (Publication) document;
+                } catch (ClassCastException | XStreamException e) {
+                    throw new UnknownResponse(url, status, content, e);
+                }
             }
             case 400 -> throw new InvalidParameter(url);
             case 401 -> throw new Unauthorized();
             case 429 -> throw new TooMany();
-            default -> throw new UnknownResponse(url, status, content);
-        };
+            default -> throw new UnknownResponse(url, status, content, null);
+        }
     }
 
 }

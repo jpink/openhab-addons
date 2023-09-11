@@ -39,6 +39,7 @@ public class EnergyUnitConverter implements SingleValueConverter {
      * @param type the Class representing the object type to be converted
      */
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean canConvert(Class type) {
         return Unit.class.isAssignableFrom(type);
     }

@@ -16,9 +16,9 @@ public class Period {
     public List<Point> points;
 
     @XStreamOmitField
-    private List<Float> prices = null;
+    private List<Double> prices = null;
 
-    public @NonNull List<Float> getPrices() {
+    public @NonNull List<Double> getPrices() {
         if (prices == null) {
             prices = new ArrayList<>(points.size());
             for (int index = 0; index < points.size(); index++) {

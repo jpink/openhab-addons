@@ -3,9 +3,9 @@ package org.openhab.binding.entsoe.internal.client.dto;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class Point {
-    public int position;
+    public Integer position;
 
     @XStreamAlias("price.amount")
-    public float price;
+    public Double price;
 
 }

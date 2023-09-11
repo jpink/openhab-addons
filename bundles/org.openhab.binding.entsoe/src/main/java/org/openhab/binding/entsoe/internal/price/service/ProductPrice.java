@@ -1,5 +1,6 @@
-package org.openhab.binding.entsoe.internal.price;
+package org.openhab.binding.entsoe.internal.price.service;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import javax.measure.Unit;
@@ -20,6 +21,7 @@ import java.util.Objects;
  * @param currency The price currency.
  * @param unit The price unit.
  */
+@NonNullByDefault
 public record ProductPrice(double price, @Nullable VatRate vatRate, double vatAmount, double total, Currency currency,
                            Unit<Energy> unit) {
     public static ProductPrice fromTotal(final double total, final VatRate vatRate, Currency currency,

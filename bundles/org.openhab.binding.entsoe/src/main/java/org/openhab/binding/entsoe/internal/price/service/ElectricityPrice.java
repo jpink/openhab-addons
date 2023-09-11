@@ -1,4 +1,6 @@
-package org.openhab.binding.entsoe.internal.price;
+package org.openhab.binding.entsoe.internal.price.service;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Energy;
@@ -23,6 +25,7 @@ import java.time.ZonedDateTime;
  * @param totalRank The cheapest price interval has rank 1, the second cheapest has rank 2, etc. The most
  *         expensive interval has the same value as total count of intervals.
  */
+@NonNullByDefault
 public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, ProductPrice transfer, ProductPrice tax,
                                ProductPrice spot, ProductPrice margin, ProductPrice price, Unit<Energy> unit,
                                int dailyIndex, int dailyRank, int totalIndex, int totalRank) {

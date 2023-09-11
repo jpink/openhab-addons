@@ -13,9 +13,10 @@ package org.openhab.binding.entsoe.internal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
 
+import java.util.Currency;
+
 /**
- * The {@link Constants} class defines common constants, which are
- * used across the whole binding.
+ * The {@link Constants} class defines common constants, which are used across the whole binding.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
@@ -31,5 +32,10 @@ public class Constants {
 
     // List of all Channel ids
     public static final String CHANNEL_1 = "channel1";
+
+    public static final Currency EUR = Currency.getInstance("EUR");
+
+    public static final String UNIT_CENT_PER_KWH = "c/kWh";
+    public static final String UNIT_EURO_PER_MWH = "EUR/HWh";
 
 }

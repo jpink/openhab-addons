@@ -5,9 +5,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import java.time.ZonedDateTime;
 
 @XStreamAlias("Publication_MarketDocument")
-public class Publication {
-    @XStreamAlias("createdDateTime")
-    public ZonedDateTime created;
+public class Publication extends MarketDocument {
+
     @XStreamAlias("TimeSeries")
     public TimeSeries timeSeries;
 

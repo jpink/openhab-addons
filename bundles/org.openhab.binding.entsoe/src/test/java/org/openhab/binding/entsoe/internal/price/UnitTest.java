@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.openhab.core.library.unit.Units;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 public class UnitTest {
 
     @Test
@@ -15,6 +19,14 @@ public class UnitTest {
         System.out.println(converter);
 
         assertEquals("12", converter.convert(12));
+    }
+
+    @Test
+    public void Zones() {
+        var foo = ZonedDateTime.now();
+        System.out.println(foo);
+        foo = foo.withZoneSameInstant(ZoneOffset.UTC);
+        System.out.println(foo);
     }
 
 }

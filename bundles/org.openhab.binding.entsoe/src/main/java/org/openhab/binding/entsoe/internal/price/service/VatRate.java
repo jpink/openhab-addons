@@ -1,8 +1,11 @@
-package org.openhab.binding.entsoe.internal.price;
+package org.openhab.binding.entsoe.internal.price.service;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import java.text.NumberFormat;
 import java.util.Locale;
 
+@NonNullByDefault
 public record VatRate(double rate) {
     private static final NumberFormat FORMAT = NumberFormat.getPercentInstance(Locale.ENGLISH);
 

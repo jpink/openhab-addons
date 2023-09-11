@@ -1,5 +1,6 @@
 package org.openhab.binding.entsoe.internal;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.entsoe.internal.client.dto.Area;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
@@ -15,6 +16,7 @@ import java.util.Set;
 import static org.openhab.binding.entsoe.internal.Constants.THING_TYPE_PRICE;
 
 @Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + Constants.BINDING_ID)
+@NonNullByDefault
 public class EntsoeDiscoveryService extends AbstractDiscoveryService {
     public EntsoeDiscoveryService(@Reference TranslationProvider i18nProvider, @Reference LocaleProvider localeProvider)
             throws IllegalArgumentException {

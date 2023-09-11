@@ -1,6 +1,7 @@
 package org.openhab.binding.entsoe.internal.price;
 
 import org.junit.jupiter.api.Test;
+import org.openhab.binding.entsoe.internal.price.service.VatRate;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -18,7 +18,10 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.dto.Area;
+import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.price.service.Bug;
+import org.openhab.binding.entsoe.internal.price.service.PriceService;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -57,19 +60,22 @@ public class PriceHandler extends BaseThingHandler {
         return (60 - now) % resolution;
     }
 
-    private @Nullable EntsoeClient apiClient;
-    private @Nullable PriceConfig configuration;
+    private final Logger logger = LoggerFactory.getLogger(PriceHandler.class);
+    private final HttpClientFactory httpClientFactory;
+    private final ZoneId zone;
+
+    private @Nullable PriceConfig config;
+    private @Nullable EntsoeClient client;
+    private @Nullable PriceService service;
+
     private @Nullable ZonedDateTime created;
-    private @Nullable Float current;
+    private @Nullable Double current;
     private @Nullable ScheduledFuture<?> currentPriceUpdateJob;
     private @Nullable ScheduledFuture<?> getDayAheadPricesJob;
-    private final HttpClientFactory httpClientFactory;
-    private final Logger logger = LoggerFactory.getLogger(PriceHandler.class);
     private @Nullable Unit<Energy> measure;
-    private List<Float> prices = emptyList();
+    private List<Double> prices = emptyList();
     private @Nullable Duration resolution;
     private @Nullable ZonedDateTime start;
-    private final ZoneId zone;
 
     public PriceHandler(Thing thing, EntsoeHandlerFactory handlerFactory) {
         super(thing);
@@ -77,18 +83,56 @@ public class PriceHandler extends BaseThingHandler {
         zone = handlerFactory.timeZoneProvider.getTimeZone();
     }
 
+    @Override
+    public void initialize() {
+        updateStatus(ThingStatus.UNKNOWN);
+
+        getDayAheadPricesJob = scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
+
+        // Can't schedule current price update job yet, because the resolution isn't known.
+    }
+
+    private PriceConfig getConfiguration() {
+        var config = this.config;
+        if (config == null) {
+            logger.trace("Transforming configuration.");
+            config = getConfigAs(PriceConfig.class);
+            this.config = config;
+        }
+        return config;
+    }
+
+    private EntsoeClient getClient() throws InvalidArea, InvalidToken {
+        var client = this.client;
+        if (client == null) {
+            logger.trace("Creating ENTSO-E API client.");
+            var config = getConfiguration();
+            client = new EntsoeClient(httpClientFactory.getCommonHttpClient(), config.token, config.area);
+            this.client = client;
+        }
+        return client;
+    }
+
+    private PriceService getService() throws InvalidArea, InvalidToken {
+        var service = this.service;
+        if (service == null) {
+            logger.trace("Creating Price Service.");
+            var config = getConfiguration();
+            service = new PriceService(
+                    new PriceService.Parameters(zone, config.transfer(), config.tax(), config.sellerVatRate(),
+                            config.margin()), getClient());
+            this.service = service;
+        }
+        return service;
+    }
+
     private void bug(Throwable t) {
         logger.error("Please report the following bug!", t);
         updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
     }
 
-    private void cancel(@Nullable ScheduledFuture<?> job) {
-        if (job != null)
-            job.cancel(true);
-    }
-
-    private List<Float> countPrices(List<Float> prices) {
-        var config = getConfiguration();
+    /*private List<Double> countPrices(List<Double> prices) {
+        var config = getConfig();
         if (MWH.equals(measure)) {
             if (KWH.equals(config.unit))
                 prices = prices.stream().map((price) -> price / 10F).toList();
@@ -101,42 +145,7 @@ public class PriceHandler extends BaseThingHandler {
         if (additions != 0F)
             prices = prices.stream().map((price) -> price + additions).toList();
         return prices;
-    }
-
-    @Override
-    public void dispose() {
-        cancel(currentPriceUpdateJob);
-        cancel(getDayAheadPricesJob);
-        apiClient = null;
-        configuration = null;
-        currentPriceUpdateJob = null;
-        getDayAheadPricesJob = null;
-        measure = null;
-        prices = emptyList();
-        resolution = null;
-        start = null;
-    }
-
-    private EntsoeClient getClient() throws InvalidArea, InvalidToken {
-        var client = apiClient;
-        if (client == null) {
-            logger.trace("Creating ENTSO-E API client.");
-            var config = getConfiguration();
-            client = new EntsoeClient(httpClientFactory.getCommonHttpClient(), config.token, config.area);
-            apiClient = client;
-        }
-        return client;
-    }
-
-    private PriceConfig getConfiguration() {
-        var config = configuration;
-        if (config == null) {
-            logger.trace("Transforming configuration.");
-            config = getConfigAs(PriceConfig.class);
-            configuration = config;
-        }
-        return config;
-    }
+    }*/
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
@@ -149,7 +158,7 @@ public class PriceHandler extends BaseThingHandler {
     private void handleGetDayAheadPrices() {
         try {
             var now = ZonedDateTime.now();
-            var document = getClient().getDayAheadPrices(now, now.plusDays(1));
+            var document = (Publication) getClient().getDayAheadPrices(now, now.plusDays(1));
             if (document == null) {
                 logger.debug("No matching data found!");
             } else
@@ -179,7 +188,7 @@ public class PriceHandler extends BaseThingHandler {
                         scheduleCurrentPriceUpdateJob(resolution);
                     }
                     created = document.created.withZoneSameInstant(zone);
-                    prices = countPrices(period.getPrices());
+                    //prices = countPrices(period.getPrices());
                     updateStatus(ThingStatus.ONLINE);
                     handleUpdateCurrentPrice();
                 } catch (Exception e) {
@@ -208,11 +217,34 @@ public class PriceHandler extends BaseThingHandler {
         }
     }
 
+    private void handleRefresh() {
+        try {
+            getService().refresh();
+        } catch (Bug e) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "bug");
+        } catch (InterruptedException e) {
+            logger.debug("Request cancelled!");
+            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
+        } catch (InvalidArea e) {
+            logger.error("Invalid area!", e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
+        } catch (InvalidToken e) {
+            logger.error("Invalid token!", e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
+        } catch (TimeoutException e) {
+            logger.debug("Request timeout!");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+        } catch (Unauthorized e) {
+            logger.error("Unauthorized!");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
+        }
+    }
+
     private void handleUpdateCurrentPrice() {
         var now = ZonedDateTime.now(zone);
         var time = start;
         var resolution = this.resolution;
-        Float current = null;
+        Double current = null;
         if (time != null && resolution != null) {
             var minutes = resolution.toMinutes();
             for (var price : prices) {
@@ -229,15 +261,6 @@ public class PriceHandler extends BaseThingHandler {
         this.current = current;
     }
 
-    @Override
-    public void initialize() {
-        updateStatus(ThingStatus.UNKNOWN);
-
-        getDayAheadPricesJob = scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
-
-        // Can't schedule current price update job yet, because the resolution isn't known.
-    }
-
     private void scheduleCurrentPriceUpdateJob(Duration resolution) {
         cancel(currentPriceUpdateJob);
         var resolutionInMinutes = resolution.toMinutes();
@@ -249,6 +272,25 @@ public class PriceHandler extends BaseThingHandler {
     @Override
     protected void updateStatus(ThingStatus status, ThingStatusDetail statusDetail, @Nullable String offlineKey) {
         super.updateStatus(status, statusDetail, "@text/offline." + offlineKey);
+    }
+
+    private void cancel(@Nullable ScheduledFuture<?> job) {
+        if (job != null)
+            job.cancel(true);
+    }
+
+    @Override
+    public void dispose() {
+        cancel(currentPriceUpdateJob);
+        cancel(getDayAheadPricesJob);
+        client = null;
+        config = null;
+        currentPriceUpdateJob = null;
+        getDayAheadPricesJob = null;
+        measure = null;
+        prices = emptyList();
+        resolution = null;
+        start = null;
     }
 
 }
