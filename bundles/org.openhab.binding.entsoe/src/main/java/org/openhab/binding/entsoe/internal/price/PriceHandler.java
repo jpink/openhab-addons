@@ -30,6 +30,8 @@ import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.measure.Unit;
+import javax.measure.quantity.Energy;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -42,8 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * The {@link PriceHandler} is responsible for handling commands, which are
- * sent to one of the channels.
+ * The {@link PriceHandler} is responsible for handling commands, which are sent to one of the channels.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
@@ -64,7 +65,7 @@ public class PriceHandler extends BaseThingHandler {
     private @Nullable ScheduledFuture<?> getDayAheadPricesJob;
     private final HttpClientFactory httpClientFactory;
     private final Logger logger = LoggerFactory.getLogger(PriceHandler.class);
-    private @Nullable String measure;
+    private @Nullable Unit<Energy> measure;
     private List<Float> prices = emptyList();
     private @Nullable Duration resolution;
     private @Nullable ZonedDateTime start;
@@ -167,9 +168,9 @@ public class PriceHandler extends BaseThingHandler {
                         } catch (IllegalArgumentException ignored) {
                         }
                         properties.put("domain", domain);
-                        var measure = timeSeries.measure.replace('H', 'h').replace('K', 'k');
+                        var measure = timeSeries.measure;
                         this.measure = measure;
-                        properties.put("measure", measure);
+                        properties.put("measure", measure.toString());
                         var resolution = period.resolution;
                         this.resolution = resolution;
                         properties.put("resolution", resolution.toMinutes() + " min");

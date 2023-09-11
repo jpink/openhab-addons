@@ -34,6 +34,7 @@ import org.openhab.binding.entsoe.internal.client.exception.InvalidArea;
 import org.openhab.binding.entsoe.internal.client.exception.InvalidToken;
 import org.openhab.binding.entsoe.internal.client.exception.TooLong;
 import org.openhab.binding.entsoe.internal.client.exception.TooShort;
+import org.openhab.core.library.unit.Units;
 
 @NonNullByDefault
 public class EntsoeClientTest {
@@ -52,7 +53,7 @@ public class EntsoeClientTest {
         assertNotNull(timeSeries);
         assertEquals(area.code, timeSeries.domain);
         assertEquals(Currency.getInstance("EUR"), timeSeries.currency);
-        assertEquals("MWH", timeSeries.measure);
+        assertEquals(Units.MEGAWATT_HOUR, timeSeries.measure);
         var period = timeSeries.period;
         assertNotNull(period);
         var timeInterval = period.timeInterval;

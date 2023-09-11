@@ -28,13 +28,11 @@ import org.slf4j.LoggerFactory;
 import com.thoughtworks.xstream.XStream;
 
 /**
- * The {@link EntsoeClient} class is HTTP API client, which fetches
- * data from ENTSO-E Transparency Platform.
- *
- * @see <a href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html">User
- *      guide</a>
+ * The {@link EntsoeClient} class is HTTP API client, which fetches data from ENTSO-E Transparency Platform.
  *
  * @author Jukka Papinkivi - Initial contribution
+ * @see <a href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html">User
+ *         guide</a>
  */
 public class EntsoeClient {
     public static final String BASE = "https://web-api.tp.entsoe.eu/api?securityToken=";
@@ -46,7 +44,9 @@ public class EntsoeClient {
 
     /**
      * @param securityToken Web Api Security Token
-     * @param area <A href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area EIC code</A>
+     * @param area <A
+     *         href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area
+     *         EIC code</A>
      */
     public static String buildDayAheadPricesEndpoint(UUID securityToken, String area) throws InvalidArea {
         return switch (area.length()) {
@@ -83,6 +83,7 @@ public class EntsoeClient {
     }
 
     static {
+        XSTREAM.registerConverter(new EnergyUnitConverter());
         XSTREAM.allowTypeHierarchy(Acknowledgement.class);
         XSTREAM.allowTypeHierarchy(Publication.class);
         XSTREAM.processAnnotations(Acknowledgement.class);
@@ -115,8 +116,8 @@ public class EntsoeClient {
 
     /**
      * @see <a href=
-     *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
-     *      Day Ahead Prices [12.1.D]</a>
+     *         "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
+     *         Day Ahead Prices [12.1.D]</a>
      */
     public Publication getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
             throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,

@@ -11,32 +11,19 @@ import javax.measure.Unit;
 import javax.measure.quantity.Energy;
 
 public class PriceCache {
-    private static class DailyCache {
-        private static class Interval {
-            final ZonedDateTime start;
-            final ZonedDateTime end;
-            final Double price;
-
-            Interval(ZonedDateTime start, ZonedDateTime end, Double price) {
-                this.start = start;
-                this.end = end;
-                this.price = price;
-            }
-
+    private record DailyCache(ZonedDateTime start, ZonedDateTime end, ProductPrice average) {
+        private record Interval(ZonedDateTime start, ZonedDateTime end, Double price) {
         }
 
-        final ZonedDateTime start;
-        //final ZonedDateTime end;
-        //final Double average;
-
-        DailyCache(ZonedDateTime start, Duration resolution, List<Float> prices, Float priceAddition) {
+        /*DailyCache(ZonedDateTime start, Duration resolution, List<Float> prices, Float priceAddition) {
             this.start = start;
+        }*/
+        DailyCache(PriceCache parent) {
+            this(null, null, null);
         }
 
     }
 
-    /** Additions to spot price: transfer price, tax and margin price. */
-    private final Float addition;
     private final Currency currency;
     private final Unit<Energy> source;
     private final Unit<Energy> target;
@@ -44,9 +31,8 @@ public class PriceCache {
     private @Nullable DailyCache tomorrow;
     private List<ElectricityPrice> prices = Collections.emptyList();
 
-    public PriceCache(ZonedDateTime start, Duration resolution, List<Float> prices, Float priceAddition,
-            Currency currency, Unit<Energy> source, Unit<Energy> target) {
-        this.addition = priceAddition;
+    public PriceCache(PriceDetails details, ZonedDateTime start, List<Float> prices, Currency currency,
+            Unit<Energy> source, Unit<Energy> target) {
         this.currency = currency;
         this.source = source;
         this.target = target;
