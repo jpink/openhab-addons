@@ -23,10 +23,13 @@ public class Period {
             prices = new ArrayList<>(points.size());
             for (int index = 0; index < points.size(); index++) {
                 var point = points.get(index);
-                if (index + 1 != point.position) throw new IllegalStateException("Point position " + point.position + " doesn't match its index " + index + "!");
+                if (index + 1 != point.position)
+                    throw new IllegalStateException(
+                            "Point position " + point.position + " doesn't match its index " + index + "!");
                 prices.add(point.price);
             }
         }
         return prices;
     }
+
 }

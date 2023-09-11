@@ -1,23 +1,22 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.entsoe.internal;
 
-import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.*;
+import static org.openhab.binding.entsoe.internal.Constants.*;
 
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.price.PriceHandler;
 import org.openhab.core.i18n.TimeZoneProvider;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.Thing;
@@ -41,10 +40,8 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
 
     public final TimeZoneProvider timeZoneProvider;
 
-    public EntsoeHandlerFactory(
-            final @Reference HttpClientFactory httpClientFactory,
-            final @Reference TimeZoneProvider timeZoneProvider
-    ) {
+    public EntsoeHandlerFactory(final @Reference HttpClientFactory httpClientFactory,
+            final @Reference TimeZoneProvider timeZoneProvider) {
         this.httpClientFactory = httpClientFactory;
         this.timeZoneProvider = timeZoneProvider;
     }
@@ -61,9 +58,10 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (THING_TYPE_PRICE.equals(thingTypeUID)) {
-            return new EntsoeHandler(thing, this);
+            return new PriceHandler(thing, this);
         }
 
         return null;
     }
+
 }

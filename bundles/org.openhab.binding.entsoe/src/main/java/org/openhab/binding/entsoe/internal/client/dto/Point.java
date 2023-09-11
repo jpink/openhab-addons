@@ -7,4 +7,5 @@ public class Point {
 
     @XStreamAlias("price.amount")
     public float price;
+
 }

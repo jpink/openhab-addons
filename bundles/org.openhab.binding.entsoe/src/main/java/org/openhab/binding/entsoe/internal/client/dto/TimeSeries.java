@@ -16,4 +16,5 @@ public class TimeSeries {
 
     @XStreamAlias("price_Measure_Unit.name")
     public String measure;
+
 }

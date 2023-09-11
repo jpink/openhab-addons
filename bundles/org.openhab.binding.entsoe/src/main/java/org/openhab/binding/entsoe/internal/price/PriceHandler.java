@@ -1,22 +1,21 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.entsoe.internal;
+package org.openhab.binding.entsoe.internal.price;
 
-import static org.openhab.binding.entsoe.internal.EntsoeBindingConstants.CHANNEL_1;
+import static org.openhab.binding.entsoe.internal.Constants.CHANNEL_1;
 import static java.util.Collections.emptyList;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.dto.Area;
 import org.openhab.binding.entsoe.internal.client.exception.*;
@@ -36,7 +35,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Currency;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -44,13 +42,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * The {@link EntsoeHandler} is responsible for handling commands, which are
+ * The {@link PriceHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class EntsoeHandler extends BaseThingHandler {
+public class PriceHandler extends BaseThingHandler {
     private static final String MWH = "MWh";
     private static final String KWH = "kWh";
 
@@ -59,22 +57,20 @@ public class EntsoeHandler extends BaseThingHandler {
     }
 
     private @Nullable EntsoeClient apiClient;
-    private @Nullable EntsoeConfiguration configuration;
+    private @Nullable PriceConfig configuration;
     private @Nullable ZonedDateTime created;
-    private @Nullable Currency currency;
     private @Nullable Float current;
     private @Nullable ScheduledFuture<?> currentPriceUpdateJob;
     private @Nullable ScheduledFuture<?> getDayAheadPricesJob;
     private final HttpClientFactory httpClientFactory;
-    private final Logger logger = LoggerFactory.getLogger(EntsoeHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(PriceHandler.class);
     private @Nullable String measure;
     private List<Float> prices = emptyList();
     private @Nullable Duration resolution;
     private @Nullable ZonedDateTime start;
     private final ZoneId zone;
 
-    public EntsoeHandler(Thing thing, EntsoeHandlerFactory handlerFactory)
-    {
+    public PriceHandler(Thing thing, EntsoeHandlerFactory handlerFactory) {
         super(thing);
         httpClientFactory = handlerFactory.httpClientFactory;
         zone = handlerFactory.timeZoneProvider.getTimeZone();
@@ -86,19 +82,24 @@ public class EntsoeHandler extends BaseThingHandler {
     }
 
     private void cancel(@Nullable ScheduledFuture<?> job) {
-        if (job != null) job.cancel(true);
+        if (job != null)
+            job.cancel(true);
     }
 
-    private void countPrices(List<Float> prices) {
+    private List<Float> countPrices(List<Float> prices) {
         var config = getConfiguration();
         if (MWH.equals(measure)) {
-            if (KWH.equals(config.unit)) prices = prices.stream().map((price) -> price / 10F).toList();
+            if (KWH.equals(config.unit))
+                prices = prices.stream().map((price) -> price / 10F).toList();
         } else if (KWH.equals(measure)) {
-            if (MWH.equals(config.unit)) prices = prices.stream().map((price) -> price * 10F).toList();
-        } else throw new UnsupportedOperationException("Source unit " + measure);
+            if (MWH.equals(config.unit))
+                prices = prices.stream().map((price) -> price * 10F).toList();
+        } else
+            throw new UnsupportedOperationException("Source unit " + measure);
         var additions = config.transfer + config.tax + config.margin;
-        if (additions != 0F) prices = prices.stream().map((price) -> price + additions).toList();
-        this.prices = prices;
+        if (additions != 0F)
+            prices = prices.stream().map((price) -> price + additions).toList();
+        return prices;
     }
 
     @Override
@@ -107,7 +108,6 @@ public class EntsoeHandler extends BaseThingHandler {
         cancel(getDayAheadPricesJob);
         apiClient = null;
         configuration = null;
-        currency = null;
         currentPriceUpdateJob = null;
         getDayAheadPricesJob = null;
         measure = null;
@@ -127,11 +127,11 @@ public class EntsoeHandler extends BaseThingHandler {
         return client;
     }
 
-    private EntsoeConfiguration getConfiguration() {
+    private PriceConfig getConfiguration() {
         var config = configuration;
         if (config == null) {
             logger.trace("Transforming configuration.");
-            config = getConfigAs(EntsoeConfiguration.class);
+            config = getConfigAs(PriceConfig.class);
             configuration = config;
         }
         return config;
@@ -140,7 +140,8 @@ public class EntsoeHandler extends BaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (CHANNEL_1.equals(channelUID.getId())) {
-            if (command instanceof RefreshType) handleGetDayAheadPrices();
+            if (command instanceof RefreshType)
+                handleGetDayAheadPrices();
         }
     }
 
@@ -148,32 +149,41 @@ public class EntsoeHandler extends BaseThingHandler {
         try {
             var now = ZonedDateTime.now();
             var document = getClient().getDayAheadPrices(now, now.plusDays(1));
-            try {
-                var timeSeries = document.timeSeries;
-                var period = timeSeries.period;
-                start = period.timeInterval.start.withZoneSameInstant(zone);
-                if (currentPriceUpdateJob == null) {
-                    var properties = editProperties();
-                    currency = timeSeries.currency;
-                    properties.put("currency", currency.getDisplayName());
-                    String domain = timeSeries.domain;
-                    try { domain = Area.valueOf(timeSeries.domain).meaning; }
-                    catch (IllegalArgumentException ignored) {}
-                    properties.put("domain", domain);
-                    var measure = timeSeries.measure.replace('H', 'h').replace('K', 'k');
-                    this.measure = measure;
-                    properties.put("measure", measure);
-                    resolution = period.resolution;
-                    properties.put("resolution", resolution.toMinutes() + " min");
-                    properties.put("start", start.format(DateTimeFormatter.ISO_TIME));
-                    updateProperties(properties);
-                    scheduleCurrentPriceUpdateJob(resolution);
+            if (document == null) {
+                logger.debug("No matching data found!");
+            } else
+                try {
+                    var timeSeries = document.timeSeries;
+                    var period = timeSeries.period;
+                    var start = period.timeInterval.start.withZoneSameInstant(zone);
+                    this.start = start;
+                    if (currentPriceUpdateJob == null) {
+                        var properties = editProperties();
+                        var currency = timeSeries.currency;
+                        properties.put("currency", currency.getDisplayName());
+                        String domain = timeSeries.domain;
+                        try {
+                            domain = Area.valueOf(timeSeries.domain).meaning;
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                        properties.put("domain", domain);
+                        var measure = timeSeries.measure.replace('H', 'h').replace('K', 'k');
+                        this.measure = measure;
+                        properties.put("measure", measure);
+                        var resolution = period.resolution;
+                        this.resolution = resolution;
+                        properties.put("resolution", resolution.toMinutes() + " min");
+                        properties.put("start", start.format(DateTimeFormatter.ISO_TIME));
+                        updateProperties(properties);
+                        scheduleCurrentPriceUpdateJob(resolution);
+                    }
+                    created = document.created.withZoneSameInstant(zone);
+                    prices = countPrices(period.getPrices());
+                    updateStatus(ThingStatus.ONLINE);
+                    handleUpdateCurrentPrice();
+                } catch (Exception e) {
+                    bug(e);
                 }
-                created = document.created.withZoneSameInstant(zone);
-                countPrices(period.getPrices());
-                updateStatus(ThingStatus.ONLINE);
-                handleUpdateCurrentPrice();
-            } catch (Exception e) { bug(e); }
         } catch (ExecutionException | InvalidParameter | TooLong | TooShort | UnknownResponse e) {
             bug(e);
         } catch (InterruptedException e) {
@@ -205,7 +215,8 @@ public class EntsoeHandler extends BaseThingHandler {
         if (time != null && resolution != null) {
             var minutes = resolution.toMinutes();
             for (var price : prices) {
-                if (time.compareTo(now) < 0) current = price;
+                if (time.compareTo(now) < 0)
+                    current = price;
                 time = time.plusMinutes(minutes);
             }
             if (time.compareTo(now) < 0) {
@@ -221,8 +232,7 @@ public class EntsoeHandler extends BaseThingHandler {
     public void initialize() {
         updateStatus(ThingStatus.UNKNOWN);
 
-        getDayAheadPricesJob =
-                scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
+        getDayAheadPricesJob = scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
 
         // Can't schedule current price update job yet, because the resolution isn't known.
     }
@@ -230,16 +240,14 @@ public class EntsoeHandler extends BaseThingHandler {
     private void scheduleCurrentPriceUpdateJob(Duration resolution) {
         cancel(currentPriceUpdateJob);
         var resolutionInMinutes = resolution.toMinutes();
-        currentPriceUpdateJob = scheduler.scheduleAtFixedRate(
-                this::handleUpdateCurrentPrice,
-                countInitialMinutes(resolutionInMinutes, LocalTime.now().getMinute()),
-                resolutionInMinutes,
-                TimeUnit.MINUTES
-        );
+        currentPriceUpdateJob = scheduler.scheduleAtFixedRate(this::handleUpdateCurrentPrice,
+                countInitialMinutes(resolutionInMinutes, LocalTime.now().getMinute()), resolutionInMinutes,
+                TimeUnit.MINUTES);
     }
 
     @Override
     protected void updateStatus(ThingStatus status, ThingStatusDetail statusDetail, @Nullable String offlineKey) {
         super.updateStatus(status, statusDetail, "@text/offline." + offlineKey);
     }
+
 }

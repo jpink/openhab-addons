@@ -14,4 +14,5 @@ public class TooLong extends Exception {
         this.max = max;
         this.value = value;
     }
+
 }

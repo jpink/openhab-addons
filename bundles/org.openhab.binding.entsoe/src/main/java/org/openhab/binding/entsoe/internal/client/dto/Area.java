@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
  * Area
  *
  * @see <a href=
- *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Codes and
- *      their meaning</a>
+ *         "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Codes
+ *         and their meaning</a>
  */
 public enum Area {
     CZ("10YCZ-CEPS-----N", "SCA|CZ, MBA|CZ, Czech Republic (CZ), CTA|CZ, BZN|CZ, LFA|CZ, LFB|CZ"),

@@ -13,4 +13,5 @@ public class UnknownResponse extends Exception {
         this.status = status;
         this.url = url;
     }
+
 }

@@ -9,4 +9,5 @@ public class InvalidArea extends Exception {
     public InvalidArea(String area) {
         super(area);
     }
+
 }

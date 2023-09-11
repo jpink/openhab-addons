@@ -19,4 +19,5 @@ public class InvalidParameter extends Exception {
     public InvalidParameter(String url) {
         super(getQuery(url));
     }
+
 }

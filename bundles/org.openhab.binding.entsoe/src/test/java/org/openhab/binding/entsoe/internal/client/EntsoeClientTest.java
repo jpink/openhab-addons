@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -29,8 +27,9 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.Test;
+import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
 import org.openhab.binding.entsoe.internal.client.dto.Area;
-import org.openhab.binding.entsoe.internal.client.dto.PublicationMarket;
+import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.InvalidArea;
 import org.openhab.binding.entsoe.internal.client.exception.InvalidToken;
 import org.openhab.binding.entsoe.internal.client.exception.TooLong;
@@ -42,13 +41,10 @@ public class EntsoeClientTest {
     private static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
     private static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     private static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
-    private static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
+    private static final String ENDPOINT =
+            BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
 
-    private void assertPublicationMarket(
-            PublicationMarket document,
-            Area area,
-            ZonedDateTime created,
-            ZonedDateTime start,
+    private void assertPublicationMarket(Publication document, Area area, ZonedDateTime created, ZonedDateTime start,
             ZonedDateTime end) {
         assertNotNull(document);
         assertEquals(created, document.created);
@@ -113,23 +109,36 @@ public class EntsoeClientTest {
     }
 
     @Test
-    public void parsePublicationMarket_Guide() {
+    public void parseDocument_Guide_Acknowledgement() {
+        var content = readFile("2016-03-10_noData.xml");
+
+        var document = (Acknowledgement) parseDocument(content);
+
+        assertNotNull(document);
+        var reason = document.reason;
+        assertNotNull(reason);
+        assertEquals(999, reason.code);
+        assertEquals("No matching data found", reason.text);
+    }
+
+    @Test
+    public void parseDocument_Guide_Publication() {
         var content = readFile("2015-12-31_CZ_dayAheadPrices.xml");
         var created = ZonedDateTime.of(2016, 5, 10, 9, 18, 53, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2015, 12, 31, 23, 0, 0, 0, ZoneOffset.UTC);
 
-        var document = parsePublicationMarket(content);
+        var document = (Publication) parseDocument(content);
 
         assertPublicationMarket(document, CZ, created, start, start.plusDays(1));
     }
 
     @Test
-    public void parsePublicationMarket_FI2023() {
+    public void parseDocument_FI2023_Publication() {
         var content = readFile("2023-09-09_FI_dayAheadPrices.xml");
         var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2023, 9, 8, 22, 0, 0, 0, ZoneOffset.UTC);
 
-        var document = parsePublicationMarket(content);
+        var document = (Publication) parseDocument(content);
 
         assertPublicationMarket(document, FI, created, start, start.plusDays(1));
     }
@@ -157,4 +166,5 @@ public class EntsoeClientTest {
         }
         throw new IllegalStateException();
     }
+
 }

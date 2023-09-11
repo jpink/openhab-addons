@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -21,7 +19,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.openhab.binding.entsoe.internal.client.dto.PublicationMarket;
+import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
+import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,8 +66,8 @@ public class EntsoeClient {
         return FORMATTER.format(toUTC(dateTime));
     }
 
-    public static PublicationMarket parsePublicationMarket(String content) {
-        return (PublicationMarket) XSTREAM.fromXML(content);
+    public static Object parseDocument(String content) {
+        return XSTREAM.fromXML(content);
     }
 
     public static UUID parseToken(String text) throws InvalidToken {
@@ -84,8 +83,10 @@ public class EntsoeClient {
     }
 
     static {
-        XSTREAM.allowTypeHierarchy(PublicationMarket.class);
-        XSTREAM.processAnnotations(PublicationMarket.class);
+        XSTREAM.allowTypeHierarchy(Acknowledgement.class);
+        XSTREAM.allowTypeHierarchy(Publication.class);
+        XSTREAM.processAnnotations(Acknowledgement.class);
+        XSTREAM.processAnnotations(Publication.class);
         XSTREAM.ignoreUnknownElements();
     }
 
@@ -105,8 +106,10 @@ public class EntsoeClient {
 
     public String buildDayAheadPricesUrl(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws TooLong, TooShort {
         var duration = Duration.between(periodStart, periodEnd);
-        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0) throw new TooShort(duration, DAY_AHEAD_PRICES_MIN);
-        if (MAX_RANGE.compareTo(duration) < 0) throw new TooLong(duration, MAX_RANGE);
+        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0)
+            throw new TooShort(duration, DAY_AHEAD_PRICES_MIN);
+        if (MAX_RANGE.compareTo(duration) < 0)
+            throw new TooLong(duration, MAX_RANGE);
         return dayAheadPricesEndpoint + "&periodStart=" + format(periodStart) + "&periodEnd=" + format(periodEnd);
     }
 
@@ -115,16 +118,9 @@ public class EntsoeClient {
      *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
      *      Day Ahead Prices [12.1.D]</a>
      */
-    public PublicationMarket getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws
-            ExecutionException,
-            InterruptedException,
-            InvalidParameter,
-            TimeoutException,
-            TooLong,
-            TooMany,
-            TooShort,
-            Unauthorized,
-            UnknownResponse {
+    public Publication getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
+            throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,
+            TooShort, Unauthorized, UnknownResponse {
         logger.debug("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);
         var url = buildDayAheadPricesUrl(periodStart, periodEnd);
         logger.trace("GET {}", url);
@@ -133,11 +129,18 @@ public class EntsoeClient {
         var content = response.getContentAsString();
         logger.trace(content);
         return switch (status) {
-            case 200 -> parsePublicationMarket(content); //TODO No matching data found, if reason code is 999.
+            case 200 -> {
+                var document = parseDocument(content);
+                if (document instanceof Publication)
+                    yield (Publication) document;
+                else
+                    yield null;
+            }
             case 400 -> throw new InvalidParameter(url);
             case 401 -> throw new Unauthorized();
             case 429 -> throw new TooMany();
             default -> throw new UnknownResponse(url, status, content);
         };
     }
+
 }

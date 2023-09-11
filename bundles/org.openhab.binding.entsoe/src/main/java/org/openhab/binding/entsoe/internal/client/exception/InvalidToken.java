@@ -9,4 +9,5 @@ public class InvalidToken extends Exception {
     public InvalidToken(IllegalArgumentException cause) {
         super(cause);
     }
+
 }
