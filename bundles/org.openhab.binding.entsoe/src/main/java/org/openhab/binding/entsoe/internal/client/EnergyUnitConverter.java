@@ -5,7 +5,7 @@ import org.openhab.core.library.unit.Units;
 
 import javax.measure.Unit;
 
-/** Energy unit converter. */
+/** Energy measure converter. */
 public class EnergyUnitConverter implements SingleValueConverter {
     /**
      * Marshals an Object into a single value representation.
@@ -29,7 +29,7 @@ public class EnergyUnitConverter implements SingleValueConverter {
         return switch (str) {
             case "MWH", "MWh" -> Units.MEGAWATT_HOUR;
             case "KWH", "kWh" -> Units.KILOWATT_HOUR;
-            default -> throw new UnsupportedOperationException("Unable parse unit '" + str + "'!");
+            default -> throw new UnsupportedOperationException("Unable parse measure '" + str + "'!");
         };
     }
 

@@ -5,10 +5,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Energy;
-import java.text.NumberFormat;
-import java.util.Currency;
-import java.util.Locale;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 /**
  * Single or multiple products price. If products have different value added tax rates, then the rate is null.
@@ -18,30 +16,33 @@ import java.util.Objects;
  *         different rates.
  * @param vatAmount The value added tax amount.
  * @param total The product price with tax included.
- * @param currency The price currency.
- * @param unit The price unit.
+ * @param currency The currency measure of the prices.
+ * @param unit The energy measure of the prices.
  */
 @NonNullByDefault
-public record ProductPrice(double price, @Nullable VatRate vatRate, double vatAmount, double total, Currency currency,
-                           Unit<Energy> unit) {
-    public static ProductPrice fromTotal(final double total, final VatRate vatRate, Currency currency,
-            Unit<Energy> unit) {
+public record ProductPrice(double price, @Nullable VatRate vatRate, double vatAmount, double total,
+                           CurrencyUnit currency, Unit<Energy> unit) {
+    public static ProductPrice fromPrice(double price, VatRate vatRate, CurrencyUnit currency, Unit<Energy> unit) {
+        return new ProductPrice(price, vatRate, vatRate.vatFromPrice(price), vatRate.totalFromPrice(price), currency,
+                unit);
+    }
+
+    public static ProductPrice fromTotal(double total, VatRate vatRate, CurrencyUnit currency, Unit<Energy> unit) {
         return new ProductPrice(vatRate.price(total), vatRate, vatRate.vatFromTotal(total), total, currency, unit);
     }
 
-    private static final NumberFormat FORMAT = NumberFormat.getCurrencyInstance(Locale.ENGLISH);
-
     @Override
     public String toString() {
-        return vatRate == null ? FORMAT.format(total) : FORMAT.format(total) + " " + vatRate;
+        return vatRate == null ? currency.format(total) : currency.format(total) + " " + vatRate;
     }
 
-    public ProductPrice plus(ProductPrice other) {
-        if (!Objects.equals(currency, other.currency))
-            throw new IllegalArgumentException(
-                    "Product price currency " + currency + "isn't same as the other " + other.currency + "!");
-        return new ProductPrice(price + other.price, Objects.equals(vatRate, other.vatRate) ? vatRate : null,
-                vatAmount + other.vatAmount, total + total, currency, unit);
+    public ProductPrice plus(ProductPrice that) {
+        var currencyConverter = that.currency.getConverterTo(currency);
+        var unitConverter = that.unit.getConverterTo(unit);
+        BiFunction<Double, Double, Double> sum = (me, other) -> me + unitConverter.convert(
+                currencyConverter.convert(other));
+        return new ProductPrice(sum.apply(price, that.price), Objects.equals(vatRate, that.vatRate) ? vatRate : null,
+                sum.apply(vatAmount, that.vatAmount), sum.apply(total, that.total), currency, unit);
     }
 
 }

@@ -11,9 +11,13 @@
 package org.openhab.binding.entsoe.internal.price;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.entsoe.internal.price.service.CurrencyUnit;
+import org.openhab.binding.entsoe.internal.price.service.PriceDetails;
 import org.openhab.binding.entsoe.internal.price.service.ProductPrice;
 import org.openhab.binding.entsoe.internal.price.service.VatRate;
 import org.openhab.core.library.unit.Units;
+
+import java.time.ZoneId;
 
 import static org.openhab.binding.entsoe.internal.Constants.*;
 
@@ -49,33 +53,15 @@ public class PriceConfig {
     /** Electricity sellers VAT percent */
     public int seller;
 
-    public VatRate generalVatRate() {
-        return new VatRate(general);
+    private ProductPrice price(double totalPrice, VatRate vatRate) {
+        return ProductPrice.fromTotal(totalPrice, vatRate, new CurrencyUnit(EUR, UNIT_CENT_PER_KWH.equals(unit)),
+                Units.KILOWATT_HOUR);
     }
 
-    public VatRate sellerVatRate() {
-        return new VatRate(seller);
-    }
-
-    private ProductPrice productPrice(double totalPrice, VatRate vatRate) {
-        var price = switch (unit) {
-            case UNIT_CENT_PER_KWH -> totalPrice / 100.0;
-            case UNIT_EURO_PER_MWH -> totalPrice;
-            default -> throw new UnsupportedOperationException(unit);
-        };
-        return ProductPrice.fromTotal(price, vatRate, EUR, Units.KILOWATT_HOUR);
-    }
-
-    public ProductPrice transfer() {
-        return productPrice(transfer, generalVatRate());
-    }
-
-    public ProductPrice tax() {
-        return productPrice(tax, generalVatRate());
-    }
-
-    public ProductPrice margin() {
-        return productPrice(margin, sellerVatRate());
+    public PriceDetails toPriceDetails(ZoneId zone) {
+        var general = new VatRate(this.general);
+        var seller = new VatRate(this.seller);
+        return new PriceDetails(zone, price(transfer, general), price(tax, general), seller, price(margin, seller));
     }
 
 }

@@ -38,12 +38,26 @@ import org.openhab.core.library.unit.Units;
 
 @NonNullByDefault
 public class EntsoeClientTest {
+    public static final String FI2023 = "2023-09-09_FI_dayAheadPrices.xml";
     private static final LocalDateTime NEW_YEAR = LocalDateTime.of(2015, 12, 31, 23, 30);
     private static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
     private static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     private static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
     private static final String ENDPOINT =
             BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
+
+    public static String readFile(String filename) {
+        try (var input = EntsoeClientTest.class.getResourceAsStream(filename)) {
+            if (input == null) {
+                fail("Resource file '" + filename + "' not found!");
+            } else {
+                return new String(input.readAllBytes(), StandardCharsets.US_ASCII);
+            }
+        } catch (IOException ex) {
+            fail(ex);
+        }
+        throw new IllegalStateException();
+    }
 
     private void assertPublicationMarket(Publication document, Area area, ZonedDateTime created, ZonedDateTime start,
             ZonedDateTime end) {
@@ -61,7 +75,6 @@ public class EntsoeClientTest {
         assertEquals(end, timeInterval.end);
         assertEquals(Duration.ofHours(1), period.resolution);
         assertEquals(24, period.points.size());
-        assertEquals(24, period.getPrices().size());
     }
 
     @Test
@@ -135,7 +148,7 @@ public class EntsoeClientTest {
 
     @Test
     public void parseDocument_FI2023_Publication() {
-        var content = readFile("2023-09-09_FI_dayAheadPrices.xml");
+        var content = readFile(FI2023);
         var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2023, 9, 8, 22, 0, 0, 0, ZoneOffset.UTC);
 
@@ -152,20 +165,6 @@ public class EntsoeClientTest {
     @Test
     public void parseToken_Sample_Valid() throws InvalidToken {
         assertEquals(TOKEN_UUID, parseToken(TOKEN_TEXT));
-    }
-
-    private String readFile(String filename) {
-        var clazz = getClass();
-        try (var input = clazz.getResourceAsStream(filename)) {
-            if (input == null) {
-                fail("Resource file '" + filename + "' of " + clazz + " not found!");
-            } else {
-                return new String(input.readAllBytes(), StandardCharsets.US_ASCII);
-            }
-        } catch (IOException ex) {
-            fail(ex);
-        }
-        throw new IllegalStateException();
     }
 
 }

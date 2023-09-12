@@ -13,7 +13,7 @@ import java.util.List;
 public class PriceCache {
     private record DailyCache(ZonedDateTime start, ZonedDateTime end, ProductPrice average) {
         static DailyCache of(PriceDetails details, Publication publication) {
-            var zone = details.targetZone();
+            var zone = details.zone();
             var timeInterval = publication.timeSeries.period.timeInterval;
             var start = timeInterval.start.withZoneSameInstant(zone);
             var end = timeInterval.end.withZoneSameInstant(zone);

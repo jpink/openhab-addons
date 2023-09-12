@@ -2,12 +2,10 @@ package org.openhab.binding.entsoe.internal.price.service;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import javax.measure.Unit;
-import javax.measure.quantity.Energy;
 import java.time.ZonedDateTime;
 
 /**
- * Electricity price interval with statistics.
+ * Electricity price interval.
  *
  * @param start
  * @param end
@@ -15,29 +13,18 @@ import java.time.ZonedDateTime;
  * @param tax The fixed energy tax amount.
  * @param spot The current spot price.
  * @param margin The fixed sellers margin price.
- * @param price The total price what consumer has to pay.
- * @param unit
- * @param dailyIndex A daily price index which is comparable to average price. Average price has index of 100.
+ * @param total The total price what consumer has to pay.
  * @param dailyRank The cheapest daily price interval has rank 1, the second cheapest has rank 2, etc. The most
  *         expensive interval has the same value as count of intervals in a day.
- * @param totalIndex A price index of the whole period which is comparable to average price. Average price has
- *         index of 100.
- * @param totalRank The cheapest price interval has rank 1, the second cheapest has rank 2, etc. The most
- *         expensive interval has the same value as total count of intervals.
+ * @param dailyNormalized A daily normalized price which is between 0.0 and 1.0.
+ * @param futureRank The cheapest daily price interval has rank 1, the second cheapest has rank 2, etc. The most
+ *         expensive interval has the same value as count of intervals in the future.
+ * @param futureNormalized A future normalized price which is between 0.0 and 1.0.
  */
 @NonNullByDefault
 public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, ProductPrice transfer, ProductPrice tax,
-                               ProductPrice spot, ProductPrice margin, ProductPrice price, Unit<Energy> unit,
-                               int dailyIndex, int dailyRank, int totalIndex, int totalRank) {
-    public ElectricityPrice(ZonedDateTime start, ZonedDateTime end, ProductPrice transfer, ProductPrice tax,
-            ProductPrice spot, ProductPrice margin, Unit<Energy> unit, int dailyIndex, int dailyRank, int totalIndex,
-            int totalRank) {
-        this(start, end, transfer, tax, spot, margin, transfer.plus(tax).plus(spot).plus(margin), unit, dailyIndex,
-                dailyRank, totalIndex, totalRank);
-    }
-
-    public boolean contains(ZonedDateTime time) {
-        return start.compareTo(time) <= 0 && time.compareTo(end) < 0;
-    }
+                               ProductPrice spot, ProductPrice margin, ProductPrice total, int dailyRank,
+                               double dailyNormalized, Holder<Integer> futureRank, Holder<Double> futureNormalized)
+        implements Interval {
 
 }

@@ -24,8 +24,16 @@ public record VatRate(double rate) {
         return total / (1.0 + rate);
     }
 
+    public double vatFromPrice(double price) {
+        return price * rate;
+    }
+
     public double vatFromTotal(double total) {
         return total - price(total);
+    }
+
+    public double totalFromPrice(double price) {
+        return price + vatFromPrice(price);
     }
 
     @Override
