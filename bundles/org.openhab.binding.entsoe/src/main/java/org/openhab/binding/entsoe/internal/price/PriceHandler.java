@@ -1,27 +1,32 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional information.
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.entsoe.internal.price;
 
 import static org.openhab.binding.entsoe.internal.Constants.CHANNEL_1;
-import static java.util.Collections.emptyList;
+
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
-import org.openhab.binding.entsoe.internal.client.dto.Area;
-import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.openhab.binding.entsoe.internal.price.service.Bug;
-import org.openhab.binding.entsoe.internal.price.service.PriceDetails;
 import org.openhab.binding.entsoe.internal.price.service.PriceService;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
@@ -33,19 +38,6 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.measure.Unit;
-import javax.measure.quantity.Energy;
-import java.time.Duration;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * The {@link PriceHandler} is responsible for handling commands, which are sent to one of the channels.
@@ -222,5 +214,4 @@ public class PriceHandler extends BaseThingHandler {
         currentPriceUpdateJob = null;
         getDayAheadPricesJob = null;
     }
-
 }

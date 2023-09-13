@@ -5,6 +5,7 @@
 
 	<type>binding</type>
 	<name>ENTSO-E Binding</name>
-	<description>This binding offers the day ahead electricity prices of European countries. They are fetched from European Network of Transmission System Operators for Electricity (ENTSO-E) Transparency Platform RESTful API.</description>
+	<description>This binding offers the day ahead electricity prices of European countries. They are fetched from European
+		Network of Transmission System Operators for Electricity (ENTSO-E) Transparency Platform RESTful API.</description>
 
 </addon:addon>

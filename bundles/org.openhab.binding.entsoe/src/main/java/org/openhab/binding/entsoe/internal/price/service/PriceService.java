@@ -1,4 +1,24 @@
+/**
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.entsoe.internal.price.service;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -9,14 +29,6 @@ import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /** Electricity Price Service */
 @NonNullByDefault
@@ -79,8 +91,7 @@ public class PriceService implements Interval {
         try {
             var now = ZonedDateTime.now();
             if (contains(now)) {
-                return today.contains(now)
-                        ? today.currentPrice(now)
+                return today.contains(now) ? today.currentPrice(now)
                         : Objects.requireNonNull(tomorrow).currentPrice(now);
             }
             return null;
@@ -90,7 +101,7 @@ public class PriceService implements Interval {
     }
 
     public ZonedDateTime refresh() throws Bug, InterruptedException, TimeoutException, Unauthorized {
-        //TODO check current status
+        // TODO check current status
         var publication = getDayAheadPrices(ZonedDateTime.now());
         today = publication.toDailyCache(details);
         return publication.created.withZoneSameInstant(zone);
@@ -109,5 +120,4 @@ public class PriceService implements Interval {
         properties.put("start", start().format(DateTimeFormatter.ISO_TIME));
         return properties;
     }
-
 }

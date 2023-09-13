@@ -29,10 +29,13 @@
 				<description>Price additions to the spot price.</description>
 			</parameter-group>
 
-			<parameter name="token" type="text" required="true" groupName="entsoe" min="36" max="36" pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$">
+			<parameter name="token" type="text" required="true" groupName="entsoe" min="36" max="36"
+				pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$">
 				<context>password</context>
 				<label>Security Token</label>
-				<description>To request access token (UUID), register on the Transparency Platform and email to transparency@entsoe.eu with "Restful API access" in the subject and the email address what you used in registration in the body. You should get response in 3 working days and there is more instructions.</description>
+				<description>To request access token (UUID), register on the Transparency Platform and email to
+					transparency@entsoe.eu with "Restful API access" in the subject and the email address what you used in registration
+					in the body. You should get response in 3 working days and there is more instructions.</description>
 			</parameter>
 
 			<parameter name="area" type="text" required="true" groupName="entsoe" min="2" max="16">
@@ -169,7 +172,7 @@
 				</options>
 				<limitToOptions>true</limitToOptions>
 			</parameter>
-			
+
 			<parameter name="transfer" type="decimal" groupName="price" min="0.0">
 				<label>Transfer Price</label>
 				<description>The fixed transfer price in the set unit. Schedule updates if using night or season tariffs.</description>

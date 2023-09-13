@@ -1,10 +1,12 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional information.
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -18,25 +20,25 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.thoughtworks.xstream.XStreamException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
-import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
+import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.client.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 /**
  * The {@link EntsoeClient} class is HTTP API client, which fetches data from ENTSO-E Transparency Platform.
  *
  * @author Jukka Papinkivi - Initial contribution
  * @see <a href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html">User
- *         guide</a>
+ *      guide</a>
  */
 @NonNullByDefault
 public class EntsoeClient {
@@ -50,13 +52,14 @@ public class EntsoeClient {
     /**
      * @param securityToken Web Api Security Token
      * @param area <A
-     *         href="https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area
-     *         EIC code</A>
+     *            href=
+     *            "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area
+     *            EIC code</A>
      */
     public static String buildDayAheadPricesEndpoint(UUID securityToken, String area) throws InvalidArea {
         return switch (area.length()) {
             case 2, 16 ->
-                    BASE + securityToken + DAY_AHEAD_PRICES_DOCUMENT + "&in_Domain=" + area + "&out_Domain=" + area;
+                BASE + securityToken + DAY_AHEAD_PRICES_DOCUMENT + "&in_Domain=" + area + "&out_Domain=" + area;
             default -> throw new InvalidArea(area);
         };
     }
@@ -121,8 +124,8 @@ public class EntsoeClient {
 
     /**
      * @see <a href=
-     *         "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
-     *         Day Ahead Prices [12.1.D]</a>
+     *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
+     *      Day Ahead Prices [12.1.D]</a>
      */
     public @NonNull MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
             throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,
@@ -149,5 +152,4 @@ public class EntsoeClient {
             default -> throw new UnknownResponse(url, status, content, null);
         }
     }
-
 }

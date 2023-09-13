@@ -1,8 +1,20 @@
+/**
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.entsoe.internal.price.service;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 import java.time.ZonedDateTime;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Electricity price interval.
@@ -15,16 +27,15 @@ import java.time.ZonedDateTime;
  * @param margin The fixed sellers margin price.
  * @param total The total price what consumer has to pay.
  * @param dailyRank The cheapest daily price interval has rank 1, the second cheapest has rank 2, etc. The most
- *         expensive interval has the same value as count of intervals in a day.
+ *            expensive interval has the same value as count of intervals in a day.
  * @param dailyNormalized A daily normalized price which is between 0.0 and 1.0.
  * @param futureRank The cheapest daily price interval has rank 1, the second cheapest has rank 2, etc. The most
- *         expensive interval has the same value as count of intervals in the future.
+ *            expensive interval has the same value as count of intervals in the future.
  * @param futureNormalized A future normalized price which is between 0.0 and 1.0.
  */
 @NonNullByDefault
 public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, ProductPrice transfer, ProductPrice tax,
-                               ProductPrice spot, ProductPrice margin, ProductPrice total, int dailyRank,
-                               double dailyNormalized, Holder<Integer> futureRank, Holder<Double> futureNormalized)
-        implements Interval {
+        ProductPrice spot, ProductPrice margin, ProductPrice total, int dailyRank, double dailyNormalized,
+        Holder<Integer> futureRank, Holder<Double> futureNormalized) implements Interval {
 
 }

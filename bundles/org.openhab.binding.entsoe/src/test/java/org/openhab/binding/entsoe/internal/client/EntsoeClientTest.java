@@ -1,10 +1,12 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional information.
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -43,8 +45,8 @@ public class EntsoeClientTest {
     private static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
     private static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     private static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
-    private static final String ENDPOINT =
-            BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
+    private static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain="
+            + CZ;
 
     public static String readFile(String filename) {
         try (var input = EntsoeClientTest.class.getResourceAsStream(filename)) {
@@ -166,5 +168,4 @@ public class EntsoeClientTest {
     public void parseToken_Sample_Valid() throws InvalidToken {
         assertEquals(TOKEN_UUID, parseToken(TOKEN_TEXT));
     }
-
 }
