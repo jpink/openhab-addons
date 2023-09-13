@@ -1,0 +1,17 @@
+package org.openhab.binding.entsoe.internal.price.service.money;
+
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.util.Currency;
+
+public class CurrencyCentUnit extends CurrencyUnit {
+    public CurrencyCentUnit(@NonNull Currency currency) {
+        super(currency);
+    }
+
+    @Override
+    public String getSymbol() {
+        return "c";
+    }
+
+}
