@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -20,7 +18,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
@@ -127,7 +124,7 @@ public class EntsoeClient {
      *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
      *      Day Ahead Prices [12.1.D]</a>
      */
-    public @NonNull MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
+    public MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
             throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,
             TooShort, Unauthorized, UnknownResponse {
         logger.debug("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);

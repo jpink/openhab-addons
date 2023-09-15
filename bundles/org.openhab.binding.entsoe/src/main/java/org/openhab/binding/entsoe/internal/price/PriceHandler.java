@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -150,34 +148,36 @@ public class PriceHandler extends BaseThingHandler {
         }
     }
 
-    private void handleRefresh() {
-        try {
-            var service = getService();
-            service.refresh();
-            // TODO
-            var properties = service.updateProperties(editProperties());
-            updateProperties(properties);
-            scheduleCurrentPriceUpdateJob(service.resolution());
-            updateStatus(ThingStatus.ONLINE);
-        } catch (Bug e) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "bug");
-        } catch (InterruptedException e) {
-            logger.debug("Request cancelled!");
-            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
-        } catch (InvalidArea e) {
-            logger.error("Invalid area!", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
-        } catch (InvalidToken e) {
-            logger.error("Invalid token!", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
-        } catch (TimeoutException e) {
-            logger.debug("Request timeout!");
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-        } catch (Unauthorized e) {
-            logger.error("Unauthorized!");
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
-        }
-    }
+    /*
+     * private void handleRefresh() {
+     * try {
+     * var service = getService();
+     * service.refresh();
+     * // TODO
+     * var properties = service.updateProperties(editProperties());
+     * updateProperties(properties);
+     * scheduleCurrentPriceUpdateJob(service.resolution());
+     * updateStatus(ThingStatus.ONLINE);
+     * } catch (Bug e) {
+     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "bug");
+     * } catch (InterruptedException e) {
+     * logger.debug("Request cancelled!");
+     * updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
+     * } catch (InvalidArea e) {
+     * logger.error("Invalid area!", e);
+     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
+     * } catch (InvalidToken e) {
+     * logger.error("Invalid token!", e);
+     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
+     * } catch (TimeoutException e) {
+     * logger.debug("Request timeout!");
+     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+     * } catch (Unauthorized e) {
+     * logger.error("Unauthorized!");
+     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
+     * }
+     * }
+     */
 
     private void handleUpdateCurrentPrice() {
         try {
