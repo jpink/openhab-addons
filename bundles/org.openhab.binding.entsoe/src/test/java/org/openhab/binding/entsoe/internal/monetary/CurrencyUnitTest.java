@@ -1,14 +1,25 @@
 package org.openhab.binding.entsoe.internal.monetary;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.openhab.core.library.unit.Units.*;
 
 import java.util.Currency;
+import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Disabled;
+import javax.measure.MetricPrefix;
+import javax.measure.Unit;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
-import org.openhab.core.library.unit.Units;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+@NonNullByDefault
 class CurrencyUnitTest {
+    static CurrencyUnit euroCent() {
+        return (CurrencyUnit) MetricPrefix.CENTI(euro());
+    }
+
     static CurrencyUnit euro() {
         return new CurrencyUnit(eur());
     }
@@ -19,6 +30,46 @@ class CurrencyUnitTest {
 
     static Currency eur() {
         return Currency.getInstance("EUR");
+    }
+
+    static Stream<Unit<?>> getSymbol_eqToString() {
+        return Stream.of(euro(), euroCent(), JOULE, NEWTON, SECOND, WATT);
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void getSymbol_eqToString(Unit<?> unit) {
+        assertEquals(unit.toString(), unit.getSymbol());
+    }
+
+    @Test
+    void getSymbol_null() {
+        assertNull(MetricPrefix.MEGA(WATT).getSymbol());
+    }
+
+    @Test
+    void getName_euro_euro() {
+        assertEquals("euro", euro().getName());
+    }
+
+    @Test
+    void getName_euroCent_centiEuro() {
+        assertEquals("centieuro", euroCent().getName());
+    }
+
+    @Test
+    void getName_megaEuro_megaEuro() {
+        assertEquals("megaeuro", MetricPrefix.MEGA(euro()).getName());
+    }
+
+    @Test
+    void getSystemUnit_euro_euro() {
+        assertEquals(euro(), euro().getSystemUnit());
+    }
+
+    @Test
+    void getSystemUnit_euroCent_euro() {
+        assertEquals(euro(), euroCent().getSystemUnit());
     }
 
     @Test
@@ -41,13 +92,9 @@ class CurrencyUnitTest {
         assertTrue(euro().isEquivalentTo(euro()));
     }
 
-    @Disabled
     @Test
     void divide_eurPerMwh_ok() {
-        var quotient = euro().divide(Units.MEGAWATT_HOUR);
-
-        var text = quotient.toString();
-        assertEquals("€/MWh", text);
+        assertEquals("€/MWh", euro().divide(MEGAWATT_HOUR).toString());
     }
 
     @Test
@@ -63,5 +110,10 @@ class CurrencyUnitTest {
     @Test
     void toString_euro_e() {
         assertEquals("€", euro().toString());
+    }
+
+    @Test
+    void prefix_euroCent() {
+        assertEquals("c", euroCent().toString());
     }
 }

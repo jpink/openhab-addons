@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -17,6 +15,7 @@ import static org.openhab.binding.entsoe.internal.Constants.*;
 import java.time.ZoneId;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.price.service.CurrencyUnit;
 import org.openhab.binding.entsoe.internal.price.service.PriceDetails;
 import org.openhab.binding.entsoe.internal.price.service.ProductPrice;
@@ -39,6 +38,12 @@ public class PriceConfig {
 
     /** Unit used in config and display. */
     public String unit = UNIT_CENT_PER_KWH;
+
+    /** Currency code. */
+    public String currency = "EUR";
+
+    /** The fraction digits of the value. Null means unlimited. */
+    public @Nullable Integer scale;
 
     /** The fixed electricity transfer fee including value added tax. */
     public double transfer;

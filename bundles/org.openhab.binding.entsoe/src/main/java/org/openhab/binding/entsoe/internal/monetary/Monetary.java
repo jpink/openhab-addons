@@ -9,6 +9,12 @@ import javax.measure.spi.SystemOfUnits;
 
 /** Monetary unit system which doesn't support currency exchanges. */
 public class Monetary implements SystemOfUnits {
+    /** openHAB Units Of Measurement */
+    public static final org.openhab.core.library.unit.Units OPENHAB = (org.openhab.core.library.unit.Units) org.openhab.core.library.unit.Units
+            .getInstance();
+
+    /** Indriya is the Reference Implementation of JSR 385 */
+    public static final tech.units.indriya.unit.Units INDRIYA = tech.units.indriya.unit.Units.getInstance();
 
     /**
      * @return a name

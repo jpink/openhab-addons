@@ -1,20 +1,20 @@
 package org.openhab.binding.entsoe.internal.monetary;
 
-import java.util.Map;
-
 import javax.measure.*;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
-import tech.units.indriya.unit.ProductUnit;
-
-public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
-    private final String symbol;
+public abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
+    protected final @Nullable Prefix prefix;
+    private final String symbols;
     private final String name;
     private final Dimension dimension;
 
-    public AbstractUnit(@NonNull String symbol, @NonNull String name, @NonNull Dimension dimension) {
-        this.symbol = symbol;
+    protected AbstractUnit(@Nullable Prefix prefix, @NonNull String symbols, @NonNull String name,
+            @NonNull Dimension dimension) {
+        this.prefix = prefix;
+        this.symbols = symbols;
         this.name = name;
         this.dimension = dimension;
     }
@@ -30,7 +30,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public String getSymbol() {
-        return symbol;
+        return symbols.length() == 1 ? symbols : null;
     }
 
     /**
@@ -60,38 +60,6 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
     }
 
     /**
-     * Returns the unscaled system unit from which this unit is derived. System units are either base units,
-     * {@linkplain #alternate(String) alternate} units or product of rational powers of system units.
-     *
-     * <p>
-     * Because the system unit is unique by quantity type, it can be be used to identify the quantity given the unit.
-     * For example:
-     * </p>
-     * <code>
-     * static boolean isAngularSpeed(Unit&lt;?&gt; unit) {<br> &nbsp;&nbsp;    return
-     * unit.getSystemUnit().equals(RADIAN.divide(SECOND));<br> }<br> assert isAngularSpeed(REVOLUTION.divide(MINUTE));
-     * // Returns true.<br><br>
-     * </code>
-     *
-     * @return the system unit this unit is derived from, or {@code this} if this unit is a system unit.
-     */
-    @Override
-    public Unit<Q> getSystemUnit() {
-        return this;
-    }
-
-    /**
-     * Returns the base units and their exponent whose product is this unit, or {@code null} if this unit is a base unit
-     * (not a product of existing units).
-     *
-     * @return the base units and their exponent making up this unit.
-     */
-    @Override
-    public Map<? extends Unit<?>, Integer> getBaseUnits() {
-        return null;
-    }
-
-    /**
      * Indicates if this unit is compatible with the unit specified. Units don't need to be equal to be compatible. For
      * example (assuming {@code ONE} is a dimensionless unit):<br>
      *
@@ -106,7 +74,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public boolean isCompatible(Unit<?> that) {
-        return getDimension().equals(that.getDimension());
+        return dimension.equals(that.getDimension());
     }
 
     /**
@@ -120,7 +88,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      * </p>
      *
      * @param that the {@code Unit<Q>} to be compared with this instance.
-     * @return {@code true} if {@code that \u2261 this}.
+     * @return {@code true} if {@code that ≡ this}.
      * @throws NullPointerException if the unit is null
      * @see <a href= "https://dictionary.cambridge.org/dictionary/english/equivalent">Cambridge Dictionary:
      *      equivalent</a>
@@ -147,7 +115,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public <T extends Quantity<T>> Unit<T> asType(Class<T> type) throws ClassCastException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -184,7 +152,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public UnitConverter getConverterToAny(Unit<?> that) throws IncommensurableException, UnconvertibleException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -209,7 +177,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> alternate(String symbol) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -219,7 +187,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      * <code>
      * CELSIUS = KELVIN.shift(273.15);
      * </code>
-     *
+     * <p>
      * creates a new unit where 0°C (the origin of the new unit) is equals to 273.15 K. Converting from the old unit to
      * the new one is equivalent to
      * <em>subtracting</em> the offset to the value in the old unit.
@@ -230,7 +198,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> shift(Number offset) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -240,7 +208,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      * <code>
      * CELSIUS = KELVIN.shift(273.15);
      * </code>
-     *
+     * <p>
      * creates a new unit where 0°C (the origin of the new unit) is equals to 273.15 K. Converting from the old unit to
      * the new one is equivalent to
      * <em>subtracting</em> the offset to the value in the old unit.
@@ -250,7 +218,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> shift(double offset) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -268,7 +236,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> multiply(Number multiplier) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -284,7 +252,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> multiply(double multiplier) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -295,7 +263,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<?> multiply(Unit<?> multiplier) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -306,7 +274,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<?> inverse() {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -323,7 +291,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> divide(Number divisor) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -338,7 +306,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> divide(double divisor) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -349,7 +317,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<?> divide(Unit<?> divisor) {
-        return ProductUnit.ofQuotient(this, divisor);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -363,7 +331,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<?> root(int n) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -375,7 +343,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<?> pow(int n) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -393,7 +361,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> transform(UnitConverter operation) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -405,7 +373,7 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
      */
     @Override
     public Unit<Q> prefix(Prefix prefix) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -424,6 +392,6 @@ public class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q> {
 
     @Override
     public String toString() {
-        return getSymbol();
+        return symbols;
     }
 }

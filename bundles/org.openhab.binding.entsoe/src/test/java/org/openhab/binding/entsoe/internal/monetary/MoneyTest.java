@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.monetary.CurrencyUnitTest.*;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class MoneyTest {
     static final double TRANSFER_MONTHLY_AMOUNT = 8.75;
-    // private static final double TRANSFER_AMOUNT = 0.034;
     static final double TAX_AMOUNT = 0.0279372;
     static final double SELLER_MONTHLY_AMOUNT = 4.9;
-    // static final double SPOT_AMOUNT = 0.075957;
-    // static final double MARGINAL_AMOUNT = 0.0025;
     static final Money TAX = new Money(TAX_AMOUNT, euro());
     static final Money TAX2 = new Money(TAX_AMOUNT, euro());
 
@@ -19,8 +18,12 @@ class MoneyTest {
         return new Money(amount, euro());
     }
 
+    static Money cents(double amount) {
+        return new Money(amount, euroCent());
+    }
+
     void toString_euros(String expected, double amount) {
-        assertEquals("€" + expected, euros(amount).toString());
+        assertEquals(expected + " €", euros(amount).toString());
     }
 
     @Test
@@ -45,12 +48,21 @@ class MoneyTest {
 
     @Test
     void toString_tax_euros() {
-        assertEquals("€0.03", TAX.toString());
+        assertEquals("0.03 €", TAX.toString());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "3.40 c,3.4", // transfer
+            "7.60 c,7.5957", // spot
+            "0.25 c,0.25" // marginal
+    })
+    void toString_cents(String expected, double amount) {
+        assertEquals(expected, cents(amount).toString());
     }
 
     @Test
     void toString_twoDecimals() {
-        assertEquals("€0.03", TAX.toString());
+        assertEquals("0.03 €", TAX.toString());
     }
 
     /*
@@ -66,11 +78,4 @@ class MoneyTest {
      * assertEquals("2.79372 c", TAX.toString());
      * }
      */
-
-    @Test
-    void test() {
-        // var foo = Quantities.getQuantity(5, Units.KILOWATT_HOUR);
-        // System.out.println(foo);
-        // System.out.println(foo.to(Units.MEGAWATT_HOUR));
-    }
 }

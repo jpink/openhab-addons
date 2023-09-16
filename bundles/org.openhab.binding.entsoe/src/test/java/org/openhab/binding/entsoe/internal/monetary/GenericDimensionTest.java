@@ -13,11 +13,13 @@ import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.quantity.Energy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@NonNullByDefault
 class GenericDimensionTest {
     static final String MONETARY_ENERGY_SYMBOLS = "[T]²·[¤]/[L]²·[M]";
 
