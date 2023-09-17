@@ -12,13 +12,15 @@
  */
 package org.openhab.binding.entsoe.internal.monetary;
 
+import javax.measure.Quantity;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Represents a measure of currency amount per energy (¤/Ws).
+ * Marker interface for monetary quantities.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public interface EnergyPrice extends MonetaryQuantity<EnergyPrice> {
+public interface MonetaryQuantity<Q extends MonetaryQuantity<Q>> extends Quantity<Q> {
 }

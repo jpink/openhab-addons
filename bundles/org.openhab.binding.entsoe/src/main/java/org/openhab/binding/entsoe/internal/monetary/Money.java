@@ -1,45 +1,25 @@
+/**
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.entsoe.internal.monetary;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import javax.measure.Quantity;
-import javax.measure.Unit;
-
-import org.eclipse.jdt.annotation.NonNull;
-
-/** Quantity of money in specific currency. */
-public class Money extends BigDecimalQuantity<Money> {
-
-    public Money(@NonNull BigDecimal value, @NonNull CurrencyUnit unit) {
-        this(value, unit.getMathContext(), unit);
-    }
-
-    public Money(@NonNull Number amount, @NonNull CurrencyUnit unit) {
-        this(amount.toString(), unit);
-    }
-
-    public Money(@NonNull String amount, @NonNull CurrencyUnit unit) {
-        this(new BigDecimal(amount, unit.getMathContext()), unit.getMathContext(), unit);
-    }
-
-    private Money(@NonNull BigDecimal value, @NonNull MathContext context, @NonNull Unit<Money> unit) {
-        super(value, context, unit, Scale.RELATIVE);
-    }
-
-    @Override
-    protected Quantity<Money> create(@NonNull BigDecimal value, @NonNull MathContext context, @NonNull Unit<Money> unit,
-            @NonNull Scale scale) {
-        return new Money(value, context, unit);
-    }
-
-    @Override
-    public String toString() {
-        var value = getValue();
-        var unit = getUnit();
-        if (unit instanceof CurrencyUnit currencyUnit)
-            return currencyUnit.format(value);
-        else
-            return value + " " + unit;
-    }
+/**
+ * Represents a measure of currency amount (¤). Different currencies are different dimensions, so currency exchanges has
+ * to be done externally.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
+@NonNullByDefault
+public interface Money extends MonetaryQuantity<Money> {
 }
