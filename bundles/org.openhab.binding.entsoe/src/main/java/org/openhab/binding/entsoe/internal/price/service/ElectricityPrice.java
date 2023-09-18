@@ -14,7 +14,12 @@ package org.openhab.binding.entsoe.internal.price.service;
 
 import java.time.ZonedDateTime;
 
+import javax.measure.Quantity;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
+import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
 
 /**
  * Electricity price interval.
@@ -34,8 +39,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @param futureNormalized A future normalized price which is between 0.0 and 1.0.
  */
 @NonNullByDefault
-public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, ProductPrice transfer, ProductPrice tax,
-        ProductPrice spot, ProductPrice margin, ProductPrice total, int dailyRank, double dailyNormalized,
-        Holder<Integer> futureRank, Holder<Double> futureNormalized) implements Interval {
+public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, TaxPrice<EnergyPrice> transfer,
+        TaxPrice<EnergyPrice> tax, TaxPrice<EnergyPrice> spot, TaxPrice<EnergyPrice> margin,
+        Quantity<EnergyPrice> total, int dailyRank, @Nullable Quantity<?> dailyNormalized, Holder<Integer> futureRank,
+        Holder<Double> futureNormalized) implements Interval {
 
 }

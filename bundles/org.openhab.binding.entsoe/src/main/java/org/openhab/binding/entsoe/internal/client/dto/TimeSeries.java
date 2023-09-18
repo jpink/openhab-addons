@@ -12,14 +12,10 @@
  */
 package org.openhab.binding.entsoe.internal.client.dto;
 
-import java.time.ZonedDateTime;
 import java.util.Currency;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Energy;
-
-import org.openhab.binding.entsoe.internal.price.service.DailyCache;
-import org.openhab.binding.entsoe.internal.price.service.PriceDetails;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -35,8 +31,4 @@ public class TimeSeries {
 
     @XStreamAlias("price_Measure_Unit.name")
     public Unit<Energy> measure;
-
-    public DailyCache toDailyCache(PriceDetails details, ZonedDateTime created) {
-        return period.toDailyCache(details, created, domain, currency, measure);
-    }
 }

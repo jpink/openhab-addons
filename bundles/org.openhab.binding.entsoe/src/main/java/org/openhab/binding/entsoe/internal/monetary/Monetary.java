@@ -1,14 +1,20 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional information.
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
 package org.openhab.binding.entsoe.internal.monetary;
+
+import static javax.measure.Quantity.Scale.*;
+import static org.openhab.core.library.unit.Units.*;
+import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -16,25 +22,19 @@ import java.util.*;
 
 import javax.measure.MetricPrefix;
 import javax.measure.Quantity;
-
-import static javax.measure.Quantity.Scale.*;
-
 import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
+import javax.measure.quantity.Energy;
 import javax.measure.quantity.Time;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import static org.openhab.core.library.unit.Units.*;
-
 import tech.units.indriya.AbstractSystemOfUnits;
 import tech.units.indriya.ComparableQuantity;
 import tech.units.indriya.format.SimpleUnitFormat;
 import tech.units.indriya.format.UnitStyle;
-import tech.units.indriya.quantity.Quantities;
 import tech.units.indriya.unit.BaseUnit;
-import tech.units.indriya.unit.ProductUnit;
 import tech.units.indriya.unit.UnitDimension;
 
 /**
@@ -57,8 +57,8 @@ public class Monetary extends AbstractSystemOfUnits {
     public static final Unit<Money> DKK = add("DKK", "DKr", '߾');
     public static final Unit<Money> EUR = add("EUR", "€", '₠');
     public static final Unit<Money> EUR_CENT = addCent(EUR, "Euro cent", "c", "snt");
-    public static final Unit<EnergyPrice> EURO_PER_MEGAWATT_HOUR = divide(EUR, MEGAWATT_HOUR);
-    public static final Unit<EnergyPrice> EURO_CENT_PER_KILOWATT_HOUR = divide(EUR_CENT, KILOWATT_HOUR);
+    public static final Unit<EnergyPrice> EURO_PER_MEGAWATT_HOUR = energyPriceUnit(EUR, MEGAWATT_HOUR);
+    public static final Unit<EnergyPrice> EURO_CENT_PER_KILOWATT_HOUR = energyPriceUnit(EUR_CENT, KILOWATT_HOUR);
     public static final Unit<Money> GBP = add("GBP");
     public static final Unit<Money> GBP_PENNY = addCent(GBP, "Penny", "p");
     public static final Unit<Money> GEL = add("GEL", 'ლ');
@@ -79,92 +79,87 @@ public class Monetary extends AbstractSystemOfUnits {
     public static final Unit<Money> USD_CENT = addCent(USD, "Dollar cent", "¢");
     private static MathContext context = MathContext.DECIMAL32;
 
-    public static Quantity<EnergyPrice> energyPrice(String amountAndUnit) {
-        return (Quantity<EnergyPrice>) Quantities.getQuantity(amountAndUnit);
-    }
-
-    public static Quantity<EnergyPrice> energyPrice(Number amount, Unit<EnergyPrice> unit) {
-        return Quantities.getQuantity(amount, unit, RELATIVE);
-    }
-
-    public static Unit<?> findUnit(String symbols) {
-        var unit = INSTANCE.getUnit(symbols);
-        if (unit == null)
-            unit = getInstance().getUnit(symbols);
-        if (unit == null)
-            unit = tech.units.indriya.unit.Units.getInstance().getUnit(symbols);
-        if (unit == null)
-            unit = SimpleUnitFormat.getInstance().parse(symbols);
-        return unit;
-    }
-
-    public static List<Unit<?>> getBaseCurrencies() {
-        return INSTANCE.units.stream()
-                .filter(unit -> unit.getBaseUnits() == null && unit.getName() != null && unit.getName().length() == 3)
-                .toList();
-    }
-
-    public static Unit<Money> getMoney(String symbols) {
-        return (Unit<Money>) SimpleUnitFormat.getInstance().parse(symbols);
-    }
-
-    public static Unit<Money> getCent(String currencyCode) {
-        return MetricPrefix.CENTI(getMoney(currencyCode));
-    }
-
-    public static Currency getCurrency(Unit<Money> unit) {
+    public static Currency currency(Unit<Money> unit) {
         return Currency.getInstance(unit.getName());
     }
 
-    public static Quantity<?> getQuantity(String amountAndUnit) {
-        var parts = StringUtils.split(amountAndUnit);
-        if (parts.length != 2)
-            throw new IllegalArgumentException("Monetary amount and unit must be separated by whitespace!");
-        return getQuantity(parts[0], parts[1]);
+    public static Quantity<EnergyPrice> energyPrice(String amountAndUnit) {
+        return (Quantity<EnergyPrice>) getQuantity(amountAndUnit);
     }
 
-    public static <Q extends Quantity<Q>> Quantity<Q> getQuantity(String amountAndUnit, Class<Q> type) {
-        return getQuantity(amountAndUnit).asType(type);
+    public static Quantity<EnergyPrice> energyPrice(Number amount, Unit<EnergyPrice> unit) {
+        return getQuantity(amount, unit, RELATIVE);
     }
 
-    public static Quantity<?> getQuantity(String amount, String unit) {
-        return Quantities.getQuantity(new BigDecimal(amount, context), findUnit(unit), RELATIVE);
+    public static Unit<EnergyPrice> energyPriceUnit(Currency currency, Unit<Energy> energy) {
+        return energyPriceUnit(moneyUnit(currency), energy);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> getQuantity(String amount, String unit, Class<Q> type) {
-        return getQuantity(amount, unit).asType(type);
+    public static Unit<EnergyPrice> energyPriceUnit(Unit<Money> money, Unit<Energy> energy) {
+        return (Unit<EnergyPrice>) money.divide(energy);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> getQuantity(long amount, Unit<Q> unit,
+    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(String amount, String unit, Class<Q> type) {
+        return quantity(amount, unit).asType(type);
+    }
+
+    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(long amount, Unit<Q> unit,
             Class<Q> type) {
-        return getQuantity(new BigDecimal(amount, context), unit, type);
+        return monetary(new BigDecimal(amount, context), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> getQuantity(double amount, Unit<Q> unit,
+    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(double amount, Unit<Q> unit,
             Class<Q> type) {
-        return getQuantity(new BigDecimal(amount, context), unit, type);
+        return monetary(new BigDecimal(amount, context), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> getQuantity(String amount, Unit<Q> unit,
+    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(String amount, Unit<Q> unit,
             Class<Q> type) {
-        return getQuantity(new BigDecimal(amount, context), unit, type);
+        return monetary(new BigDecimal(amount, context), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> getQuantity(BigDecimal amount, Unit<Q> unit,
+    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(BigDecimal amount, Unit<Q> unit,
             Class<Q> type) {
-        return Quantities.getQuantity(amount, unit, RELATIVE).asType(type);
+        return getQuantity(amount, unit, RELATIVE).asType(type);
     }
 
     public static Quantity<Money> money(String amountAndUnit) {
-        return (Quantity<Money>) Quantities.getQuantity(amountAndUnit);
+        return (Quantity<Money>) getQuantity(amountAndUnit);
     }
 
     public static Quantity<Money> money(Number amount, Unit<Money> unit) {
-        return Quantities.getQuantity(amount, unit, RELATIVE);
+        return getQuantity(amount, unit, RELATIVE);
+    }
+
+    public static Unit<Money> moneyCentUnit(String currencyCode) {
+        return MetricPrefix.CENTI(moneyUnit(currencyCode));
+    }
+
+    public static Unit<Money> moneyUnit(Currency currency) {
+        return moneyUnit(currency.getCurrencyCode());
+    }
+
+    public static Unit<Money> moneyUnit(String symbols) {
+        return (Unit<Money>) SimpleUnitFormat.getInstance().parse(symbols);
     }
 
     public static Quantity<Dimensionless> percent(int percentage) {
-        return Quantities.getQuantity(percentage, PERCENT, RELATIVE);
+        return getQuantity(percentage, PERCENT, RELATIVE);
+    }
+
+    public static Quantity<?> quantity(String amountAndUnit) {
+        var parts = StringUtils.split(amountAndUnit);
+        if (parts.length != 2)
+            throw new IllegalArgumentException("Monetary amount and unit must be separated by whitespace!");
+        return quantity(parts[0], parts[1]);
+    }
+
+    public static <Q extends Quantity<Q>> Quantity<Q> quantity(String amountAndUnit, Class<Q> type) {
+        return quantity(amountAndUnit).asType(type);
+    }
+
+    public static Quantity<?> quantity(String amount, String unit) {
+        return getQuantity(new BigDecimal(amount, context), unit(unit), RELATIVE);
     }
 
     public static void setPrecision(int precision) {
@@ -177,7 +172,7 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Number amount, Unit<Q> unit,
             Quantity<Dimensionless> vatRate) {
-        return taxPrice(Quantities.getQuantity(amount, unit, RELATIVE), vatRate);
+        return taxPrice(getQuantity(amount, unit, RELATIVE), vatRate);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Quantity<Q> amount,
@@ -187,34 +182,45 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(String amountAndUnit, Class<Q> type,
             int vatRate) {
-        return taxPrice(getQuantity(amountAndUnit, type), percent(vatRate));
+        return taxPrice(quantity(amountAndUnit, type), percent(vatRate));
     }
 
-    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfTotal(Number total, Unit<Q> unit, int vatRate) {
-        return taxPriceOfTotal(total, unit, percent(vatRate));
+    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Number sum, Unit<Q> unit, int vatRate) {
+        return taxPriceOfSum(sum, unit, percent(vatRate));
     }
 
-    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfTotal(Number total, Unit<Q> unit,
+    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Number sum, Unit<Q> unit,
             Quantity<Dimensionless> vatRate) {
-        return TaxPrice.ofTotal(Quantities.getQuantity(total, unit, RELATIVE), vatRate);
+        return TaxPrice.ofSum(getQuantity(sum, unit, RELATIVE), vatRate);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfTotal(Quantity<Q> total,
+    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Quantity<Q> sum,
             Quantity<Dimensionless> vatRate) {
-        return TaxPrice.ofTotal(total, vatRate);
+        return TaxPrice.ofSum(sum, vatRate);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfTotal(String totalAndUnit, Class<Q> type,
+    public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(String totalAndUnit, Class<Q> type,
             int vatRate) {
-        return taxPriceOfTotal(getQuantity(totalAndUnit, type), percent(vatRate));
+        return taxPriceOfSum(quantity(totalAndUnit, type), percent(vatRate));
     }
 
     public static Quantity<TemporalPrice> temporalPrice(String amountAndUnit) {
-        return (Quantity<TemporalPrice>) Quantities.getQuantity(amountAndUnit);
+        return (Quantity<TemporalPrice>) getQuantity(amountAndUnit);
     }
 
     public static Quantity<TemporalPrice> temporalPrice(Number amount, Unit<TemporalPrice> unit) {
-        return Quantities.getQuantity(amount, unit, RELATIVE);
+        return getQuantity(amount, unit, RELATIVE);
+    }
+
+    public static Unit<?> unit(String symbols) {
+        var unit = INSTANCE.getUnit(symbols);
+        if (unit == null)
+            unit = getInstance().getUnit(symbols);
+        if (unit == null)
+            unit = tech.units.indriya.unit.Units.getInstance().getUnit(symbols);
+        if (unit == null)
+            unit = SimpleUnitFormat.getInstance().parse(symbols);
+        return unit;
     }
 
     private static Unit<Money> add(String currencyCode) {
@@ -240,11 +246,13 @@ public class Monetary extends AbstractSystemOfUnits {
         return INSTANCE.addUnit(unit, name, symbol, aliases);
     }
 
-    private static <Q extends Quantity<Q>> Unit<Q> divide(Unit<?> dividend, Unit<?> divisor) {
-        return new ProductUnit<>(dividend.divide(divisor));
+    private Monetary() {
     }
 
-    private Monetary() {
+    public List<Unit<?>> getBaseCurrencies() {
+        return units.stream()
+                .filter(unit -> unit.getBaseUnits() == null && unit.getName() != null && unit.getName().length() == 3)
+                .toList();
     }
 
     private Unit<Money> addCurrency(String currencyCode, String symbol, char dimension) {

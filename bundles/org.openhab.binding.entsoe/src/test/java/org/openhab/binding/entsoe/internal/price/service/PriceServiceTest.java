@@ -15,31 +15,27 @@ package org.openhab.binding.entsoe.internal.price.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.*;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
-import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
-import org.openhab.core.library.unit.Units;
+import org.openhab.binding.entsoe.internal.price.PriceConfig;
 
-class DailyCacheTest {
-    static final VatRate GENERIC = new VatRate(24);
-
-    ProductPrice price(double total) {
-        return ProductPrice.fromTotal(total, GENERIC, new CurrencyUnit(Currency.getInstance("EUR"), true),
-                Units.KILOWATT_HOUR);
-    }
-
+class PriceServiceTest {
     @Test
-    void toDailyCache_FI2023_DailyCache() throws Bug {
+    void toDailyCache_FI2023_DailyCache() throws Bug, CurrencyMismatch {
+        var config = new PriceConfig();
+        config.zone = ZoneId.of("Europe/Helsinki");
+        config.transfer = BigDecimal.valueOf(3.4);
+        config.tax = BigDecimal.valueOf(2.79372);
+        config.margin = BigDecimal.valueOf(0.25);
+        config.general = 24;
+        config.seller = 24;
         var publication = (Publication) EntsoeClient.parseDocument(readFile(FI2023));
-        var transfer = price(3.4);
-        var tax = price(2.79372);
-        var margin = price(0.25);
-        var details = new PriceDetails(ZoneId.of("Europe/Helsinki"), transfer, tax, GENERIC, margin);
 
-        var instance = publication.toDailyCache(details);
+        var instance = PriceService.parse(config, publication);
 
         assertNotNull(instance);
     }

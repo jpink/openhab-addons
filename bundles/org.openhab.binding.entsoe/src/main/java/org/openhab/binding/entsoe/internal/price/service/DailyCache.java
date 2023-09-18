@@ -14,19 +14,17 @@ package org.openhab.binding.entsoe.internal.price.service;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.Currency;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 
-import javax.measure.Unit;
-import javax.measure.quantity.Energy;
+import javax.measure.Quantity;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 
 @NonNullByDefault
 public record DailyCache(ZonedDateTime created, String domain, ZonedDateTime start, ZonedDateTime end,
-        Duration resolution, Currency currency, Unit<Energy> measure, List<ElectricityPrice> prices,
-        DoubleSummaryStatistics statistics) implements Interval {
+        Duration resolution, List<ElectricityPrice> prices, Quantity<EnergyPrice> minimum,
+        Quantity<EnergyPrice> average, Quantity<EnergyPrice> maximum) implements Interval {
 
     public ElectricityPrice currentPrice(ZonedDateTime now) {
         return prices.stream().filter(price -> price.contains(now)).findFirst().orElseThrow();

@@ -12,7 +12,16 @@ package org.openhab.binding.entsoe.internal.monetary;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.getQuantity;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.measure.IncommensurableException;
+import javax.measure.UnconvertibleException;
+import javax.measure.Unit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,22 +29,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import tech.units.indriya.format.SimpleUnitFormat;
 
-import javax.measure.IncommensurableException;
-import javax.measure.UnconvertibleException;
-import javax.measure.Unit;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import tech.units.indriya.format.SimpleUnitFormat;
 
 class MonetaryTest {
     static Stream<Arguments> collection_size() {
         return Stream.of(//
-                Arguments.of(26, getBaseCurrencies()),//
-                Arguments.of(26, getBaseCurrencies().stream().map(Unit::getDimension).collect(Collectors.toSet())),
+                Arguments.of(26, INSTANCE.getBaseCurrencies()), //
+                Arguments.of(26,
+                        INSTANCE.getBaseCurrencies().stream().map(Unit::getDimension).collect(Collectors.toSet())),
                 Arguments.of(30, INSTANCE.getUnits()));
     }
 
@@ -48,6 +50,7 @@ class MonetaryTest {
     @Test
     void getConverterTo_eurToUsd_incommensurable() {
         var cause = assertThrows(UnconvertibleException.class, () -> EUR.getConverterTo(USD)).getCause();
+        assertNotNull(cause);
         assertInstanceOf(IncommensurableException.class, cause);
         assertEquals("€ is not compatible with $", cause.getMessage());
     }
@@ -65,7 +68,7 @@ class MonetaryTest {
     @ParameterizedTest
     @ValueSource(strings = { "€", "MWh", "€/MWh", "c", "kWh", "c/kWh" })
     void findUnit_monetary(String symbols) {
-        assertNotNull(findUnit(symbols));
+        assertNotNull(unit(symbols));
     }
 
     @Test
@@ -84,19 +87,18 @@ class MonetaryTest {
             "0.25 c/kWh,2.5 €/MWh" // margin
     })
     void isEquivalentTo(String a, String b) {
-        var qa = getQuantity(a, MonetaryQuantity.class);
-        var qb = getQuantity(b, MonetaryQuantity.class);
+        var qa = quantity(a, MonetaryQuantity.class);
+        var qb = quantity(b, MonetaryQuantity.class);
         if (!qa.isEquivalentTo(qb))
             assertEquals(b, qb.toString());
     }
 
     static Stream<Arguments> toString_equals() {
         return Stream.of(//
-                Arguments.of("euro", getCurrency(getMoney("€")).getDisplayName()),//
-                Arguments.of("mo", findUnit("kk")),//
-                Arguments.of("24 €", taxPrice(100, EUR, 24).vat()),
-                Arguments.of("124 €", taxPrice(100, EUR, 24).total()),
-                Arguments.of("100 €", taxPriceOfTotal(124, EUR, 24).amount()));
+                Arguments.of("euro", currency(moneyUnit("€")).getDisplayName()), //
+                Arguments.of("mo", unit("kk")), //
+                Arguments.of("24 €", taxPrice(100, EUR, 24).vat()), Arguments.of("124 €", taxPrice(100, EUR, 24).sum()),
+                Arguments.of("100 €", taxPriceOfSum(124, EUR, 24).amount()));
     }
 
     @ParameterizedTest
@@ -110,12 +112,12 @@ class MonetaryTest {
             "GBP,£", "GEL,ლ", "HUF,Ft", "ISK,Kr", "JPY,¥", "MDL,L", "MKD,den", "NOK,NKr", "PLN,zł", "RON,lei",
             "RSD,РСД", "RUB,₽", "SEK,SKr", "TRY,₺", "UAH,₴", "USD,$" })
     void toString_moneyBaseUnit(String currencyCode, String expected) {
-        assertEquals(expected, getMoney(currencyCode).toString());
+        assertEquals(expected, moneyUnit(currencyCode).toString());
     }
 
     @ParameterizedTest
     @CsvSource({ "EUR,c", "GBP,p", "USD,¢" })
     void toString_moneyBaseSubunit(String currencyCode, String expected) {
-        assertEquals(expected, getCent(currencyCode).toString());
+        assertEquals(expected, moneyCentUnit(currencyCode).toString());
     }
 }

@@ -26,7 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.monetary.Monetary;
 import org.openhab.binding.entsoe.internal.price.service.Bug;
+import org.openhab.binding.entsoe.internal.price.service.CurrencyMismatch;
 import org.openhab.binding.entsoe.internal.price.service.PriceService;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
@@ -79,6 +81,8 @@ public class PriceHandler extends BaseThingHandler {
         if (config == null) {
             logger.trace("Transforming configuration.");
             config = getConfigAs(PriceConfig.class);
+            config.zone = zone;
+            Monetary.setPrecision(config.precision);
             this.config = config;
         }
         return config;
@@ -95,12 +99,12 @@ public class PriceHandler extends BaseThingHandler {
         return client;
     }
 
-    private PriceService getService()
-            throws Bug, InterruptedException, InvalidArea, InvalidToken, TimeoutException, Unauthorized {
+    private PriceService getService() throws Bug, CurrencyMismatch, InterruptedException, InvalidArea, InvalidToken,
+            TimeoutException, Unauthorized {
         var service = this.service;
         if (service == null) {
             logger.trace("Creating Price Service.");
-            service = new PriceService(getConfiguration().toPriceDetails(zone), getClient());
+            service = new PriceService(getConfiguration(), getClient());
             this.service = service;
         }
         return service;
@@ -132,6 +136,9 @@ public class PriceHandler extends BaseThingHandler {
             }
         } catch (Bug e) {
             bug(e);
+        } catch (CurrencyMismatch e) {
+            logger.error("Invalid currency!", e);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-currency");
         } catch (InterruptedException e) {
             logger.debug("Request cancelled!");
             updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
@@ -147,6 +154,7 @@ public class PriceHandler extends BaseThingHandler {
         } catch (Unauthorized e) {
             logger.error("Unauthorized!");
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
+
         }
     }
 
@@ -184,7 +192,8 @@ public class PriceHandler extends BaseThingHandler {
     private void handleUpdateCurrentPrice() {
         try {
             getService();
-        } catch (Bug | InterruptedException | InvalidArea | InvalidToken | TimeoutException | Unauthorized e) {
+        } catch (Bug | CurrencyMismatch | InterruptedException | InvalidArea | InvalidToken | TimeoutException
+                | Unauthorized e) {
             bug(e);
         }
     }

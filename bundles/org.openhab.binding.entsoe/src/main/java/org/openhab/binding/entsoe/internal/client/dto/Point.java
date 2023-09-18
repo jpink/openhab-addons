@@ -12,11 +12,13 @@
  */
 package org.openhab.binding.entsoe.internal.client.dto;
 
+import java.math.BigDecimal;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 public class Point {
     public int position;
 
     @XStreamAlias("price.amount")
-    public double amount;
+    public BigDecimal amount;
 }
