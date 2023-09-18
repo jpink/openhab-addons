@@ -133,6 +133,7 @@
 					<option value="¤/MWh">¤/MWh</option>
 				</options>
 				<limitToOptions>true</limitToOptions>
+				<default>¤/MWh</default>
 			</parameter>
 
 			<parameter name="transfer" type="decimal" groupName="price" min="0.0">
@@ -156,6 +157,18 @@
 				<default>0.0</default>
 			</parameter>
 
+			<parameter name="general" type="integer" groupName="price" min="0" max="100">
+				<label>General VAT Rate</label>
+				<description>The value added tax (VAT) percent that is included in the transfer fee and tax amount.</description>
+				<default>0</default>
+			</parameter>
+
+			<parameter name="seller" type="integer" groupName="price" min="0" max="100">
+				<label>Seller VAT Rate</label>
+				<description>The value added tax (VAT) percent that is used for spot price and included in seller's margin price.</description>
+				<default>0</default>
+			</parameter>
+
 			<parameter name="precision" type="integer" groupName="price" min="0" max="34">
 				<label>Price Precision</label>
 				<description>The number of digits to be used for mathematical operations. The results are rounded to
@@ -167,7 +180,8 @@
 			<parameter name="scale" type="integer" groupName="price" min="0" max="34">
 				<label>Price Scale</label>
 				<description>The number of digits are always shown on the right of the price's decimal point. Values are stored
-					using the precision.</description>
+					using the precision.
+				</description>
 				<default>2</default>
 			</parameter>
 		</config-description>

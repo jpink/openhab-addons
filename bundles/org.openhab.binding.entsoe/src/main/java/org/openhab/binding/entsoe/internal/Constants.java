@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -47,5 +45,5 @@ public class Constants {
     public static final Currency EUR = Currency.getInstance("EUR");
 
     public static final String UNIT_CENT_PER_KWH = "c/kWh";
-    public static final String UNIT_EURO_PER_MWH = "EUR/HWh";
+    public static final String UNIT_CURRENCY_PER_MWH = "¤/MWh";
 }

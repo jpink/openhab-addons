@@ -12,18 +12,59 @@ package org.openhab.binding.entsoe.internal.monetary;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.getQuantity;
 
-import java.util.Currency;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tech.units.indriya.format.SimpleUnitFormat;
+
+import javax.measure.IncommensurableException;
+import javax.measure.UnconvertibleException;
+import javax.measure.Unit;
+import javax.measure.quantity.Dimensionless;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class MonetaryTest {
     @Test
-    void toString_dimension_o() {
-        assertEquals("[¤]", DIMENSION.toString());
+    void getConverterTo_eurToUsd_incommensurable() {
+        var cause = assertThrows(UnconvertibleException.class, () -> EUR.getConverterTo(USD)).getCause();
+        assertInstanceOf(IncommensurableException.class, cause);
+        assertEquals("€ is not compatible with $", cause.getMessage());
+    }
+
+    @Test
+    void getBaseCurrencies_count_30() {
+        assertEquals(26, getBaseCurrencies().size());
+    }
+
+    @Test
+    void getBaseCurrencies_dimensions_26() {
+        assertEquals(26, getBaseCurrencies().stream().map(Unit::getDimension).collect(Collectors.toSet()).size());
+    }
+
+    @Test
+    void getCurrency_e_euro() {
+        assertEquals("euro", getCurrency(getMoney("€")).getDisplayName());
+    }
+
+    @Test
+    void getUnits_count_30() {
+        assertEquals(30, INSTANCE.getUnits().size());
+    }
+
+    static Set<Unit<?>> getUnits_symbol_unique() {
+        return INSTANCE.getUnits();
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void getUnits_symbol_unique(Unit<?> unit) {
+        assertEquals(unit, SimpleUnitFormat.getInstance().parse(unit.toString()));
     }
 
     @ParameterizedTest
@@ -31,19 +72,24 @@ class MonetaryTest {
             "GBP,£", "GEL,ლ", "HUF,Ft", "ISK,Kr", "JPY,¥", "MDL,L", "MKD,den", "NOK,NKr", "PLN,zł", "RON,lei",
             "RSD,РСД", "RUB,₽", "SEK,SKr", "TRY,₺", "UAH,₴", "USD,$" })
     void toString_moneyBaseUnit(String currencyCode, String expected) {
-        assertEquals(expected, getUnit(Currency.getInstance(currencyCode)).toString());
+        assertEquals(expected, getMoney(currencyCode).toString());
     }
 
     @ParameterizedTest
     @CsvSource({ "EUR,c", "GBP,p", "USD,¢" })
     void toString_moneyBaseSubunit(String currencyCode, String expected) {
-        assertEquals(expected, getUnit(currencyCode, true).toString());
+        assertEquals(expected, getCent(currencyCode).toString());
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "€", "MWh", "€/MWh", "c", "kWh", "c/kWh" })
     void findUnit_monetary(String symbols) {
         assertNotNull(findUnit(symbols));
+    }
+
+    @Test
+    void isCompatible_eurVsUsd_false() {
+        assertFalse(EUR.isCompatible(USD));
     }
 
     @ParameterizedTest
@@ -61,5 +107,27 @@ class MonetaryTest {
         var qb = getQuantity(b, MonetaryQuantity.class);
         if (!qa.isEquivalentTo(qb))
             assertEquals(b, qb.toString());
+    }
+
+    @Test
+    void findUnit_alias_found() {
+        assertNotNull(findUnit("kk"));
+    }
+
+    static Price<@NonNull Money> price = price("100 €", Money.class, 24);
+
+    @Test
+    void price_vat_24() {
+        assertEquals("24 €", price.vat().toString());
+    }
+
+    @Test
+    void price_total_124() {
+        assertEquals("124 €", price.total().toString());
+    }
+
+    @Test
+    void totalPrice_amount_100() {
+        assertEquals("100 €", totalPrice("124 €", Money.class, 24).amount().toString());
     }
 }

@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -38,14 +36,11 @@ public class PriceConfig {
     /** An area EIC code. */
     public String area = "";
 
-    /** Unit used in config and display. */
-    public String unit = UNIT_CENT_PER_KWH;
-
     /** Currency code. */
-    public String currency = "EUR";
+    public @Nullable String currency;
 
-    /** The fraction digits of the value. Null means unlimited. */
-    public @Nullable Integer scale;
+    /** Unit used in config and display. */
+    public String unit = UNIT_CURRENCY_PER_MWH;
 
     /** The fixed electricity transfer fee including value added tax. */
     public double transfer;
@@ -61,6 +56,11 @@ public class PriceConfig {
 
     /** Electricity sellers VAT percent */
     public int seller;
+
+    public int precision = 7;
+
+    /** The fraction digits of the value. */
+    public int scale = 2;
 
     private ProductPrice price(double totalPrice, VatRate vatRate) {
         return ProductPrice.fromTotal(totalPrice, vatRate, new CurrencyUnit(EUR, UNIT_CENT_PER_KWH.equals(unit)),

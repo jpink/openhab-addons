@@ -1,12 +1,10 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file(s) distributed with this work for additional information.
  *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -32,9 +30,10 @@ import org.eclipse.jdt.annotation.Nullable;
  * @param currency The currency measure of the prices.
  * @param unit The energy measure of the prices.
  */
+@Deprecated
 @NonNullByDefault
 public record ProductPrice(double price, @Nullable VatRate vatRate, double vatAmount, double total,
-        CurrencyUnit currency, Unit<Energy> unit) {
+                           CurrencyUnit currency, Unit<Energy> unit) {
     public static ProductPrice fromPrice(double price, VatRate vatRate, CurrencyUnit currency, Unit<Energy> unit) {
         return new ProductPrice(price, vatRate, vatRate.vatFromPrice(price), vatRate.totalFromPrice(price), currency,
                 unit);
@@ -52,8 +51,8 @@ public record ProductPrice(double price, @Nullable VatRate vatRate, double vatAm
     public ProductPrice plus(ProductPrice that) {
         var currencyConverter = that.currency.getConverterTo(currency);
         var unitConverter = that.unit.getConverterTo(unit);
-        BiFunction<Double, Double, Double> sum = (me, other) -> me
-                + unitConverter.convert(currencyConverter.convert(other));
+        BiFunction<Double, Double, Double> sum = (me, other) -> me + unitConverter.convert(
+                currencyConverter.convert(other));
         return new ProductPrice(sum.apply(price, that.price), Objects.equals(vatRate, that.vatRate) ? vatRate : null,
                 sum.apply(vatAmount, that.vatAmount), sum.apply(total, that.total), currency, unit);
     }
