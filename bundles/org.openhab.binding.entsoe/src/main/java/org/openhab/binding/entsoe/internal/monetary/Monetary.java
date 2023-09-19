@@ -17,6 +17,7 @@ import static org.openhab.core.library.unit.Units.*;
 import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.*;
 
@@ -77,10 +78,43 @@ public class Monetary extends AbstractSystemOfUnits {
     public static final Unit<Money> UAH = add("UAH", '₴');
     public static final Unit<Money> USD = add("USD");
     public static final Unit<Money> USD_CENT = addCent(USD, "Dollar cent", "¢");
-    private static MathContext context = MathContext.DECIMAL32;
+    public static MathContext mathContext = MathContext.DECIMAL32;
+
+    public static BigDecimal bigDecimal(BigDecimal value) {
+        return (value.precision() > mathContext.getPrecision()
+                ? new BigDecimal(value.toString().toCharArray(), mathContext)
+                : value).stripTrailingZeros();
+    }
+
+    public static BigDecimal bigDecimal(Number number) {
+        if (number instanceof BigDecimal val)
+            return bigDecimal(val);
+        if (number instanceof BigInteger val)
+            return new BigDecimal(val, mathContext);
+        if (number instanceof Double val)
+            return new BigDecimal(val, mathContext);
+        if (number instanceof Long val)
+            return new BigDecimal(val, mathContext);
+        if (number instanceof Float val)
+            return new BigDecimal(val, mathContext);
+        return new BigDecimal(number.intValue(), mathContext);
+    }
+
+    public static BigDecimal bigDecimal(String value) {
+        return new BigDecimal(value, mathContext).stripTrailingZeros();
+    }
 
     public static Currency currency(Unit<Money> unit) {
         return Currency.getInstance(unit.getName());
+    }
+
+    public static BigDecimal divide(BigDecimal dividend, Number divisor) {
+        return dividend.divide(bigDecimal(divisor), mathContext).stripTrailingZeros();
+    }
+
+    public static Quantity<?> divide(Quantity<?> dividend, Quantity<?> divisor) {
+        var quantity = dividend.divide(divisor);
+        return getQuantity(bigDecimal(quantity.getValue()), quantity.getUnit());
     }
 
     public static Quantity<EnergyPrice> energyPrice(String amountAndUnit) {
@@ -105,17 +139,17 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(long amount, Unit<Q> unit,
             Class<Q> type) {
-        return monetary(new BigDecimal(amount, context), unit, type);
+        return monetary(bigDecimal(amount), unit, type);
     }
 
     public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(double amount, Unit<Q> unit,
             Class<Q> type) {
-        return monetary(new BigDecimal(amount, context), unit, type);
+        return monetary(bigDecimal(amount), unit, type);
     }
 
     public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(String amount, Unit<Q> unit,
             Class<Q> type) {
-        return monetary(new BigDecimal(amount, context), unit, type);
+        return monetary(bigDecimal(amount), unit, type);
     }
 
     public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(BigDecimal amount, Unit<Q> unit,
@@ -129,6 +163,10 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static Quantity<Money> money(Number amount, Unit<Money> unit) {
         return getQuantity(amount, unit, RELATIVE);
+    }
+
+    public static Unit<Money> moneyCentUnit(Currency currency) {
+        return MetricPrefix.CENTI(moneyUnit(currency));
     }
 
     public static Unit<Money> moneyCentUnit(String currencyCode) {
@@ -147,6 +185,10 @@ public class Monetary extends AbstractSystemOfUnits {
         return getQuantity(percentage, PERCENT, RELATIVE);
     }
 
+    public static Quantity<Dimensionless> percent(Number percentage) {
+        return getQuantity(percentage, PERCENT, RELATIVE);
+    }
+
     public static Quantity<?> quantity(String amountAndUnit) {
         var parts = StringUtils.split(amountAndUnit);
         if (parts.length != 2)
@@ -159,11 +201,11 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     public static Quantity<?> quantity(String amount, String unit) {
-        return getQuantity(new BigDecimal(amount, context), unit(unit), RELATIVE);
+        return getQuantity(bigDecimal(amount), unit(unit), RELATIVE);
     }
 
     public static void setPrecision(int precision) {
-        context = new MathContext(precision);
+        mathContext = new MathContext(precision);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Number amount, Unit<Q> unit, int vatRate) {
@@ -177,7 +219,7 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Quantity<Q> amount,
             Quantity<Dimensionless> vatRate) {
-        return new TaxPrice<>(amount, vatRate);
+        return new TaxPriceByAmount<>(amount, vatRate);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(String amountAndUnit, Class<Q> type,
@@ -191,12 +233,12 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Number sum, Unit<Q> unit,
             Quantity<Dimensionless> vatRate) {
-        return TaxPrice.ofSum(getQuantity(sum, unit, RELATIVE), vatRate);
+        return taxPriceOfSum(getQuantity(sum, unit, RELATIVE), vatRate);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Quantity<Q> sum,
             Quantity<Dimensionless> vatRate) {
-        return TaxPrice.ofSum(sum, vatRate);
+        return new TaxPriceBySum<>(vatRate, sum);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(String totalAndUnit, Class<Q> type,

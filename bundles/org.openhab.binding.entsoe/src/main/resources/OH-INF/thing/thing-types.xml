@@ -9,7 +9,14 @@
 		<description>This service offers the day ahead electricity prices.</description>
 
 		<channels>
-			<channel id="channel1" typeId="sample-channel"/>
+			<channel id="current" typeId="price-channel"/>
+			<channel id="dailyRank" typeId="rank-channel"/>
+			<channel id="dailyNormalized" typeId="percent-channel"/>
+			<channel id="futureRank" typeId="rank-channel"/>
+			<channel id="futureNormalized" typeId="percent-channel"/>
+			<channel id="graph" typeId="image-channel"/>
+			<channel id="data" typeId="json-channel"/>
+			<channel id="updated" typeId="datetime-channel"/>
 		</channels>
 
 		<config-description>
@@ -187,10 +194,28 @@
 		</config-description>
 	</thing-type>
 
-	<!-- Sample Channel Type -->
-	<channel-type id="sample-channel">
-		<item-type>Number:Temperature</item-type>
-		<label>Example Temperature</label><!-- Use uppercase words, except prepositions. 2-3 words, max 25 chars -->
-		<description>Sample channel for Entsoe Binding</description>
+	<channel-type id="price-channel">
+		<item-type>Number</item-type>
+		<label>Electricity Price</label>
+	</channel-type>
+	<channel-type id="percent-channel">
+		<item-type>Dimmer</item-type>
+		<label>Normalized Price</label>
+	</channel-type>
+	<channel-type id="rank-channel">
+		<item-type>Number</item-type>
+		<label>Price Rank</label>
+	</channel-type>
+	<channel-type id="json-channel">
+		<item-type>String</item-type>
+		<label>JSON Data</label>
+	</channel-type>
+	<channel-type id="image-channel">
+		<item-type>Image</item-type>
+		<label>Image Data</label>
+	</channel-type>
+	<channel-type id="datetime-channel">
+		<item-type>DateTime</item-type>
+		<label>Date Time</label>
 	</channel-type>
 </thing:thing-descriptions>

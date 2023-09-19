@@ -12,8 +12,9 @@
  */
 package org.openhab.binding.entsoe.internal.client;
 
+import static org.openhab.binding.entsoe.internal.common.Time.utc;
+
 import java.time.Duration;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -50,8 +51,7 @@ public class EntsoeClient {
 
     /**
      * @param securityToken Web Api Security Token
-     * @param area <A
-     *            href=
+     * @param area <A href=
      *            "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area
      *            EIC code</A>
      */
@@ -70,7 +70,7 @@ public class EntsoeClient {
      * @return `yyyyMMddHHmm` formatted UTC string.
      */
     public static String format(ZonedDateTime dateTime) {
-        return FORMATTER.format(toUTC(dateTime));
+        return FORMATTER.format(utc(dateTime));
     }
 
     public static Object parseDocument(String content) {
@@ -83,10 +83,6 @@ public class EntsoeClient {
         } catch (IllegalArgumentException ex) {
             throw new InvalidToken(ex);
         }
-    }
-
-    public static ZonedDateTime toUTC(ZonedDateTime dateTime) {
-        return dateTime.withZoneSameInstant(ZoneOffset.UTC);
     }
 
     static {

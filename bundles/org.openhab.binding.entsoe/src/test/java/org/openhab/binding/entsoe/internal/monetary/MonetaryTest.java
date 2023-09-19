@@ -1,10 +1,12 @@
 /**
  * Copyright (c) 2010-2023 Contributors to the openHAB project
  *
- * See the NOTICE file(s) distributed with this work for additional information.
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
- * which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -13,6 +15,8 @@ package org.openhab.binding.entsoe.internal.monetary;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -33,6 +37,21 @@ import org.junit.jupiter.params.provider.ValueSource;
 import tech.units.indriya.format.SimpleUnitFormat;
 
 class MonetaryTest {
+    static Stream<Arguments> bigDecimal_trailingZeros() {
+        return Stream.of(//
+                Arguments.of(2, "1.0", new BigDecimal("1.0")), //
+                Arguments.of(1, "1", new BigDecimal("1.0").stripTrailingZeros()), //
+                Arguments.of(1, "1", new BigDecimal("1.0", new MathContext(2)).stripTrailingZeros())//
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void bigDecimal_trailingZeros(int precision, String text, BigDecimal value) {
+        assertEquals(precision, value.precision());
+        assertEquals(text, value.toString());
+    }
+
     static Stream<Arguments> collection_size() {
         return Stream.of(//
                 Arguments.of(26, INSTANCE.getBaseCurrencies()), //
@@ -82,7 +101,7 @@ class MonetaryTest {
             "8.75 €/mo,0.2874802 €/day", // transfer
             "3.4 c/kWh,34 €/MWh", // transfer
             "2.79372 c/kWh,27.9372 €/MWh", // tax
-            "4.9 €/mo,16.09890 c/day", // seller
+            "4.9 €/mo,16.0989 c/day", // seller
             "75.957 €/MWh,7.5957 c/kWh", // spot
             "0.25 c/kWh,2.5 €/MWh" // margin
     })

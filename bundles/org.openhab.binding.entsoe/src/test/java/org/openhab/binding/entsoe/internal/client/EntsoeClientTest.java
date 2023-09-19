@@ -41,8 +41,9 @@ import org.openhab.core.library.unit.Units;
 @NonNullByDefault
 public class EntsoeClientTest {
     public static final String FI2023 = "2023-09-09_FI_dayAheadPrices.xml";
+    public static final String CZ2015 = "2015-12-31_CZ_dayAheadPrices.xml";
     static final LocalDateTime NEW_YEAR = LocalDateTime.of(2015, 12, 31, 23, 30);
-    static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
+    public static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
     static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
     static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
@@ -138,7 +139,7 @@ public class EntsoeClientTest {
 
     @Test
     void parseDocument_Guide_Publication() {
-        var content = readFile("2015-12-31_CZ_dayAheadPrices.xml");
+        var content = readFile(CZ2015);
         var created = ZonedDateTime.of(2016, 5, 10, 9, 18, 53, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2015, 12, 31, 23, 0, 0, 0, ZoneOffset.UTC);
 

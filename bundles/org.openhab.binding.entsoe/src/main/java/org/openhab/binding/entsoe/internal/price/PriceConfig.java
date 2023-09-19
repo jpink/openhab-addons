@@ -13,7 +13,9 @@
 package org.openhab.binding.entsoe.internal.price;
 
 import static org.openhab.binding.entsoe.internal.Constants.*;
+import static org.openhab.binding.entsoe.internal.common.Time.convert;
 import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
+import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
 import java.math.BigDecimal;
@@ -22,13 +24,14 @@ import java.time.ZonedDateTime;
 import java.util.Currency;
 import java.util.Locale;
 
+import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Energy;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
-import org.openhab.binding.entsoe.internal.monetary.Money;
+import org.openhab.binding.entsoe.internal.monetary.Monetary;
 import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
 import org.openhab.binding.entsoe.internal.price.service.*;
 
@@ -53,14 +56,14 @@ public class PriceConfig {
 
     public transient Currency responseCurrency = Currency.getInstance(Locale.getDefault());
 
-    public transient Unit<Money> responseMoney = EUR;
-
     /** Unit used in config and display. */
     public String unit = UNIT_CURRENCY_PER_MWH;
 
     public transient Unit<Energy> responseMeasure = MEGAWATT_HOUR;
 
-    public transient Unit<EnergyPrice> priceUnit = EURO_PER_MEGAWATT_HOUR;
+    public transient Unit<EnergyPrice> spotUnit = EURO_PER_MEGAWATT_HOUR;
+
+    public transient Unit<EnergyPrice> targetUnit = EURO_CENT_PER_KILOWATT_HOUR;
 
     /** The fixed electricity transfer fee including value added tax. */
     public BigDecimal transfer = BigDecimal.ZERO;
@@ -82,8 +85,8 @@ public class PriceConfig {
     /** The fraction digits of the value. */
     public int scale = 2;
 
-    public ZonedDateTime local(ZonedDateTime instant) {
-        return instant.withZoneSameInstant(zone);
+    public ZonedDateTime local(ZonedDateTime time) {
+        return convert(time, zone);
     }
 
     public Unit<EnergyPrice> response(Currency currency, Unit<Energy> measure) throws CurrencyMismatch {
@@ -91,18 +94,24 @@ public class PriceConfig {
         responseMeasure = measure;
         if (this.currency != null && Currency.getInstance(this.currency) != currency)
             throw new CurrencyMismatch(Currency.getInstance(this.currency), currency);
-        return priceUnit = energyPriceUnit(currency, measure);
+        targetUnit = UNIT_CENT_PER_KWH.equals(unit) ? energyPriceUnit(moneyCentUnit(currency), KILOWATT_HOUR)
+                : energyPriceUnit(currency, MEGAWATT_HOUR);
+        return spotUnit = energyPriceUnit(currency, measure);
     }
 
     public TaxPrice<EnergyPrice> transferTaxPrice() {
-        return taxPriceOfSum(transfer, priceUnit, general);
+        return taxPriceOfSum(transfer, targetUnit, general);
     }
 
     public TaxPrice<EnergyPrice> taxTaxPrice() {
-        return taxPriceOfSum(tax, priceUnit, general);
+        return taxPriceOfSum(tax, targetUnit, general);
     }
 
     public TaxPrice<EnergyPrice> marginTaxPrice() {
-        return taxPriceOfSum(margin, priceUnit, seller);
+        return taxPriceOfSum(margin, targetUnit, seller);
+    }
+
+    public Quantity<EnergyPrice> energyPrice(BigDecimal value) {
+        return Monetary.energyPrice(value, targetUnit);
     }
 }

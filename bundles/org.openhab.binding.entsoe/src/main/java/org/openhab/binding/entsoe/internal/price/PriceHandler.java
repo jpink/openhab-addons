@@ -12,8 +12,7 @@
  */
 package org.openhab.binding.entsoe.internal.price;
 
-import static org.openhab.binding.entsoe.internal.Constants.CHANNEL_1;
-
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -26,6 +25,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.common.AbstractThingHandler;
 import org.openhab.binding.entsoe.internal.monetary.Monetary;
 import org.openhab.binding.entsoe.internal.price.service.Bug;
 import org.openhab.binding.entsoe.internal.price.service.CurrencyMismatch;
@@ -33,13 +33,8 @@ import org.openhab.binding.entsoe.internal.price.service.PriceService;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
-import org.openhab.core.thing.ThingStatus;
-import org.openhab.core.thing.ThingStatusDetail;
-import org.openhab.core.thing.binding.BaseThingHandler;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The {@link PriceHandler} is responsible for handling commands, which are sent to one of the channels.
@@ -47,19 +42,28 @@ import org.slf4j.LoggerFactory;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class PriceHandler extends BaseThingHandler {
+public class PriceHandler extends AbstractThingHandler {
     public static long countInitialMinutes(long resolution, int now) {
         return (60 - now) % resolution;
     }
 
-    private final Logger logger = LoggerFactory.getLogger(PriceHandler.class);
     private final HttpClientFactory httpClientFactory;
     private final ZoneId zone;
     private @Nullable PriceConfig config;
     private @Nullable EntsoeClient client;
     private @Nullable PriceService service;
-    private @Nullable ScheduledFuture<?> currentPriceUpdateJob;
-    private @Nullable ScheduledFuture<?> getDayAheadPricesJob;
+    private @Nullable ScheduledFuture<?> refreshJob;
+    private @Nullable ScheduledFuture<?> updateCurrentJob;
+
+    private final ChannelUID//
+    current = channel("current"), //
+            dailyNormalized = channel("dailyNormalized"), //
+            dailyRank = channel("dailyRank"), //
+            data = channel("data"), //
+            futureNormalized = channel("futureNormalized"), //
+            futureRank = channel("futureRank"), //
+            graph = channel("graph"), //
+            updated = channel("updated");
 
     public PriceHandler(Thing thing, EntsoeHandlerFactory handlerFactory) {
         super(thing);
@@ -69,10 +73,8 @@ public class PriceHandler extends BaseThingHandler {
 
     @Override
     public void initialize() {
-        updateStatus(ThingStatus.UNKNOWN);
-
-        getDayAheadPricesJob = scheduler.scheduleWithFixedDelay(this::handleGetDayAheadPrices, 0, 6, TimeUnit.HOURS);
-
+        thingUnknown();
+        refreshJob = scheduler.scheduleWithFixedDelay(this::handleRefresh, 0, 6, TimeUnit.HOURS);
         // Can't schedule current price update job yet, because the resolution isn't known.
     }
 
@@ -110,119 +112,77 @@ public class PriceHandler extends BaseThingHandler {
         return service;
     }
 
-    private void bug(Throwable t) {
-        logger.error("Please report the following bug!", t);
-        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-    }
-
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (CHANNEL_1.equals(channelUID.getId())) {
-            if (command instanceof RefreshType)
-                handleGetDayAheadPrices();
-        }
+        if (command instanceof RefreshType)
+            handleRefresh();
     }
 
-    private void handleGetDayAheadPrices() {
+    private void handleRefresh() {
         try {
             var service = getService();
-            if (currentPriceUpdateJob == null) {
-                var properties = editProperties();
-                service.updateProperties(editProperties());
-                updateProperties(properties);
-                scheduleCurrentPriceUpdateJob(service.resolution());
-                updateStatus(ThingStatus.ONLINE);
-                handleUpdateCurrentPrice();
+            channel(updated, service.refresh());
+            if (updateCurrentJob == null) {
+                thingOnline();
+                updateProperties(service.updateProperties(editProperties()));
+                scheduleUpdateCurrentJob(service.resolution());
+                try (var input = getClass().getResourceAsStream("entsoe.svg")) {
+                    if (input != null)
+                        channelSvg(graph, input.readAllBytes());
+                }
+                channelJson(data, "{ \"foo\" : 1 }");
+                handleUpdateCurrent();
             }
-        } catch (Bug e) {
-            bug(e);
+        } catch (Bug | IOException e) {
+            thingBug(e);
         } catch (CurrencyMismatch e) {
-            logger.error("Invalid currency!", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-currency");
+            thingConfigurationError("Invalid currency!", e, "invalid-currency");
         } catch (InterruptedException e) {
             logger.debug("Request cancelled!");
-            updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
         } catch (InvalidArea e) {
-            logger.error("Invalid area!", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
+            thingConfigurationError("Invalid area!", e, "invalid-area");
         } catch (InvalidToken e) {
-            logger.error("Invalid token!", e);
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
+            thingConfigurationError("Invalid token!", e, "invalid-token");
         } catch (TimeoutException e) {
-            logger.debug("Request timeout!");
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
+            thingCommunicationError("Request timeout!");
         } catch (Unauthorized e) {
-            logger.error("Unauthorized!");
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
-
+            thingConfigurationError("Unauthorized!", e, "unauthorized");
         }
     }
 
-    /*
-     * private void handleRefresh() {
-     * try {
-     * var service = getService();
-     * service.refresh();
-     * // TODO
-     * var properties = service.updateProperties(editProperties());
-     * updateProperties(properties);
-     * scheduleCurrentPriceUpdateJob(service.resolution());
-     * updateStatus(ThingStatus.ONLINE);
-     * } catch (Bug e) {
-     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "bug");
-     * } catch (InterruptedException e) {
-     * logger.debug("Request cancelled!");
-     * updateStatus(ThingStatus.UNKNOWN, ThingStatusDetail.COMMUNICATION_ERROR);
-     * } catch (InvalidArea e) {
-     * logger.error("Invalid area!", e);
-     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-area");
-     * } catch (InvalidToken e) {
-     * logger.error("Invalid token!", e);
-     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "invalid-token");
-     * } catch (TimeoutException e) {
-     * logger.debug("Request timeout!");
-     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR);
-     * } catch (Unauthorized e) {
-     * logger.error("Unauthorized!");
-     * updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "unauthorized");
-     * }
-     * }
-     */
-
-    private void handleUpdateCurrentPrice() {
+    private void handleUpdateCurrent() {
         try {
-            getService();
-        } catch (Bug | CurrencyMismatch | InterruptedException | InvalidArea | InvalidToken | TimeoutException
-                | Unauthorized e) {
-            bug(e);
+            var service = getService();
+            var price = service.currentPrice();
+            if (price == null) {
+                channelsUndefined();
+                thingCommunicationError("Missing current price.");
+            } else {
+                channel(current, price.total());
+                channelPercent(dailyNormalized, price.dailyNormalized());
+                channel(dailyRank, price.dailyRank());
+                channelPercent(futureNormalized, price.futureNormalized());
+                channel(futureRank, price.futureRank());
+            }
+        } catch (Throwable t) {
+            thingBug(t);
         }
     }
 
-    private void scheduleCurrentPriceUpdateJob(Duration resolution) {
-        cancel(currentPriceUpdateJob);
+    private void scheduleUpdateCurrentJob(Duration resolution) {
+        cancel(updateCurrentJob);
         var resolutionInMinutes = resolution.toMinutes();
-        currentPriceUpdateJob = scheduler.scheduleAtFixedRate(this::handleUpdateCurrentPrice,
+        updateCurrentJob = scheduler.scheduleAtFixedRate(this::handleUpdateCurrent,
                 countInitialMinutes(resolutionInMinutes, LocalTime.now().getMinute()), resolutionInMinutes,
                 TimeUnit.MINUTES);
     }
 
     @Override
-    protected void updateStatus(ThingStatus status, ThingStatusDetail statusDetail, @Nullable String offlineKey) {
-        super.updateStatus(status, statusDetail, "@text/offline." + offlineKey);
-    }
-
-    private void cancel(@Nullable ScheduledFuture<?> job) {
-        if (job != null)
-            job.cancel(true);
-    }
-
-    @Override
     public void dispose() {
-        cancel(currentPriceUpdateJob);
-        cancel(getDayAheadPricesJob);
+        cancel(refreshJob, updateCurrentJob);
         client = null;
         config = null;
-        currentPriceUpdateJob = null;
-        getDayAheadPricesJob = null;
+        updateCurrentJob = null;
+        refreshJob = null;
     }
 }

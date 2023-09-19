@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.entsoe.internal;
+package org.openhab.binding.entsoe.internal.common;
 
 public class Text {
     public static String toExponent(int exponent) {

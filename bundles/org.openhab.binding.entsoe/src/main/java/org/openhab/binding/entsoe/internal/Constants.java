@@ -13,7 +13,6 @@
 package org.openhab.binding.entsoe.internal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
@@ -30,17 +29,6 @@ public class Constants {
     public static final ThingTypeUID THING_TYPE_CHEAP = new ThingTypeUID(BINDING_ID, "cheap");
 
     public static final ThingTypeUID THING_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
-
-    // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
-    public static final String CHANNEL_UPDATED = "updated"; // May be property
-    public static final ChannelUID CHANNEL_CURRENT = new ChannelUID("current");
-    public static final String CHANNEL_DAILY_RANK = "dailyRank";
-    public static final String CHANNEL_DAILY_NORMALIZED = "dailyNormalized";
-    public static final String CHANNEL_FUTURE_RANK = "futureRank";
-    public static final String CHANNEL_FUTURE_NORMALIZED = "futureNormalized";
-    public static final String CHANNEL_DATA = "data";
-    public static final String CHANNEL_GRAPH = "graph";
 
     public static final String UNIT_CENT_PER_KWH = "c/kWh";
     public static final String UNIT_CURRENCY_PER_MWH = "¤/MWh";

@@ -12,10 +12,6 @@
  */
 package org.openhab.binding.entsoe.internal.monetary;
 
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.bigDecimal;
-
-import java.math.BigDecimal;
-
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
@@ -27,32 +23,25 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 @SuppressWarnings("unchecked")
-public interface TaxPrice<Q extends MonetaryQuantity<Q>> {
-    Quantity<Q> amount();
-
-    default BigDecimal amountValue() {
-        return bigDecimal(amount().getValue());
+public record TaxPriceByAmount<Q extends MonetaryQuantity<Q>> (Quantity<Q> amount,
+        Quantity<Dimensionless> vatRate) implements TaxPrice<Q> {
+    @Override
+    public Quantity<Q> sum() {
+        return amount.add(vat());
     }
 
-    Quantity<Dimensionless> vatRate();
-
-    default Quantity<Q> vat() {
-        return ((Quantity<Q>) amount().multiply(vatRate())).to(unit());
+    @Override
+    public Unit<Q> unit() {
+        return amount.getUnit();
     }
 
-    default BigDecimal vatValue() {
-        return bigDecimal(vat().getValue());
+    @Override
+    public TaxPrice<Q> byAmount() {
+        return this;
     }
 
-    Quantity<Q> sum();
-
-    default BigDecimal sumValue() {
-        return bigDecimal(sum().getValue());
+    @Override
+    public TaxPrice<Q> bySum() {
+        return new TaxPriceBySum<>(vatRate, sum());
     }
-
-    Unit<Q> unit();
-
-    TaxPrice<Q> byAmount();
-
-    TaxPrice<Q> bySum();
 }
