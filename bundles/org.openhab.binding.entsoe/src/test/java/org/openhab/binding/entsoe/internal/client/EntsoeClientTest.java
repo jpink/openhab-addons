@@ -154,6 +154,19 @@ public class EntsoeClientTest {
     }
 
     @Test
+    void parseDocumentFi2023InvalidInterval() {
+        var content = readFile("2023-09-25_invalidInterval.xml");
+
+        var document = (Acknowledgement) parseDocument(content);
+
+        assertNotNull(document);
+        var reason = document.reason;
+        assertNotNull(reason);
+        assertEquals(999, reason.code);
+        assertEquals("Delivered time interval is not valid for this Data item.", reason.text);
+    }
+
+    @Test
     void parseDocumentFi2023Publication() {
         var content = readFile(FI2023);
         var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);

@@ -62,7 +62,7 @@ public class EntsoeDiscoveryService extends AbstractDiscoveryService {
         var builder = DiscoveryResultBuilder.create(new ThingUID(THING_TYPE_PRICE, country))
                 .withProperty("area", area.code).withRepresentationProperty("area");
         if ("FI".equals(country)) {
-            builder.withProperty("tax", BigDecimal.valueOf(2.79372)); // TODO move to resource bundle
+            builder.withProperty("tax", BigDecimal.valueOf(2.79)); // 2.79372 TODO move to resource bundle
         }
         thingDiscovered(builder.build());
     }

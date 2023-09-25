@@ -13,11 +13,9 @@
 package org.openhab.binding.entsoe.internal.client.exception;
 
 import java.io.Serial;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
 
 /**
  * Invalid parameter exception.
@@ -25,19 +23,11 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class InvalidParameter extends Exception {
+public class InvalidParameter extends ErrorResponse {
     @Serial
-    private static final long serialVersionUID = -1662688835270360171L;
+    private static final long serialVersionUID = -6810087691405197485L;
 
-    private static @Nullable String getQuery(String url) {
-        try {
-            return new URL(url).getQuery();
-        } catch (MalformedURLException e) {
-            return e.getMessage();
-        }
-    }
-
-    public InvalidParameter(String url) {
-        super(getQuery(url));
+    public InvalidParameter(MarketDocument document) {
+        super(document);
     }
 }

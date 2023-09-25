@@ -13,6 +13,7 @@
 package org.openhab.binding.entsoe.internal.price.service;
 
 import static org.openhab.binding.entsoe.internal.common.Time.convert;
+import static org.openhab.binding.entsoe.internal.common.Time.evenHour;
 import static org.openhab.binding.entsoe.internal.common.Time.gone;
 import static org.openhab.binding.entsoe.internal.common.Time.set;
 import static org.openhab.binding.entsoe.internal.monetary.Monetary.bigDecimal;
@@ -149,7 +150,7 @@ public class PriceService implements Interval {
             throws Bug, CurrencyMismatch, InterruptedException, TimeoutException, Unauthorized {
         this.config = config;
         this.client = client;
-        today = parse(config, getDayAheadPrices(ZonedDateTime.now()));
+        today = parse(config, getDayAheadPrices(evenHour()));
     }
 
     @Override

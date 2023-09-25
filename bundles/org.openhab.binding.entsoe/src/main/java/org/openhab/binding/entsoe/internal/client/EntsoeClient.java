@@ -82,8 +82,8 @@ public class EntsoeClient {
         return FORMATTER.format(utc(dateTime));
     }
 
-    public static Object parseDocument(String content) {
-        return XSTREAM.fromXML(content);
+    public static MarketDocument parseDocument(String content) {
+        return (MarketDocument) XSTREAM.fromXML(content);
     }
 
     public static UUID parseToken(String text) throws InvalidToken {
@@ -143,19 +143,19 @@ public class EntsoeClient {
         var status = response.getStatus();
         var content = response.getContentAsString();
         trace(logger, content);
-        switch (status) {
-            case 200 -> {
-                try {
-                    var document = parseDocument(content);
-                    return document instanceof Acknowledgement ? (Acknowledgement) document : (Publication) document;
-                } catch (ClassCastException | XStreamException e) {
-                    throw new UnknownResponse(url, status, content, e);
+        try {
+            var document = parseDocument(content);
+            switch (status) {
+                case 200 -> {
+                    return document;
                 }
+                case 400 -> throw new InvalidParameter(document);
+                case 401 -> throw new Unauthorized(document);
+                case 429 -> throw new TooMany(document);
+                default -> throw new UnknownResponse(url, status, content, null);
             }
-            case 400 -> throw new InvalidParameter(url);
-            case 401 -> throw new Unauthorized();
-            case 429 -> throw new TooMany();
-            default -> throw new UnknownResponse(url, status, content, null);
+        } catch (ClassCastException | XStreamException e) {
+            throw new UnknownResponse(url, status, content, e);
         }
     }
 }

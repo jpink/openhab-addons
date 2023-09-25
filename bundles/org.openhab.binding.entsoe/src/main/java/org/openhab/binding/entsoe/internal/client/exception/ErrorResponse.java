@@ -18,18 +18,18 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
 
 /**
- * Too many requests exception.
+ * Error response exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
 
-public class TooMany extends ErrorResponse {
+public class ErrorResponse extends Exception {
 
     @Serial
-    private static final long serialVersionUID = -995333382226355244L;
+    private static final long serialVersionUID = 3954392262959910801L;
 
-    public TooMany(MarketDocument document) {
-        super(document);
+    public ErrorResponse(MarketDocument document) {
+        super(document.toString());
     }
 }

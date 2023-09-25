@@ -34,6 +34,12 @@ public class Time {
         return time.withOffsetSameInstant(zone);
     }
 
+    public static ZonedDateTime evenHour() {
+        var now = ZonedDateTime.now();
+        return ZonedDateTime.of(now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), 0, 0, 0,
+                now.getZone());
+    }
+
     public static boolean gone(ZonedDateTime time) {
         return time.isBefore(ZonedDateTime.now());
     }

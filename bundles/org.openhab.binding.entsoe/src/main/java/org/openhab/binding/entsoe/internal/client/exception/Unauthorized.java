@@ -15,6 +15,7 @@ package org.openhab.binding.entsoe.internal.client.exception;
 import java.io.Serial;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
 
 /**
  * Unauthorized exception.
@@ -23,7 +24,12 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 
-public class Unauthorized extends Exception {
+public class Unauthorized extends ErrorResponse {
+
     @Serial
-    private static final long serialVersionUID = 8735182670518378301L;
+    private static final long serialVersionUID = 4814388119887939900L;
+
+    public Unauthorized(MarketDocument document) {
+        super(document);
+    }
 }

@@ -13,6 +13,7 @@
 package org.openhab.binding.entsoe.internal.common;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Text helper functions.
@@ -21,8 +22,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public class Text {
-    public static String[] splitWhitespace(String str) {
-        return str.split("\\s");
+    public static String[] splitWhitespace(@Nullable String str) {
+        return str == null ? new String[0] : str.split("\\s");
     }
 
     public static String toExponent(int exponent) {

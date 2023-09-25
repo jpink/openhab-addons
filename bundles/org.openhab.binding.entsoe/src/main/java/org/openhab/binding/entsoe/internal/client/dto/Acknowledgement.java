@@ -23,4 +23,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class Acknowledgement extends MarketDocument {
     @XStreamAlias("Reason")
     public Reason reason;
+
+    @Override
+    public String toString() {
+        return reason == null || reason.text == null ? "" : reason.text;
+    }
 }
