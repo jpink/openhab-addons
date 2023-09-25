@@ -15,23 +15,18 @@ package org.openhab.binding.entsoe.internal.common;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Collection extensions.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class Collections {
-    @SafeVarargs
-    public static <E> @NonNull List<E> listOf(E... elements) {
-        return unmodifiableList(Arrays.asList(elements));
-    }
-
-    public static <E extends Comparable<? super E>> @NonNull List<E> sort(@NonNull List<E> list) {
+    public static <E extends Comparable<? super E>> List<E> sort(List<E> list) {
         var sorted = new ArrayList<>(list);
         java.util.Collections.sort(sorted);
         return unmodifiableList(sorted);

@@ -27,6 +27,7 @@ import javax.measure.IncommensurableException;
 import javax.measure.UnconvertibleException;
 import javax.measure.Unit;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,8 +37,14 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import tech.units.indriya.format.SimpleUnitFormat;
 
+/**
+ * Monetary unit tests.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
+@NonNullByDefault
 class MonetaryTest {
-    static Stream<Arguments> bigDecimal_trailingZeros() {
+    static Stream<Arguments> bigDecimalTrailingZeros() {
         return Stream.of(//
                 Arguments.of(2, "1.0", new BigDecimal("1.0")), //
                 Arguments.of(1, "1", new BigDecimal("1.0").stripTrailingZeros()), //
@@ -47,12 +54,12 @@ class MonetaryTest {
 
     @ParameterizedTest
     @MethodSource
-    void bigDecimal_trailingZeros(int precision, String text, BigDecimal value) {
+    void bigDecimalTrailingZeros(int precision, String text, BigDecimal value) {
         assertEquals(precision, value.precision());
         assertEquals(text, value.toString());
     }
 
-    static Stream<Arguments> collection_size() {
+    static Stream<Arguments> collectionSize() {
         return Stream.of(//
                 Arguments.of(26, INSTANCE.getBaseCurrencies()), //
                 Arguments.of(26,
@@ -62,12 +69,12 @@ class MonetaryTest {
 
     @ParameterizedTest
     @MethodSource
-    void collection_size(int expected, Collection<?> actual) {
+    void collectionSize(int expected, Collection<?> actual) {
         assertEquals(expected, actual.size());
     }
 
     @Test
-    void getConverterTo_eurToUsd_incommensurable() {
+    void getConverterToEurToUsdIncommensurable() {
         var exception = assertThrows(UnconvertibleException.class, () -> EUR.getConverterTo(USD));
         assertNotNull(exception);
         var cause = exception.getCause();
@@ -76,24 +83,24 @@ class MonetaryTest {
         assertEquals("€ is not compatible with $", cause.getMessage());
     }
 
-    static Set<Unit<?>> getUnits_symbol_unique() {
+    static Set<Unit<?>> getUnitsSymbolUnique() {
         return INSTANCE.getUnits();
     }
 
     @ParameterizedTest
     @MethodSource
-    void getUnits_symbol_unique(Unit<?> unit) {
+    void getUnitsSymbolUnique(Unit<?> unit) {
         assertEquals(unit, SimpleUnitFormat.getInstance().parse(unit.toString()));
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "€", "MWh", "€/MWh", "c", "kWh", "c/kWh" })
-    void findUnit_monetary(String symbols) {
+    void findUnitMonetary(String symbols) {
         assertNotNull(unit(symbols));
     }
 
     @Test
-    void isCompatible_eurVsUsd_false() {
+    void isCompatibleEurVsUsdFalse() {
         assertFalse(EUR.isCompatible(USD));
     }
 
@@ -110,11 +117,12 @@ class MonetaryTest {
     void isEquivalentTo(String a, String b) {
         var qa = quantity(a, MonetaryQuantity.class);
         var qb = quantity(b, MonetaryQuantity.class);
-        if (!qa.isEquivalentTo(qb))
+        if (!qa.isEquivalentTo(qb)) {
             assertEquals(b, qb.toString());
+        }
     }
 
-    static Stream<Arguments> toString_equals() {
+    static Stream<Arguments> toStringEquals() {
         return Stream.of(//
                 Arguments.of("euro", currency(moneyUnit("€")).getDisplayName()), //
                 Arguments.of("mo", unit("kk")), //
@@ -124,7 +132,7 @@ class MonetaryTest {
 
     @ParameterizedTest
     @MethodSource
-    void toString_equals(String expected, Object actual) {
+    void toStringEquals(String expected, Object actual) {
         assertEquals(expected, Objects.toString(actual));
     }
 
@@ -132,13 +140,13 @@ class MonetaryTest {
     @CsvSource({ "ALL,Lekë", "AMD,֏", "AZN,₼", "BAM,KM", "BGN,лв", "BYN,Rbl", "CHF,SFr", "CZK,Kč", "DKK,DKr", "EUR,€",
             "GBP,£", "GEL,ლ", "HUF,Ft", "ISK,Kr", "JPY,¥", "MDL,L", "MKD,den", "NOK,NKr", "PLN,zł", "RON,lei",
             "RSD,РСД", "RUB,₽", "SEK,SKr", "TRY,₺", "UAH,₴", "USD,$" })
-    void toString_moneyBaseUnit(String currencyCode, String expected) {
+    void toStringMoneyBaseUnit(String currencyCode, String expected) {
         assertEquals(expected, moneyUnit(currencyCode).toString());
     }
 
     @ParameterizedTest
     @CsvSource({ "EUR,c", "GBP,p", "USD,¢" })
-    void toString_moneyBaseSubunit(String currencyCode, String expected) {
+    void toStringMoneyBaseSubunit(String currencyCode, String expected) {
         assertEquals(expected, moneyCentUnit(currencyCode).toString());
     }
 }

@@ -14,11 +14,16 @@ package org.openhab.binding.entsoe.internal.client.exception;
 
 import java.io.Serial;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Unknown response exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
+
 public class UnknownResponse extends Exception {
 
     @Serial
@@ -26,7 +31,7 @@ public class UnknownResponse extends Exception {
     public final String url;
     public final int status;
 
-    public UnknownResponse(String url, int status, String content, Exception cause) {
+    public UnknownResponse(String url, int status, String content, @Nullable Exception cause) {
         super(content, cause);
         this.status = status;
         this.url = url;

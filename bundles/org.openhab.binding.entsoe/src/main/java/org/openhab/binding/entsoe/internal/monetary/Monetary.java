@@ -12,14 +12,20 @@
  */
 package org.openhab.binding.entsoe.internal.monetary;
 
-import static javax.measure.Quantity.Scale.*;
-import static org.openhab.core.library.unit.Units.*;
+import static javax.measure.Quantity.Scale.RELATIVE;
+import static org.openhab.binding.entsoe.internal.common.Text.splitWhitespace;
+import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
+import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
+import static org.openhab.core.library.unit.Units.PERCENT;
+import static org.openhab.core.library.unit.Units.YEAR;
+import static org.openhab.core.library.unit.Units.getInstance;
 import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.*;
+import java.util.Currency;
+import java.util.List;
 
 import javax.measure.MetricPrefix;
 import javax.measure.Quantity;
@@ -28,7 +34,6 @@ import javax.measure.quantity.Dimensionless;
 import javax.measure.quantity.Energy;
 import javax.measure.quantity.Time;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import tech.units.indriya.AbstractSystemOfUnits;
@@ -90,17 +95,17 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     public static BigDecimal bigDecimal(Number number) {
-        if (number instanceof BigDecimal val)
+        if (number instanceof BigDecimal val) {
             return bigDecimal(val);
-        if (number instanceof BigInteger val)
+        } else if (number instanceof BigInteger val) {
             return new BigDecimal(val, mathContext);
-        if (number instanceof Double val)
-            return new BigDecimal(val, mathContext);
-        if (number instanceof Long val)
-            return new BigDecimal(val, mathContext);
-        if (number instanceof Float val)
-            return new BigDecimal(val, mathContext);
-        return new BigDecimal(number.intValue(), mathContext);
+        } else if (number instanceof Double || number instanceof Float) {
+            return BigDecimal.valueOf(number.doubleValue());
+        } else if (number instanceof Long) {
+            return new BigDecimal(number.longValue(), mathContext);
+        } else {
+            return new BigDecimal(number.intValue(), mathContext);
+        }
     }
 
     public static BigDecimal bigDecimal(String value) {
@@ -193,9 +198,10 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     public static Quantity<?> quantity(String amountAndUnit) {
-        var parts = StringUtils.split(amountAndUnit);
-        if (parts.length != 2)
+        var parts = splitWhitespace(amountAndUnit);
+        if (parts.length != 2) {
             throw new IllegalArgumentException("Monetary amount and unit must be separated by whitespace!");
+        }
         return quantity(parts[0], parts[1]);
     }
 
@@ -259,19 +265,23 @@ public class Monetary extends AbstractSystemOfUnits {
 
     public static Unit<?> unit(String symbols) {
         var unit = INSTANCE.getUnit(symbols);
-        if (unit == null)
+        if (unit == null) {
             unit = getInstance().getUnit(symbols);
-        if (unit == null)
+        }
+        if (unit == null) {
             unit = tech.units.indriya.unit.Units.getInstance().getUnit(symbols);
-        if (unit == null)
+        }
+        if (unit == null) {
             unit = SimpleUnitFormat.getInstance().parse(symbols);
+        }
         return unit;
     }
 
     private static Unit<Money> add(String currencyCode) {
         var symbol = Currency.getInstance(currencyCode).getSymbol();
-        if (symbol == null || symbol.length() != 1)
+        if (symbol == null || symbol.length() != 1) {
             throw new IllegalArgumentException();
+        }
         return add(currencyCode, symbol.charAt(0));
     }
 
@@ -307,8 +317,9 @@ public class Monetary extends AbstractSystemOfUnits {
 
     private <U extends Unit<?>> U addUnit(U unit, String name, String symbol, String... aliases) {
         Helper.addUnit(units, unit, name, symbol, UnitStyle.SYMBOL_AND_LABEL);
-        for (String alias : aliases)
+        for (String alias : aliases) {
             SimpleUnitFormat.getInstance().alias(unit, alias);
+        }
         return unit;
     }
 

@@ -14,11 +14,14 @@ package org.openhab.binding.entsoe.internal.price.service;
 
 import java.time.ZonedDateTime;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Time interval interface.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public interface Interval {
     ZonedDateTime start();
 

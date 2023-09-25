@@ -12,12 +12,19 @@
  */
 package org.openhab.binding.entsoe.internal.common;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Text helper functions.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class Text {
+    public static String[] splitWhitespace(String str) {
+        return str.split("\\s");
+    }
+
     public static String toExponent(int exponent) {
         return switch (exponent) {
             case 1 -> ""; // Could be '¹' but useless.

@@ -15,11 +15,14 @@ package org.openhab.binding.entsoe.internal.price.service;
 import java.io.Serial;
 import java.util.Currency;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Currencies doesn't match exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class CurrencyMismatch extends Exception {
     @Serial
     private static final long serialVersionUID = -1424230311124706505L;

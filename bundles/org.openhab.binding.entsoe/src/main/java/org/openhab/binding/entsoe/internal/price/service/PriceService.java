@@ -12,8 +12,14 @@
  */
 package org.openhab.binding.entsoe.internal.price.service;
 
-import static org.openhab.binding.entsoe.internal.common.Time.*;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
+import static org.openhab.binding.entsoe.internal.common.Time.convert;
+import static org.openhab.binding.entsoe.internal.common.Time.gone;
+import static org.openhab.binding.entsoe.internal.common.Time.set;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.bigDecimal;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.divide;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.energyPrice;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.percent;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.taxPrice;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -21,7 +27,7 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -30,8 +36,17 @@ import javax.measure.Unit;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
-import org.openhab.binding.entsoe.internal.client.dto.*;
-import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.client.dto.Area;
+import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
+import org.openhab.binding.entsoe.internal.client.dto.Period;
+import org.openhab.binding.entsoe.internal.client.dto.Publication;
+import org.openhab.binding.entsoe.internal.client.dto.TimeSeries;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidParameter;
+import org.openhab.binding.entsoe.internal.client.exception.TooLong;
+import org.openhab.binding.entsoe.internal.client.exception.TooMany;
+import org.openhab.binding.entsoe.internal.client.exception.TooShort;
+import org.openhab.binding.entsoe.internal.client.exception.Unauthorized;
+import org.openhab.binding.entsoe.internal.client.exception.UnknownResponse;
 import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 import org.openhab.binding.entsoe.internal.price.PriceConfig;
 import org.slf4j.Logger;
@@ -60,8 +75,8 @@ public class PriceService implements Interval {
         var unit = config.response(series.currency, series.measure);
         try {
             return parse(config, created, series.domain, series.period, unit);
-        } catch (Throwable t) {
-            throw new Bug(t);
+        } catch (Exception e) {
+            throw new Bug(e);
         }
     }
 
@@ -74,8 +89,9 @@ public class PriceService implements Interval {
                 // Convert units if needed.
                 .map(point -> taxPrice(energyPrice(point.amount, spotUnit).to(config.targetUnit), sellersVatRate))
                 .toList();
-        if (spotTaxPrices.isEmpty())
+        if (spotTaxPrices.isEmpty()) {
             throw new IllegalStateException("No data points!");
+        }
 
         // 2. Count total sum values
         var transferTaxPrice = config.transferTaxPrice();
@@ -182,9 +198,9 @@ public class PriceService implements Interval {
         try {
             var now = ZonedDateTime.now();
             if (contains(now)) {
-                if (today.contains(now))
+                if (today.contains(now)) {
                     return today.currentPrice(now);
-                else {
+                } else {
                     final var tomorrow = this.tomorrow;
                     if (tomorrow != null && tomorrow.contains(now)) {
                         logger.debug("Switching tomorrow's prices today.");
@@ -200,8 +216,8 @@ public class PriceService implements Interval {
                 logger.warn("Data is too old!");
             }
             return null;
-        } catch (Throwable t) {
-            return bug(t);
+        } catch (Exception e) {
+            return bug(e);
         }
     }
 

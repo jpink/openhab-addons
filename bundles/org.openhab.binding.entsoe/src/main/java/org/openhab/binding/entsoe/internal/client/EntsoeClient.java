@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.entsoe.internal.client;
 
+import static org.openhab.binding.entsoe.internal.common.Log.trace;
 import static org.openhab.binding.entsoe.internal.common.Time.utc;
 
 import java.time.Duration;
@@ -26,7 +27,14 @@ import org.eclipse.jetty.client.HttpClient;
 import org.openhab.binding.entsoe.internal.client.dto.Acknowledgement;
 import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
-import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidArea;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidParameter;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidToken;
+import org.openhab.binding.entsoe.internal.client.exception.TooLong;
+import org.openhab.binding.entsoe.internal.client.exception.TooMany;
+import org.openhab.binding.entsoe.internal.client.exception.TooShort;
+import org.openhab.binding.entsoe.internal.client.exception.Unauthorized;
+import org.openhab.binding.entsoe.internal.client.exception.UnknownResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,10 +119,12 @@ public class EntsoeClient {
 
     public String buildDayAheadPricesUrl(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws TooLong, TooShort {
         var duration = Duration.between(periodStart, periodEnd);
-        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0)
+        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0) {
             throw new TooShort(duration, DAY_AHEAD_PRICES_MIN);
-        if (MAX_RANGE.compareTo(duration) < 0)
+        }
+        if (MAX_RANGE.compareTo(duration) < 0) {
             throw new TooLong(duration, MAX_RANGE);
+        }
         return dayAheadPricesEndpoint + "&periodStart=" + format(periodStart) + "&periodEnd=" + format(periodEnd);
     }
 
@@ -132,7 +142,7 @@ public class EntsoeClient {
         var response = client.GET(url);
         var status = response.getStatus();
         var content = response.getContentAsString();
-        logger.trace(content);
+        trace(logger, content);
         switch (status) {
             case 200 -> {
                 try {

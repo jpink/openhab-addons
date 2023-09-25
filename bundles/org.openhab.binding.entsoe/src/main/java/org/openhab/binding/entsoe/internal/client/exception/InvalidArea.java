@@ -14,11 +14,14 @@ package org.openhab.binding.entsoe.internal.client.exception;
 
 import java.io.Serial;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Invalid area exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class InvalidArea extends Exception {
     @Serial
     private static final long serialVersionUID = -745040893268448199L;

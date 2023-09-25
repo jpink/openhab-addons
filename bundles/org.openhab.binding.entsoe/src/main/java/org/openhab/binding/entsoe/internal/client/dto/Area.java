@@ -14,6 +14,8 @@ package org.openhab.binding.entsoe.internal.client.dto;
 
 import java.util.Locale;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -24,11 +26,12 @@ import org.slf4j.LoggerFactory;
  *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Codes
  *      and their meaning</a>
  */
+@NonNullByDefault
 public enum Area {
     CZ("10YCZ-CEPS-----N", "SCA|CZ, MBA|CZ, Czech Republic (CZ), CTA|CZ, BZN|CZ, LFA|CZ, LFB|CZ"),
     FI("10YFI-1--------U", "MBA|FI, SCA|FI, CTA|FI, Finland (FI), BZN|FI, IPA|FI, IBA|FI");
 
-    public static Area of(Locale locale) {
+    public static @Nullable Area of(Locale locale) {
         var country = locale.getCountry();
         try {
             return Area.valueOf(country);

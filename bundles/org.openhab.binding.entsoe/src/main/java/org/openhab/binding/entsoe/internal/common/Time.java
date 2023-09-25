@@ -17,11 +17,14 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Time handling helper functions.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class Time {
     public static ZonedDateTime convert(ZonedDateTime time, ZoneId zone) {
         return time.withZoneSameInstant(zone);

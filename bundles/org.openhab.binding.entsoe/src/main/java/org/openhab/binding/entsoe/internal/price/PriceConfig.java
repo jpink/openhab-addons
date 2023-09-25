@@ -12,9 +12,14 @@
  */
 package org.openhab.binding.entsoe.internal.price;
 
-import static org.openhab.binding.entsoe.internal.Constants.*;
+import static org.openhab.binding.entsoe.internal.Constants.UNIT_CENT_PER_KWH;
+import static org.openhab.binding.entsoe.internal.Constants.UNIT_CURRENCY_PER_MWH;
 import static org.openhab.binding.entsoe.internal.common.Time.convert;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.*;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.EURO_CENT_PER_KILOWATT_HOUR;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.EURO_PER_MEGAWATT_HOUR;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.energyPriceUnit;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.moneyCentUnit;
+import static org.openhab.binding.entsoe.internal.monetary.Monetary.taxPriceOfSum;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
@@ -33,7 +38,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 import org.openhab.binding.entsoe.internal.monetary.Monetary;
 import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
-import org.openhab.binding.entsoe.internal.price.service.*;
+import org.openhab.binding.entsoe.internal.price.service.CurrencyMismatch;
 
 /**
  * The {@link PriceConfig} class contains fields mapping thing configuration parameters.
@@ -92,8 +97,9 @@ public class PriceConfig {
     public Unit<EnergyPrice> response(Currency currency, Unit<Energy> measure) throws CurrencyMismatch {
         responseCurrency = currency;
         responseMeasure = measure;
-        if (this.currency != null && Currency.getInstance(this.currency) != currency)
+        if (this.currency != null && Currency.getInstance(this.currency).equals(currency)) {
             throw new CurrencyMismatch(Currency.getInstance(this.currency), currency);
+        }
         targetUnit = UNIT_CENT_PER_KWH.equals(unit) ? energyPriceUnit(moneyCentUnit(currency), KILOWATT_HOUR)
                 : energyPriceUnit(currency, MEGAWATT_HOUR);
         return spotUnit = energyPriceUnit(currency, measure);

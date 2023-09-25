@@ -14,6 +14,8 @@ package org.openhab.binding.entsoe.internal.client;
 
 import javax.measure.Unit;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.library.unit.Units;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
@@ -23,6 +25,7 @@ import com.thoughtworks.xstream.converters.SingleValueConverter;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class EnergyUnitConverter implements SingleValueConverter {
     /**
      * Marshals an Object into a single value representation.
@@ -31,8 +34,8 @@ public class EnergyUnitConverter implements SingleValueConverter {
      * @return a String with the single value of the Object or <code>null</code>
      */
     @Override
-    public String toString(Object obj) {
-        return obj.toString();
+    public @Nullable String toString(@Nullable Object obj) {
+        return obj == null ? null : obj.toString();
     }
 
     /**
@@ -42,8 +45,8 @@ public class EnergyUnitConverter implements SingleValueConverter {
      * @return the Object
      */
     @Override
-    public Object fromString(String str) {
-        return switch (str) {
+    public @Nullable Object fromString(@Nullable String str) {
+        return str == null ? null : switch (str) {
             case "MWH", "MWh" -> Units.MEGAWATT_HOUR;
             case "KWH", "kWh" -> Units.KILOWATT_HOUR;
             default -> throw new UnsupportedOperationException("Unable parse measure '" + str + "'!");
@@ -57,7 +60,7 @@ public class EnergyUnitConverter implements SingleValueConverter {
      */
     @Override
     @SuppressWarnings("rawtypes")
-    public boolean canConvert(Class type) {
-        return Unit.class.isAssignableFrom(type);
+    public boolean canConvert(@Nullable Class type) {
+        return type != null && Unit.class.isAssignableFrom(type);
     }
 }

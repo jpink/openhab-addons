@@ -15,11 +15,15 @@ package org.openhab.binding.entsoe.internal.client.exception;
 import java.io.Serial;
 import java.time.Duration;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Too long duration exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
+
 public class TooLong extends Exception {
     @Serial
     private static final long serialVersionUID = 7232286219011534478L;

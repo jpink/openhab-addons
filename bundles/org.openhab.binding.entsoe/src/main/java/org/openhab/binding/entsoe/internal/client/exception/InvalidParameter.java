@@ -16,16 +16,20 @@ import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Invalid parameter exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
 public class InvalidParameter extends Exception {
     @Serial
     private static final long serialVersionUID = -1662688835270360171L;
 
-    private static String getQuery(String url) {
+    private static @Nullable String getQuery(String url) {
         try {
             return new URL(url).getQuery();
         } catch (MalformedURLException e) {

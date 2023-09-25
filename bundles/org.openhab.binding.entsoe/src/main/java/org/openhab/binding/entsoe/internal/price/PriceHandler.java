@@ -24,7 +24,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.EntsoeHandlerFactory;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
-import org.openhab.binding.entsoe.internal.client.exception.*;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidArea;
+import org.openhab.binding.entsoe.internal.client.exception.InvalidToken;
+import org.openhab.binding.entsoe.internal.client.exception.Unauthorized;
 import org.openhab.binding.entsoe.internal.common.AbstractThingHandler;
 import org.openhab.binding.entsoe.internal.monetary.Monetary;
 import org.openhab.binding.entsoe.internal.price.service.Bug;
@@ -114,8 +116,9 @@ public class PriceHandler extends AbstractThingHandler {
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (command instanceof RefreshType)
+        if (command instanceof RefreshType) {
             handleRefresh();
+        }
     }
 
     private void handleRefresh() {
@@ -127,8 +130,9 @@ public class PriceHandler extends AbstractThingHandler {
                 updateProperties(service.updateProperties(editProperties()));
                 scheduleUpdateCurrentJob(service.resolution());
                 try (var input = getClass().getResourceAsStream("entsoe.svg")) {
-                    if (input != null)
+                    if (input != null) {
                         channelSvg(graph, input.readAllBytes());
+                    }
                 }
                 channelJson(data, "{ \"foo\" : 1 }");
                 handleUpdateCurrent();
@@ -164,8 +168,8 @@ public class PriceHandler extends AbstractThingHandler {
                 channelPercent(futureNormalized, price.futureNormalized());
                 channel(futureRank, price.futureRank());
             }
-        } catch (Throwable t) {
-            thingBug(t);
+        } catch (Exception e) {
+            thingBug(e);
         }
     }
 

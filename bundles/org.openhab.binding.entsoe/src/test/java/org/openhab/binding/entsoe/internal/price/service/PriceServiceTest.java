@@ -20,13 +20,20 @@ import static org.openhab.binding.entsoe.internal.price.service.PriceService.*;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
 import org.openhab.binding.entsoe.internal.price.PriceConfig;
 
+/**
+ * Price service unit tests.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
+@NonNullByDefault
 class PriceServiceTest {
-    void parse_dailyCache(int general, int seller, String file, double min, double avg) throws Exception {
+    void parseDailyCache(int general, int seller, String file, double min, double avg) throws Exception {
         var config = new PriceConfig();
         config.zone = ZoneId.of("Europe/Helsinki");
         config.transfer = BigDecimal.valueOf(3.4);
@@ -44,22 +51,22 @@ class PriceServiceTest {
     }
 
     @Test
-    void parse_CZ2023vat21_dailyCache() throws Exception {
-        parse_dailyCache(21, 21, CZ2015, 12.44372, 28.96062);
+    void parseCz2023vat21DailyCache() throws Exception {
+        parseDailyCache(21, 21, CZ2015, 12.44372, 28.96062);
     }
 
     @Test
-    void parse_FI2023vat10_dailyCache() throws Exception {
-        parse_dailyCache(24, 10, FI2023, 5.25572, 14.52322);
+    void parseFi2023vat10DailyCache() throws Exception {
+        parseDailyCache(24, 10, FI2023, 5.25572, 14.52322);
     }
 
     @Test
-    void parse_FI2023vat24_dailyCache() throws Exception {
-        parse_dailyCache(24, 24, FI2023, 5.10452, 15.55152);
+    void parseFi2023vat24DailyCache() throws Exception {
+        parseDailyCache(24, 24, FI2023, 5.10452, 15.55152);
     }
 
     @Test
-    void published_CZ_1245() {
+    void publishedCz1245() {
         assertEquals("2015-12-31T12:45+01:00[Europe/Prague]", set(START, PUBLISHED).toString());
     }
 }

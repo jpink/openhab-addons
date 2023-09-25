@@ -14,11 +14,15 @@ package org.openhab.binding.entsoe.internal.client.exception;
 
 import java.io.Serial;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Unauthorized exception.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@NonNullByDefault
+
 public class Unauthorized extends Exception {
     @Serial
     private static final long serialVersionUID = 8735182670518378301L;

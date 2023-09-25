@@ -12,29 +12,32 @@
  */
 package org.openhab.binding.entsoe.internal.common;
 
-import java.util.function.Supplier;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.slf4j.Logger;
 
 /**
- * Kotlin style common exceptions.
+ * Logging extensions.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class Exceptions {
+public class Log {
     /**
-     * Checks that the required object exists.
-     *
-     * @param <T> The type of the required object.
-     * @param object The required object instance.
-     * @param message The error message supplier.
-     * @throws IllegalArgumentException If the object is missing.
+     * One dynamic parameter
+     * 
+     * @see <a href="see http://www.slf4j.org/faq.html#logging_performance">Logging performance</a>
      */
-    public static <T> T require(T object, Supplier<String> message) {
-        if (object == null) {
-            throw new IllegalArgumentException(message.get());
-        }
-        return object;
+    private static final String ONE = "{}";
+
+    public static void debug(Logger logger, String message) {
+        logger.debug(ONE, message);
+    }
+
+    public static void error(Logger logger, String message, Exception exception) {
+        logger.error(ONE, message, exception);
+    }
+
+    public static void trace(Logger logger, String message) {
+        logger.trace(ONE, message);
     }
 }

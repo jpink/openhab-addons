@@ -38,6 +38,11 @@ import org.openhab.binding.entsoe.internal.client.exception.TooLong;
 import org.openhab.binding.entsoe.internal.client.exception.TooShort;
 import org.openhab.core.library.unit.Units;
 
+/**
+ * ENTSO-E client unit tests.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public class EntsoeClientTest {
     public static final String FI2023 = "2023-09-09_FI_dayAheadPrices.xml";
@@ -80,28 +85,28 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void buildDayAheadPricesEndpoint_CZ_Valid() throws Exception {
+    void buildDayAheadPricesEndpointCzValid() throws Exception {
         assertEquals(ENDPOINT, buildDayAheadPricesEndpoint(TOKEN_UUID, CZ.code));
     }
 
     @Test
-    void buildDayAheadPricesEndpoint_EUR_Invalid() {
+    void buildDayAheadPricesEndpointEurInvalid() {
         assertThrows(InvalidArea.class, () -> buildDayAheadPricesEndpoint(TOKEN_UUID, "EUR"));
     }
 
     @Test
-    void buildDayAheadPricesUrl_Guide_Ok() throws Exception {
+    void buildDayAheadPricesUrlGuideOk() throws Exception {
         assertEquals(ENDPOINT + "&periodStart=201512312230&periodEnd=201612312230",
                 createClient().buildDayAheadPricesUrl(START, START.plusYears(1)));
     }
 
     @Test
-    void buildDayAheadPricesUrl_P367D_TooLong() {
+    void buildDayAheadPricesUrlP367DTooLong() {
         assertThrows(TooLong.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusDays(367)));
     }
 
     @Test
-    void buildDayAheadPricesUrl_PT23H_TooShort() {
+    void buildDayAheadPricesUrlPT23HTooShort() {
         assertThrows(TooShort.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusHours(23)));
     }
 
@@ -110,22 +115,22 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void format_CZ() {
+    void formatCz() {
         assertEquals("201512312230", format(START));
     }
 
     @Test
-    void format_FI() {
+    void formatFi() {
         assertEquals("201512312130", format(ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Helsinki"))));
     }
 
     @Test
-    void format_UTC() {
+    void formatUtc() {
         assertEquals("201512312330", format(ZonedDateTime.of(NEW_YEAR, ZoneOffset.UTC)));
     }
 
     @Test
-    void parseDocument_Guide_Acknowledgement() {
+    void parseDocumentGuideAcknowledgement() {
         var content = readFile("2016-03-10_noData.xml");
 
         var document = (Acknowledgement) parseDocument(content);
@@ -138,7 +143,7 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void parseDocument_Guide_Publication() {
+    void parseDocumentGuidePublication() {
         var content = readFile(CZ2015);
         var created = ZonedDateTime.of(2016, 5, 10, 9, 18, 53, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2015, 12, 31, 23, 0, 0, 0, ZoneOffset.UTC);
@@ -149,7 +154,7 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void parseDocument_FI2023_Publication() {
+    void parseDocumentFi2023Publication() {
         var content = readFile(FI2023);
         var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2023, 9, 8, 22, 0, 0, 0, ZoneOffset.UTC);
@@ -160,12 +165,12 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void parseToken_Guide_Invalid() {
+    void parseTokenGuideInvalid() {
         assertThrows(InvalidToken.class, () -> parseToken("MYTOKEN"));
     }
 
     @Test
-    void parseToken_Sample_Valid() throws InvalidToken {
+    void parseTokenSampleValid() throws InvalidToken {
         assertEquals(TOKEN_UUID, parseToken(TOKEN_TEXT));
     }
 }

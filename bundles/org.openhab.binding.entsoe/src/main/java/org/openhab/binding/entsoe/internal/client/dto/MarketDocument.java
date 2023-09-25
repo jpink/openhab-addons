@@ -21,7 +21,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-abstract public class MarketDocument {
+public abstract class MarketDocument {
     @XStreamAlias("createdDateTime")
     public ZonedDateTime created;
 }
