@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
  * The {@link EntsoeClient} class is HTTP API client, which fetches data from ENTSO-E Transparency Platform.
@@ -47,7 +48,7 @@ public class EntsoeClient {
     private static final Duration DAY_AHEAD_PRICES_MIN = Duration.ofDays(1);
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
     private static final Duration MAX_RANGE = Duration.ofDays(366);
-    private static final XStream XSTREAM = new XStream();
+    private static final XStream XSTREAM = new XStream(new StaxDriver());
 
     /**
      * @param securityToken Web Api Security Token

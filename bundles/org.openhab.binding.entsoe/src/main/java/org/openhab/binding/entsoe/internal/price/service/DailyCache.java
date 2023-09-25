@@ -21,6 +21,11 @@ import javax.measure.Quantity;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 
+/**
+ * Daily cache record.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public record DailyCache(ZonedDateTime created, String domain, ZonedDateTime start, ZonedDateTime end,
         Duration resolution, List<ElectricityPrice> prices, Quantity<EnergyPrice> minimum,

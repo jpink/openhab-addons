@@ -12,6 +12,11 @@
  */
 package org.openhab.binding.entsoe.internal.client.dto;
 
+/**
+ * Error reason data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Reason {
     public Integer code;
     public String text;

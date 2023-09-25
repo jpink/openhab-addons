@@ -17,7 +17,11 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-/** Kotlin style common exceptions. */
+/**
+ * Kotlin style common exceptions.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Exceptions {
     /**
      * Checks that the required object exists.

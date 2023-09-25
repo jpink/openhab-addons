@@ -20,6 +20,11 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+/**
+ * Collection extensions.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Collections {
     @SafeVarargs
     public static <E> @NonNull List<E> listOf(E... elements) {

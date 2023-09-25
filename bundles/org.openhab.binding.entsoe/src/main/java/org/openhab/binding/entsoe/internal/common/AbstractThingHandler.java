@@ -31,6 +31,11 @@ import org.openhab.core.types.UnDefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Abstract thing handler.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public abstract class AbstractThingHandler extends BaseThingHandler {
 

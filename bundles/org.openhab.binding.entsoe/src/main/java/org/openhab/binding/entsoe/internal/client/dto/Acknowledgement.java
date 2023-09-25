@@ -14,6 +14,11 @@ package org.openhab.binding.entsoe.internal.client.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Acknowledgement market document data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @XStreamAlias("Acknowledgement_MarketDocument")
 public class Acknowledgement extends MarketDocument {
     @XStreamAlias("Reason")

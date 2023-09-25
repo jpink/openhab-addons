@@ -12,6 +12,11 @@
  */
 package org.openhab.binding.entsoe.internal.common;
 
+/**
+ * Text helper functions.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Text {
     public static String toExponent(int exponent) {
         return switch (exponent) {

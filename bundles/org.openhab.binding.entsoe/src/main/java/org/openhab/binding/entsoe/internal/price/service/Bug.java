@@ -14,7 +14,11 @@ package org.openhab.binding.entsoe.internal.price.service;
 
 import java.io.Serial;
 
-/** Unexpected exception which means bug in price service. */
+/**
+ * Unexpected exception which means there is a bug in the price service.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Bug extends Exception {
     @Serial
     private static final long serialVersionUID = 6476362399567760465L;

@@ -22,7 +22,9 @@ import javax.measure.quantity.Dimensionless;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Taxable price
+ * Taxable price created by the sum.
+ *
+ * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
 @SuppressWarnings("unchecked")

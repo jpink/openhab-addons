@@ -14,6 +14,11 @@ package org.openhab.binding.entsoe.internal.client.exception;
 
 import java.io.Serial;
 
+/**
+ * Unknown response exception.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class UnknownResponse extends Exception {
 
     @Serial

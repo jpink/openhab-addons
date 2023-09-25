@@ -37,7 +37,11 @@ import org.openhab.binding.entsoe.internal.price.PriceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Electricity Price Service */
+/**
+ * Electricity price service
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public class PriceService implements Interval {
     /**

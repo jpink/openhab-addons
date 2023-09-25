@@ -19,6 +19,11 @@ import javax.measure.quantity.Energy;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Time series data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class TimeSeries {
     @XStreamAlias("in_Domain.mRID")
     public String domain;

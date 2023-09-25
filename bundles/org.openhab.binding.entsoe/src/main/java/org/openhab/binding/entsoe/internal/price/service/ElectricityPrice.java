@@ -22,7 +22,9 @@ import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
 
 /**
- * Electricity price interval.
+ * Electricity price record.
+ *
+ * @author Jukka Papinkivi - Initial contribution
  *
  * @param start
  * @param end

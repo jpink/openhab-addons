@@ -16,6 +16,11 @@ import java.math.BigDecimal;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Data point data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Point {
     public int position;
 

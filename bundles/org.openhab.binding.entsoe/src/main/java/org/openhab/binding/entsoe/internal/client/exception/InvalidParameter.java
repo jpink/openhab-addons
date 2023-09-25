@@ -16,6 +16,11 @@ import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Invalid parameter exception.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class InvalidParameter extends Exception {
     @Serial
     private static final long serialVersionUID = -1662688835270360171L;

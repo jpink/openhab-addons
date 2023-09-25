@@ -23,7 +23,9 @@ import javax.measure.quantity.Dimensionless;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Taxable price
+ * Taxable price.
+ *
+ * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
 @SuppressWarnings("unchecked")

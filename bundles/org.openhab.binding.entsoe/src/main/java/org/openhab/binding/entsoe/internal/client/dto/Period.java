@@ -17,6 +17,11 @@ import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
+/**
+ * Period data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Period {
     public TimeInterval timeInterval;
     public Duration resolution;

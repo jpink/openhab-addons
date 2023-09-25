@@ -17,8 +17,9 @@ import java.util.Locale;
 import org.slf4j.LoggerFactory;
 
 /**
- * Area
+ * Power area
  *
+ * @author Jukka Papinkivi - Initial contribution
  * @see <a href=
  *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Codes
  *      and their meaning</a>

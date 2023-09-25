@@ -16,6 +16,11 @@ import java.time.ZonedDateTime;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * Abstract market document data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 abstract public class MarketDocument {
     @XStreamAlias("createdDateTime")
     public ZonedDateTime created;

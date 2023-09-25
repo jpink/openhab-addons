@@ -14,6 +14,7 @@ package org.openhab.binding.entsoe.internal;
 
 import static org.openhab.binding.entsoe.internal.Constants.THING_TYPE_PRICE;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -28,6 +29,11 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+/**
+ * ENTSO-E discovery service.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + Constants.BINDING_ID)
 @NonNullByDefault
 public class EntsoeDiscoveryService extends AbstractDiscoveryService {
@@ -55,7 +61,7 @@ public class EntsoeDiscoveryService extends AbstractDiscoveryService {
         var builder = DiscoveryResultBuilder.create(new ThingUID(THING_TYPE_PRICE, country))
                 .withProperty("area", area.code).withRepresentationProperty("area");
         if ("FI".equals(country))
-            builder.withProperty("tax", 2.79372F); // TODO move to resource bundle
+            builder.withProperty("tax", BigDecimal.valueOf(2.79372)); // TODO move to resource bundle
         thingDiscovered(builder.build());
     }
 }

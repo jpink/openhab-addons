@@ -18,7 +18,11 @@ import org.openhab.core.library.unit.Units;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 
-/** Energy measure converter. */
+/**
+ * Energy measure converter for XStream.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class EnergyUnitConverter implements SingleValueConverter {
     /**
      * Marshals an Object into a single value representation.

@@ -68,7 +68,9 @@ class MonetaryTest {
 
     @Test
     void getConverterTo_eurToUsd_incommensurable() {
-        var cause = assertThrows(UnconvertibleException.class, () -> EUR.getConverterTo(USD)).getCause();
+        var exception = assertThrows(UnconvertibleException.class, () -> EUR.getConverterTo(USD));
+        assertNotNull(exception);
+        var cause = exception.getCause();
         assertNotNull(cause);
         assertInstanceOf(IncommensurableException.class, cause);
         assertEquals("€ is not compatible with $", cause.getMessage());

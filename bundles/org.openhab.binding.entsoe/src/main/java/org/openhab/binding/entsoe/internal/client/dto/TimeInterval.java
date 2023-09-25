@@ -14,6 +14,11 @@ package org.openhab.binding.entsoe.internal.client.dto;
 
 import java.time.ZonedDateTime;
 
+/**
+ * Time interval data transfer object.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class TimeInterval {
     public ZonedDateTime start;
     public ZonedDateTime end;

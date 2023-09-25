@@ -19,10 +19,11 @@ import javax.measure.quantity.Dimensionless;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Taxable price
+ * Taxable price created by amount.
+ *
+ * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-@SuppressWarnings("unchecked")
 public record TaxPriceByAmount<Q extends MonetaryQuantity<Q>> (Quantity<Q> amount,
         Quantity<Dimensionless> vatRate) implements TaxPrice<Q> {
     @Override

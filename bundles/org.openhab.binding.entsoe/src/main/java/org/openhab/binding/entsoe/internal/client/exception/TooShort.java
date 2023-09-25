@@ -15,6 +15,11 @@ package org.openhab.binding.entsoe.internal.client.exception;
 import java.io.Serial;
 import java.time.Duration;
 
+/**
+ * Too short duration exception.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class TooShort extends Exception {
     @Serial
     private static final long serialVersionUID = 4818451922083980812L;

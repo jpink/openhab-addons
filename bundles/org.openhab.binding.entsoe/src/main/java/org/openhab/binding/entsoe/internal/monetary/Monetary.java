@@ -39,8 +39,11 @@ import tech.units.indriya.unit.BaseUnit;
 import tech.units.indriya.unit.UnitDimension;
 
 /**
+ * Monetary system of units.
  * <a href="https://www.entsoe.eu/about/inside-entsoe/members/"></a>
  * <a href="https://en.wikipedia.org/wiki/List_of_currencies_in_Europe"></a>
+ *
+ * @author Jukka Papinkivi - Initial contribution
  */
 @SuppressWarnings("unchecked")
 @NonNullByDefault

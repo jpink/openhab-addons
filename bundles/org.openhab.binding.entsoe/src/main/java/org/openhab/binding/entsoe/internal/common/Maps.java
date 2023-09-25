@@ -20,7 +20,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-/** Kotlin style helper extensions. */
+/**
+ * Kotlin style Map helper extensions.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 public class Maps {
     public static <K, V> @NonNull Map<K, V> filter(@NonNull Map<K, V> map, @NonNull BiFunction<K, V, Boolean> action) {
         return map.entrySet().stream().filter(entry -> action.apply(entry.getKey(), entry.getValue()))

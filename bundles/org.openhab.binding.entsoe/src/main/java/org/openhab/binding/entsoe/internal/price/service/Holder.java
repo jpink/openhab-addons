@@ -15,7 +15,11 @@ package org.openhab.binding.entsoe.internal.price.service;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-/** Generic holder to edit record values. */
+/**
+ * Generic holder to edit record values after creation.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public class Holder<T> {
     @NonNull
