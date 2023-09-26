@@ -10,10 +10,8 @@
 
 		<channels>
 			<channel id="current" typeId="price-channel"/>
-			<channel id="dailyRank" typeId="rank-channel"/>
-			<channel id="dailyNormalized" typeId="percent-channel"/>
-			<channel id="futureRank" typeId="rank-channel"/>
-			<channel id="futureNormalized" typeId="percent-channel"/>
+			<channel id="rank" typeId="rank-channel"/>
+			<channel id="normalized" typeId="percent-channel"/>
 			<channel id="graph" typeId="image-channel"/>
 			<channel id="data" typeId="json-channel"/>
 			<channel id="updated" typeId="datetime-channel"/>

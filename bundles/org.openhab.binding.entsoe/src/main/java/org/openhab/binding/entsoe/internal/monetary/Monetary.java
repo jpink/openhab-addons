@@ -103,8 +103,11 @@ public class Monetary extends AbstractSystemOfUnits {
             return BigDecimal.valueOf(number.doubleValue());
         } else if (number instanceof Long) {
             return new BigDecimal(number.longValue(), mathContext);
-        } else {
+        } else if (number instanceof Integer){
             return new BigDecimal(number.intValue(), mathContext);
+        } else {
+            // E.g. tech.units.indriya.function.RationalNumber
+            return new BigDecimal(number.toString(), mathContext);
         }
     }
 

@@ -59,11 +59,9 @@ public class PriceHandler extends AbstractThingHandler {
 
     private final ChannelUID//
     current = channel("current"), //
-            dailyNormalized = channel("dailyNormalized"), //
-            dailyRank = channel("dailyRank"), //
+            normalized = channel("dailyNormalized"), //
+            rank = channel("dailyRank"), //
             data = channel("data"), //
-            futureNormalized = channel("futureNormalized"), //
-            futureRank = channel("futureRank"), //
             graph = channel("graph"), //
             updated = channel("updated");
 
@@ -163,10 +161,8 @@ public class PriceHandler extends AbstractThingHandler {
                 thingCommunicationError("Missing current price.");
             } else {
                 channel(current, price.total());
-                channelPercent(dailyNormalized, price.dailyNormalized());
-                channel(dailyRank, price.dailyRank());
-                channelPercent(futureNormalized, price.futureNormalized());
-                channel(futureRank, price.futureRank());
+                channelPercent(normalized, price.normalized());
+                channel(rank, price.rank());
             }
         } catch (Exception e) {
             thingBug(e);

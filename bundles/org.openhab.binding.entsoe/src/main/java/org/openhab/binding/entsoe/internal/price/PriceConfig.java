@@ -24,6 +24,7 @@ import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Currency;
@@ -90,8 +91,12 @@ public class PriceConfig {
     /** The fraction digits of the value. */
     public int scale = 2;
 
-    public ZonedDateTime local(ZonedDateTime time) {
+    public ZonedDateTime zonedLocal(ZonedDateTime time) {
         return convert(time, zone);
+    }
+
+    public LocalDateTime local(ZonedDateTime time) {
+        return zonedLocal(time).toLocalDateTime();
     }
 
     public Unit<EnergyPrice> response(Currency currency, Unit<Energy> measure) throws CurrencyMismatch {

@@ -13,6 +13,9 @@
 package org.openhab.binding.entsoe.internal.client.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+
+import java.util.List;
 
 /**
  * Publication market document data transfer object.
@@ -21,7 +24,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  */
 @XStreamAlias("Publication_MarketDocument")
 public class Publication extends MarketDocument {
+    @XStreamAlias("period.timeInterval")
+    public TimeInterval timeInterval;
 
-    @XStreamAlias("TimeSeries")
-    public TimeSeries timeSeries;
+    @XStreamImplicit(itemFieldName = "TimeSeries")
+    public List<TimeSeries> timeSeries;
 }

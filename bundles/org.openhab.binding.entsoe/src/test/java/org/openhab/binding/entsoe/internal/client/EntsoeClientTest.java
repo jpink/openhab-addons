@@ -46,6 +46,7 @@ import org.openhab.core.library.unit.Units;
 @NonNullByDefault
 public class EntsoeClientTest {
     public static final String FI2023 = "2023-09-09_FI_dayAheadPrices.xml";
+    public static final String FI2023_2 = "2023-09-26_FI_dayAheadPrices_twoSeries.xml";
     public static final String CZ2015 = "2015-12-31_CZ_dayAheadPrices.xml";
     static final LocalDateTime NEW_YEAR = LocalDateTime.of(2015, 12, 31, 23, 30);
     public static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
@@ -58,7 +59,7 @@ public class EntsoeClientTest {
             if (input == null) {
                 fail("Resource file '" + filename + "' not found!");
             } else {
-                return new String(input.readAllBytes(), StandardCharsets.US_ASCII);
+                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
             }
         } catch (IOException ex) {
             fail(ex);
@@ -70,7 +71,7 @@ public class EntsoeClientTest {
             ZonedDateTime end) {
         assertNotNull(document);
         assertEquals(created, document.created);
-        var timeSeries = document.timeSeries;
+        var timeSeries = document.timeSeries.get(0);
         assertNotNull(timeSeries);
         assertEquals(area.code, timeSeries.domain);
         assertEquals(Currency.getInstance("EUR"), timeSeries.currency);
@@ -171,6 +172,18 @@ public class EntsoeClientTest {
         var content = readFile(FI2023);
         var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
         var start = ZonedDateTime.of(2023, 9, 8, 22, 0, 0, 0, ZoneOffset.UTC);
+
+        var document = (Publication) parseDocument(content);
+
+        assertPublicationMarket(document, FI, created, start, start.plusDays(1));
+    }
+
+    @Test
+    void parseDocumentFi2023TwoSeries() {
+        // Requested: 202309252100 - 202309262100
+        var content = readFile(FI2023_2);
+        var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
+        var start = ZonedDateTime.of(2023, 9, 25, 21, 0, 0, 0, ZoneOffset.UTC);
 
         var document = (Publication) parseDocument(content);
 

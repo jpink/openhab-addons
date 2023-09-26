@@ -68,7 +68,7 @@ public class PriceService implements Interval {
     public static final OffsetTime PUBLISHED = OffsetTime.of(11, 45, 0, 0, ZoneOffset.UTC);
 
     public static DailyCache parse(PriceConfig config, Publication publication) throws Bug, CurrencyMismatch {
-        return parse(config, config.local(publication.created), publication.timeSeries);
+        return parse(config, config.zonedLocal(publication.created), publication.timeSeries.get(0));
     }
 
     public static DailyCache parse(PriceConfig config, ZonedDateTime created, TimeSeries series)
@@ -118,7 +118,7 @@ public class PriceService implements Interval {
         // 6. Wrap everything up in electricity price.
         var resolution = period.resolution;
         var minutes = resolution.toMinutes();
-        var endOffset = config.local(period.timeInterval.start);
+        var endOffset = config.zonedLocal(period.timeInterval.start);
         var startOffset = endOffset.minusMinutes(minutes);
         var electricityPrices = period.points.stream().map(point -> {
             var position = point.position;
@@ -130,10 +130,10 @@ public class PriceService implements Interval {
             var rank = ranks.indexOf(totalPrice) + 1;
             var normalized = normalizedPrices.get(index);
             return new ElectricityPrice(start, end, transferTaxPrice, taxTaxPrice, spotTaxPrice, marginTaxPrice,
-                    config.energyPrice(totalPrice), rank, normalized, new Holder<>(rank), new Holder<>(normalized));
+                    config.energyPrice(totalPrice), rank, normalized);
         }).toList();
 
-        return new DailyCache(created, domain, endOffset, config.local(period.timeInterval.end), resolution,
+        return new DailyCache(created, domain, endOffset, config.zonedLocal(period.timeInterval.end), resolution,
                 electricityPrices, config.energyPrice(minimum), config.energyPrice(average),
                 config.energyPrice(maximum));
     }
