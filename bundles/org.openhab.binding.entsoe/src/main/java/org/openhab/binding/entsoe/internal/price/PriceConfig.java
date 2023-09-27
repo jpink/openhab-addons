@@ -24,7 +24,6 @@ import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Currency;
@@ -55,7 +54,7 @@ public class PriceConfig {
     /** An area EIC code. */
     public String area = "";
 
-    public transient ZoneId zone = ZoneId.systemDefault();
+    public transient ZoneId zone;
 
     /** Currency code. */
     public @Nullable String currency;
@@ -63,7 +62,7 @@ public class PriceConfig {
     public transient Currency responseCurrency = Currency.getInstance(Locale.getDefault());
 
     /** Unit used in config and display. */
-    public String unit = UNIT_CURRENCY_PER_MWH;
+    public String unit;
 
     public transient Unit<Energy> responseMeasure = MEGAWATT_HOUR;
 
@@ -72,13 +71,13 @@ public class PriceConfig {
     public transient Unit<EnergyPrice> targetUnit = EURO_CENT_PER_KILOWATT_HOUR;
 
     /** The fixed electricity transfer fee including value added tax. */
-    public BigDecimal transfer = BigDecimal.ZERO;
+    public BigDecimal transfer;
 
     /** The fixed energy tax amount including value added tax. */
-    public BigDecimal tax = BigDecimal.ZERO;
+    public BigDecimal tax;
 
     /** The fixed sellers margin price including value added tax. */
-    public BigDecimal margin = BigDecimal.ZERO;
+    public BigDecimal margin;
 
     /** General VAT percent */
     public int general;
@@ -91,12 +90,24 @@ public class PriceConfig {
     /** The fraction digits of the value. */
     public int scale = 2;
 
-    public ZonedDateTime zonedLocal(ZonedDateTime time) {
-        return convert(time, zone);
+    public PriceConfig() {
+        this(ZoneId.systemDefault(), UNIT_CURRENCY_PER_MWH, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0);
     }
 
-    public LocalDateTime local(ZonedDateTime time) {
-        return zonedLocal(time).toLocalDateTime();
+    /** Constructor for unit tests. */
+    public PriceConfig(ZoneId zone, String unit, BigDecimal transfer, BigDecimal tax, BigDecimal margin, int general,
+            int seller) {
+        this.zone = zone;
+        this.unit = unit;
+        this.transfer = transfer;
+        this.tax = tax;
+        this.margin = margin;
+        this.general = general;
+        this.seller = seller;
+    }
+
+    public ZonedDateTime local(ZonedDateTime time) {
+        return convert(time, zone);
     }
 
     public Unit<EnergyPrice> response(Currency currency, Unit<Energy> measure) throws CurrencyMismatch {

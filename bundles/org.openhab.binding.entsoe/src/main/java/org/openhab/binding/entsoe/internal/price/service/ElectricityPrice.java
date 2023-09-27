@@ -18,6 +18,7 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.entsoe.internal.client.dto.Interval;
 import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
 

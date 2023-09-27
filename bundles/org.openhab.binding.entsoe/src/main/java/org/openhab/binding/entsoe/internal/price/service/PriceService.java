@@ -12,17 +12,12 @@
  */
 package org.openhab.binding.entsoe.internal.price.service;
 
+import static org.openhab.binding.entsoe.internal.common.Log.debug;
 import static org.openhab.binding.entsoe.internal.common.Time.convert;
 import static org.openhab.binding.entsoe.internal.common.Time.evenHour;
 import static org.openhab.binding.entsoe.internal.common.Time.gone;
 import static org.openhab.binding.entsoe.internal.common.Time.set;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.bigDecimal;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.divide;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.energyPrice;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.percent;
-import static org.openhab.binding.entsoe.internal.monetary.Monetary.taxPrice;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -32,23 +27,19 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import javax.measure.Unit;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
 import org.openhab.binding.entsoe.internal.client.dto.Area;
+import org.openhab.binding.entsoe.internal.client.dto.Interval;
 import org.openhab.binding.entsoe.internal.client.dto.MarketDocument;
-import org.openhab.binding.entsoe.internal.client.dto.Period;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
-import org.openhab.binding.entsoe.internal.client.dto.TimeSeries;
 import org.openhab.binding.entsoe.internal.client.exception.InvalidParameter;
 import org.openhab.binding.entsoe.internal.client.exception.TooLong;
 import org.openhab.binding.entsoe.internal.client.exception.TooMany;
 import org.openhab.binding.entsoe.internal.client.exception.TooShort;
 import org.openhab.binding.entsoe.internal.client.exception.Unauthorized;
 import org.openhab.binding.entsoe.internal.client.exception.UnknownResponse;
-import org.openhab.binding.entsoe.internal.monetary.EnergyPrice;
 import org.openhab.binding.entsoe.internal.price.PriceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,106 +57,32 @@ public class PriceService implements Interval {
      * @see <a href="https://sahko.tk/">Samuel Lehtonen</a>
      */
     public static final OffsetTime PUBLISHED = OffsetTime.of(11, 45, 0, 0, ZoneOffset.UTC);
-
-    public static DailyCache parse(PriceConfig config, Publication publication) throws Bug, CurrencyMismatch {
-        return parse(config, config.zonedLocal(publication.created), publication.timeSeries.get(0));
-    }
-
-    public static DailyCache parse(PriceConfig config, ZonedDateTime created, TimeSeries series)
-            throws Bug, CurrencyMismatch {
-        var unit = config.response(series.currency, series.measure);
-        try {
-            return parse(config, created, series.domain, series.period, unit);
-        } catch (Exception e) {
-            throw new Bug(e);
-        }
-    }
-
-    public static DailyCache parse(PriceConfig config, ZonedDateTime created, String domain, Period period,
-            Unit<EnergyPrice> spotUnit) {
-        // 1. Create spot prices
-        var marginTaxPrice = config.marginTaxPrice();
-        var sellersVatRate = marginTaxPrice.vatRate();
-        var spotTaxPrices = period.points.stream()
-                // Convert units if needed.
-                .map(point -> taxPrice(energyPrice(point.amount, spotUnit).to(config.targetUnit), sellersVatRate))
-                .toList();
-        if (spotTaxPrices.isEmpty()) {
-            throw new IllegalStateException("No data points!");
-        }
-
-        // 2. Count total sum values
-        var transferTaxPrice = config.transferTaxPrice();
-        var taxTaxPrice = config.taxTaxPrice();
-        var baseSumValue = bigDecimal(
-                transferTaxPrice.sumValue().add(taxTaxPrice.sumValue()).add(marginTaxPrice.sumValue()));
-        var totalSumValues = spotTaxPrices.stream().map(spot -> bigDecimal(baseSumValue.add(spot.sumValue()))).toList();
-
-        // 3. Count ranks
-        var ranks = totalSumValues.stream().sorted().toList();
-
-        // 4. Count min, average and max
-        var minimum = ranks.get(0);
-        var average = divide(ranks.stream().reduce(BigDecimal.ZERO, BigDecimal::add), ranks.size());
-        var maximum = ranks.get(ranks.size() - 1);
-
-        // 5. Count normalized values (0.0 - 1.0) which can be shown as a percent.
-        // https://stats.stackexchange.com/questions/70801/how-to-normalize-data-to-0-1-range
-        var divisor = maximum.add(minimum.negate());
-        var normalizedPrices = totalSumValues.stream()
-                .map(total -> percent(divide(total.add(minimum.negate()), divisor))).toList();
-
-        // 6. Wrap everything up in electricity price.
-        var resolution = period.resolution;
-        var minutes = resolution.toMinutes();
-        var endOffset = config.zonedLocal(period.timeInterval.start);
-        var startOffset = endOffset.minusMinutes(minutes);
-        var electricityPrices = period.points.stream().map(point -> {
-            var position = point.position;
-            var start = startOffset.plusMinutes(position * minutes);
-            var end = endOffset.plusMinutes(position * minutes);
-            var index = position - 1;
-            var spotTaxPrice = spotTaxPrices.get(index);
-            var totalPrice = totalSumValues.get(index);
-            var rank = ranks.indexOf(totalPrice) + 1;
-            var normalized = normalizedPrices.get(index);
-            return new ElectricityPrice(start, end, transferTaxPrice, taxTaxPrice, spotTaxPrice, marginTaxPrice,
-                    config.energyPrice(totalPrice), rank, normalized);
-        }).toList();
-
-        return new DailyCache(created, domain, endOffset, config.zonedLocal(period.timeInterval.end), resolution,
-                electricityPrices, config.energyPrice(minimum), config.energyPrice(average),
-                config.energyPrice(maximum));
-    }
+    private static final Duration ENOUGH_DATA = Duration.ofDays(1);
 
     private final Logger logger = LoggerFactory.getLogger(PriceService.class);
     private final PriceConfig config;
     private final EntsoeClient client;
-    // private final ZoneId zone;
-
-    private DailyCache today;
-    private @Nullable DailyCache tomorrow;
+    private PriceCache cache;
 
     public PriceService(PriceConfig config, EntsoeClient client)
             throws Bug, CurrencyMismatch, InterruptedException, TimeoutException, Unauthorized {
         this.config = config;
         this.client = client;
-        today = parse(config, getDayAheadPrices(evenHour()));
+        cache = new PriceCache(config, getDayAheadPrices(evenHour()));
     }
 
     @Override
     public ZonedDateTime start() {
-        return today.start();
+        return cache.start();
     }
 
     @Override
     public ZonedDateTime end() {
-        final var tomorrow = this.tomorrow;
-        return tomorrow == null ? today.end() : tomorrow.end();
+        return cache.end();
     }
 
     public Duration resolution() {
-        return today.resolution();
+        return cache.resolution;
     }
 
     private <T> T bug(Throwable t) throws Bug {
@@ -191,61 +108,42 @@ public class PriceService implements Interval {
         }
     }
 
-    private void calculateStatistics() {
-        // TODO
-    }
-
     public @Nullable ElectricityPrice currentPrice() throws Bug {
         try {
             var now = ZonedDateTime.now();
             if (contains(now)) {
-                if (today.contains(now)) {
-                    return today.currentPrice(now);
-                } else {
-                    final var tomorrow = this.tomorrow;
-                    if (tomorrow != null && tomorrow.contains(now)) {
-                        logger.debug("Switching tomorrow's prices today.");
-                        today = tomorrow;
-                        this.tomorrow = null;
-                        calculateStatistics();
-                        return today.currentPrice(now);
-                    } else {
-                        logger.warn("Missing tomorrow's prices");
-                    }
-                }
+                return cache.currentPrice(now);
             } else {
                 logger.warn("Data is too old!");
+                return null;
             }
-            return null;
         } catch (Exception e) {
             return bug(e);
         }
     }
 
     public ZonedDateTime refresh() throws Bug, CurrencyMismatch, InterruptedException, TimeoutException, Unauthorized {
-        final var tomorrow = this.tomorrow;
-        if (tomorrow == null) {
-            if (gone(set(ZonedDateTime.now(), PUBLISHED))) {
-                var document = searchDayAheadPrices(today.end());
+        var now = ZonedDateTime.now();
+        if (contains(now) && ENOUGH_DATA.compareTo(Duration.between(now, end())) < 0) {
+            logger.trace("Enough data already fetched.");
+        } else {
+            if (gone(set(now, PUBLISHED))) {
+                var document = searchDayAheadPrices(end());
                 if (document instanceof Publication publication) {
-                    this.tomorrow = parse(config, publication);
-                    calculateStatistics();
+                    cache = new PriceCache(config, publication);
                 } else {
-                    logger.debug("Got no data for tomorrow, but it should be published.");
+                    debug(logger, document.toString());
                 }
             } else {
                 logger.debug("Waiting for tomorrow's publication.");
             }
-            return today.created();
-        } else {
-            logger.trace("Tomorrow's prices already fetched.");
-            return tomorrow.created();
         }
+        return cache.zonedCreated;
     }
 
     public Map<String, String> updateProperties(Map<String, String> properties) {
         properties.put("currency", config.responseCurrency.getDisplayName());
-        String domain = today.domain();
+        String domain = cache.domain;
         try {
             domain = Area.valueOf(domain).meaning;
         } catch (IllegalArgumentException ignored) {

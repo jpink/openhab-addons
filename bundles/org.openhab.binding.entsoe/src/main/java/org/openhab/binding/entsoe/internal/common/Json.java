@@ -12,6 +12,16 @@
  */
 package org.openhab.binding.entsoe.internal.common;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.function.Function;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -20,16 +30,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-
-import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.function.Function;
 
 /**
  * JSON serialization helper.
@@ -85,7 +85,7 @@ public class Json {
 
         @Override
         protected final void encode(JsonWriter out, T value) throws IOException {
-            out.value(value.toString());
+            out.value(value == null ? "" : value.toString());
         }
 
         @Override
@@ -94,7 +94,7 @@ public class Json {
         }
     }
 
-    public record SubclassAdapterFactory<S>(Class<S> superType, TypeAdapter<S> adapter) implements TypeAdapterFactory {
+    public record SubclassAdapterFactory<S> (Class<S> superType, TypeAdapter<S> adapter) implements TypeAdapterFactory {
         /**
          * Returns a type adapter for {@code type}, or null if this factory doesn't support {@code type}.
          *
@@ -113,16 +113,15 @@ public class Json {
     public static final StringAdapter<Object> STRING = new StringAdapter<>(value -> {
         throw new UnsupportedOperationException("Parsing not supported!");
     });
-    public static final SubclassAdapterFactory<ZoneId> ZONE = new SubclassAdapterFactory<>(ZoneId.class, new StringAdapter<>(ZoneId::of));
+    public static final SubclassAdapterFactory<ZoneId> ZONE = new SubclassAdapterFactory<>(ZoneId.class,
+            new StringAdapter<>(ZoneId::of));
     public static final StringAdapter<ZonedDateTime> ZONED_DATE_TIME = new StringAdapter<>(ZonedDateTime::parse);
 
     private static final Gson GSON = builder().create();
 
     public static GsonBuilder builder() {
-        return new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME)
-                .registerTypeAdapter(ZonedDateTime.class, ZONED_DATE_TIME)
-                .registerTypeAdapterFactory(ZONE);
+        return new GsonBuilder().registerTypeAdapter(LocalDateTime.class, LOCAL_DATE_TIME)
+                .registerTypeAdapter(ZonedDateTime.class, ZONED_DATE_TIME).registerTypeAdapterFactory(ZONE);
     }
 
     public static String encode(@Nullable Object src) {

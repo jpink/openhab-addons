@@ -22,8 +22,6 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Jukka Papinkivi - Initial contribution
  */
 public class Point {
-    public int position;
-
     @XStreamAlias("price.amount")
     public BigDecimal amount;
 }

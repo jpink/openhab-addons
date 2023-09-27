@@ -23,7 +23,6 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
  * @author Jukka Papinkivi - Initial contribution
  */
 public class Period {
-    public TimeInterval timeInterval;
     public Duration resolution;
 
     @XStreamImplicit(itemFieldName = "Point")

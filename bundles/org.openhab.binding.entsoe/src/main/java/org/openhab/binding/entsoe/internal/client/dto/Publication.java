@@ -12,10 +12,10 @@
  */
 package org.openhab.binding.entsoe.internal.client.dto;
 
+import java.util.List;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
-import java.util.List;
 
 /**
  * Publication market document data transfer object.
@@ -29,4 +29,9 @@ public class Publication extends MarketDocument {
 
     @XStreamImplicit(itemFieldName = "TimeSeries")
     public List<TimeSeries> timeSeries;
+
+    @Override
+    public String toString() {
+        return "Publication for " + timeInterval;
+    }
 }

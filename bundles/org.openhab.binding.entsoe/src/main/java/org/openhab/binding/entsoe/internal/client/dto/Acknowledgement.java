@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.entsoe.internal.client.dto;
 
+import java.util.Objects;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -26,6 +28,6 @@ public class Acknowledgement extends MarketDocument {
 
     @Override
     public String toString() {
-        return reason == null || reason.text == null ? "" : reason.text;
+        return Objects.toString(reason);
     }
 }

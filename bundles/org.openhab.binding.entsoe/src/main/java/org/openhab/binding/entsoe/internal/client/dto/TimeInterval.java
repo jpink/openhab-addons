@@ -19,7 +19,22 @@ import java.time.ZonedDateTime;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-public class TimeInterval {
+public class TimeInterval implements Interval {
     public ZonedDateTime start;
     public ZonedDateTime end;
+
+    @Override
+    public ZonedDateTime start() {
+        return start;
+    }
+
+    @Override
+    public ZonedDateTime end() {
+        return end;
+    }
+
+    @Override
+    public String toString() {
+        return start + "/" + end;
+    }
 }

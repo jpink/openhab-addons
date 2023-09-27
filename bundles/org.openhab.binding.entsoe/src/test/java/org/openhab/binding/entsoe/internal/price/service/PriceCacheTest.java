@@ -12,19 +12,26 @@
  */
 package org.openhab.binding.entsoe.internal.price.service;
 
-import com.google.gson.Gson;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.CZ_FILE_2015;
+import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.FI_FILE_2022;
+import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.FI_FILE_2023;
+import static org.openhab.binding.entsoe.internal.price.PriceConfigTest.CZ_CONFIG;
+import static org.openhab.binding.entsoe.internal.price.PriceConfigTest.FI_CONFIG;
+import static org.openhab.binding.entsoe.internal.price.PriceConfigTest.FI_CONFIG_2022;
+
+import java.math.BigDecimal;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.entsoe.internal.client.EntsoeClient;
+import org.openhab.binding.entsoe.internal.client.EntsoeClientTest;
 import org.openhab.binding.entsoe.internal.client.dto.Publication;
+import org.openhab.binding.entsoe.internal.common.AbstractTest;
 import org.openhab.binding.entsoe.internal.price.PriceConfig;
+import org.opentest4j.AssertionFailedError;
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.openhab.binding.entsoe.internal.Constants.UNIT_CENT_PER_KWH;
-import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.readFile;
+import com.google.gson.Gson;
 
 /**
  * Price cache unit tests.
@@ -32,28 +39,56 @@ import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.readFi
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-class PriceCacheTest {
-    private static final Gson GSON = PriceCache.builder().setPrettyPrinting().create();
+class PriceCacheTest extends AbstractTest {
+    static final Gson GSON = PriceCache.builder().setPrettyPrinting().create();
 
-    void assertJson(int general, int seller, String file) throws CurrencyMismatch {
-        var config = new PriceConfig();
-        config.zone = ZoneId.of("Europe/Helsinki");
-        config.transfer = BigDecimal.valueOf(3.4);
-        config.tax = BigDecimal.valueOf(2.79372);
-        config.margin = BigDecimal.valueOf(0.25);
-        config.unit = UNIT_CENT_PER_KWH;
-        config.general = general;
-        config.seller = seller;
-        var publication = (Publication) EntsoeClient.parseDocument(readFile(file + ".xml"));
-        var expected = readFile(file + ".json");
+    PriceCache create(PriceConfig config, String file) {
+        var xml = new EntsoeClientTest().readXml(file);
+        var publication = (Publication) EntsoeClient.parseDocument(xml);
+        try {
+            return new PriceCache(config, publication);
+        } catch (CurrencyMismatch e) {
+            throw new AssertionFailedError(null, e);
+        }
+    }
 
-        var cache = new PriceCache(config, publication);
-
-        assertEquals(expected, GSON.toJson(cache));
+    void assertPriceCache(PriceConfig config, String file, double min, double avg) {
+        var instance = create(config, file);
+        assertEquals(BigDecimal.valueOf(min), instance.min);
+        assertEquals(BigDecimal.valueOf(avg), instance.avg);
     }
 
     @Test
-    void jsonFi2023vat24() throws CurrencyMismatch {
-        assertJson(24, 24, "2023-09-26_FI_dayAheadPrices_twoSeries");
+    void createCz2015() {
+        assertPriceCache(CZ_CONFIG, CZ_FILE_2015, 7.045, 8.706481);
+    }
+
+    @Test
+    void createFi2022() {
+        assertPriceCache(FI_CONFIG_2022, FI_FILE_2022, 16.2289, 33.25296);
+    }
+
+    @Test
+    void createFi2023() {
+        assertPriceCache(FI_CONFIG, FI_FILE_2023, 5.94028, 6.564904);
+    }
+
+    void assertJson(PriceConfig config, String file) {
+        assertEquals(readJson(file), GSON.toJson(create(config, file)));
+    }
+
+    @Test
+    void jsonCz2015() {
+        assertJson(CZ_CONFIG, CZ_FILE_2015);
+    }
+
+    @Test
+    void jsonFi2022() {
+        assertJson(FI_CONFIG_2022, FI_FILE_2022);
+    }
+
+    @Test
+    void jsonFi2023() {
+        assertJson(FI_CONFIG, FI_FILE_2023);
     }
 }

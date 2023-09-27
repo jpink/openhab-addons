@@ -15,9 +15,8 @@ package org.openhab.binding.entsoe.internal.client;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.openhab.binding.entsoe.internal.client.EntsoeClient.*;
 import static org.openhab.binding.entsoe.internal.client.dto.Area.*;
+import static org.openhab.binding.entsoe.internal.price.PriceConfigTest.PRAGUE;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -36,6 +35,7 @@ import org.openhab.binding.entsoe.internal.client.exception.InvalidArea;
 import org.openhab.binding.entsoe.internal.client.exception.InvalidToken;
 import org.openhab.binding.entsoe.internal.client.exception.TooLong;
 import org.openhab.binding.entsoe.internal.client.exception.TooShort;
+import org.openhab.binding.entsoe.internal.common.AbstractTest;
 import org.openhab.core.library.unit.Units;
 
 /**
@@ -44,28 +44,15 @@ import org.openhab.core.library.unit.Units;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class EntsoeClientTest {
-    public static final String FI2023 = "2023-09-09_FI_dayAheadPrices.xml";
-    public static final String FI2023_2 = "2023-09-26_FI_dayAheadPrices_twoSeries.xml";
-    public static final String CZ2015 = "2015-12-31_CZ_dayAheadPrices.xml";
-    static final LocalDateTime NEW_YEAR = LocalDateTime.of(2015, 12, 31, 23, 30);
-    public static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, ZoneId.of("Europe/Prague"));
+public class EntsoeClientTest extends AbstractTest {
+    public static final String CZ_FILE_2015 = "2015-12-31_CZ_dayAheadPrices";
+    public static final String FI_FILE_2022 = "2022-12-06_FI_dayAheadPrices_oneSeries";
+    public static final String FI_FILE_2023 = "2023-09-26_FI_dayAheadPrices_twoSeries";
+    public static final LocalDateTime NEW_YEAR = LocalDateTime.of(2015, 12, 31, 23, 30);
+    static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, PRAGUE);
     static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
     static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
-
-    public static String readFile(String filename) {
-        try (var input = EntsoeClientTest.class.getResourceAsStream(filename)) {
-            if (input == null) {
-                fail("Resource file '" + filename + "' not found!");
-            } else {
-                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
-            }
-        } catch (IOException ex) {
-            fail(ex);
-        }
-        throw new IllegalStateException();
-    }
 
     void assertPublicationMarket(Publication document, Area area, ZonedDateTime created, ZonedDateTime start,
             ZonedDateTime end) {
@@ -78,11 +65,11 @@ public class EntsoeClientTest {
         assertEquals(Units.MEGAWATT_HOUR, timeSeries.measure);
         var period = timeSeries.period;
         assertNotNull(period);
-        var timeInterval = period.timeInterval;
-        assertEquals(start, timeInterval.start);
-        assertEquals(end, timeInterval.end);
         assertEquals(Duration.ofHours(1), period.resolution);
         assertEquals(24, period.points.size());
+        var timeInterval = document.timeInterval;
+        assertEquals(start, timeInterval.start);
+        assertEquals(end, timeInterval.end);
     }
 
     @Test
@@ -132,7 +119,7 @@ public class EntsoeClientTest {
 
     @Test
     void parseDocumentGuideAcknowledgement() {
-        var content = readFile("2016-03-10_noData.xml");
+        var content = readXml("2016-03-10_noData");
 
         var document = (Acknowledgement) parseDocument(content);
 
@@ -145,18 +132,19 @@ public class EntsoeClientTest {
 
     @Test
     void parseDocumentGuidePublication() {
-        var content = readFile(CZ2015);
-        var created = ZonedDateTime.of(2016, 5, 10, 9, 18, 53, 0, ZoneOffset.UTC);
-        var start = ZonedDateTime.of(2015, 12, 31, 23, 0, 0, 0, ZoneOffset.UTC);
+        var content = readXml(CZ_FILE_2015);
+        var created = ZonedDateTime.parse("2016-05-10T09:18:53Z");
+        var start = ZonedDateTime.parse("2015-12-31T23:00Z");
+        var end = ZonedDateTime.parse("2016-04-02T22:00Z");
 
         var document = (Publication) parseDocument(content);
 
-        assertPublicationMarket(document, CZ, created, start, start.plusDays(1));
+        assertPublicationMarket(document, CZ, created, start, end);
     }
 
     @Test
     void parseDocumentFi2023InvalidInterval() {
-        var content = readFile("2023-09-25_invalidInterval.xml");
+        var content = readXml("2023-09-25_FI_dayAheadPrices_invalidInterval");
 
         var document = (Acknowledgement) parseDocument(content);
 
@@ -168,10 +156,10 @@ public class EntsoeClientTest {
     }
 
     @Test
-    void parseDocumentFi2023Publication() {
-        var content = readFile(FI2023);
-        var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
-        var start = ZonedDateTime.of(2023, 9, 8, 22, 0, 0, 0, ZoneOffset.UTC);
+    void parseDocumentFi2022OneSeries() {
+        var content = readXml(FI_FILE_2022);
+        var created = ZonedDateTime.parse("2023-09-27T21:23:51Z");
+        var start = ZonedDateTime.parse("2022-12-05T23:00Z");
 
         var document = (Publication) parseDocument(content);
 
@@ -181,13 +169,13 @@ public class EntsoeClientTest {
     @Test
     void parseDocumentFi2023TwoSeries() {
         // Requested: 202309252100 - 202309262100
-        var content = readFile(FI2023_2);
-        var created = ZonedDateTime.of(2023, 9, 9, 10, 58, 2, 0, ZoneOffset.UTC);
-        var start = ZonedDateTime.of(2023, 9, 25, 21, 0, 0, 0, ZoneOffset.UTC);
+        var content = readXml(FI_FILE_2023);
+        var created = ZonedDateTime.parse("2023-09-25T21:59:23Z");
+        var start = ZonedDateTime.parse("2023-09-24T22:00Z");
 
         var document = (Publication) parseDocument(content);
 
-        assertPublicationMarket(document, FI, created, start, start.plusDays(1));
+        assertPublicationMarket(document, FI, created, start, start.plusDays(2));
     }
 
     @Test
