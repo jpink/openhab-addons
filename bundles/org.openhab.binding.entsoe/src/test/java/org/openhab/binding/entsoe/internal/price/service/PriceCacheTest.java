@@ -52,25 +52,36 @@ class PriceCacheTest extends AbstractTest {
         }
     }
 
-    void assertPriceCache(PriceConfig config, String file, double min, double avg) {
-        var instance = create(config, file);
+    public PriceCache createCz2015() {
+        return create(CZ_CONFIG, CZ_FILE_2015);
+    }
+
+    public PriceCache createFi2022() {
+        return create(FI_CONFIG_2022, FI_FILE_2022);
+    }
+
+    public PriceCache createFi2023() {
+        return create(FI_CONFIG, FI_FILE_2023);
+    }
+
+    void assertCache(PriceCache instance, double min, double avg) {
         assertEquals(BigDecimal.valueOf(min), instance.min);
         assertEquals(BigDecimal.valueOf(avg), instance.avg);
     }
 
     @Test
-    void createCz2015() {
-        assertPriceCache(CZ_CONFIG, CZ_FILE_2015, 7.045, 8.706481);
+    void minAvgCz2015() {
+        assertCache(createCz2015(), 7.045, 8.706481);
     }
 
     @Test
-    void createFi2022() {
-        assertPriceCache(FI_CONFIG_2022, FI_FILE_2022, 16.2289, 33.25296);
+    void minAvgFi2022() {
+        assertCache(createFi2022(), 16.2289, 33.25296);
     }
 
     @Test
-    void createFi2023() {
-        assertPriceCache(FI_CONFIG, FI_FILE_2023, 5.94028, 6.564904);
+    void minAvgFi2023() {
+        assertCache(createFi2023(), 5.94028, 6.564904);
     }
 
     void assertJson(PriceConfig config, String file) {

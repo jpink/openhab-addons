@@ -61,6 +61,7 @@ public class PriceCache implements Interval {
 
     private static final Gson GSON = builder().create();
 
+    public final transient PriceConfig config;
     public final ZoneId zone;
     public final transient ZonedDateTime zonedCreated, zonedStart, zonedEnd;
     public final LocalDateTime created, start, end;
@@ -73,9 +74,11 @@ public class PriceCache implements Interval {
     public final List<BigDecimal> spot, prices;
     public final BigDecimal min, avg, max;
     public final List<BigDecimal> normalized;
-    private final transient List<ElectricityPrice> electricityPrices;
+    public final transient List<ElectricityPrice> electricityPrices;
 
     public PriceCache(PriceConfig config, Publication publication) throws CurrencyMismatch {
+        this.config = config;
+
         // 1. Set metadata
         zone = config.zone;
         zonedCreated = config.local(publication.created);
@@ -161,5 +164,9 @@ public class PriceCache implements Interval {
     @Override
     public ZonedDateTime end() {
         return zonedEnd;
+    }
+
+    public boolean hasMinutes() {
+        return resolution.toMinutesPart() == 0;
     }
 }

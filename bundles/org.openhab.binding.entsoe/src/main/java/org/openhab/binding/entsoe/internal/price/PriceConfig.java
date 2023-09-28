@@ -110,13 +110,17 @@ public class PriceConfig {
         return convert(time, zone);
     }
 
+    public boolean showInCents() {
+        return UNIT_CENT_PER_KWH.equals(unit);
+    }
+
     public Unit<EnergyPrice> response(Currency currency, Unit<Energy> measure) throws CurrencyMismatch {
         responseCurrency = currency;
         responseMeasure = measure;
         if (this.currency != null && Currency.getInstance(this.currency).equals(currency)) {
             throw new CurrencyMismatch(Currency.getInstance(this.currency), currency);
         }
-        targetUnit = UNIT_CENT_PER_KWH.equals(unit) ? energyPriceUnit(moneyCentUnit(currency), KILOWATT_HOUR)
+        targetUnit = showInCents() ? energyPriceUnit(moneyCentUnit(currency), KILOWATT_HOUR)
                 : energyPriceUnit(currency, MEGAWATT_HOUR);
         return spotUnit = energyPriceUnit(currency, measure);
     }

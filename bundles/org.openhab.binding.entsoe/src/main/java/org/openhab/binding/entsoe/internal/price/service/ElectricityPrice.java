@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.entsoe.internal.price.service;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import javax.measure.Quantity;
@@ -42,4 +43,8 @@ import org.openhab.binding.entsoe.internal.monetary.TaxPrice;
 public record ElectricityPrice(ZonedDateTime start, ZonedDateTime end, TaxPrice<EnergyPrice> transfer,
         TaxPrice<EnergyPrice> tax, TaxPrice<EnergyPrice> spot, TaxPrice<EnergyPrice> margin,
         Quantity<EnergyPrice> total, int rank, Quantity<Dimensionless> normalized) implements Interval {
+    public Number vat() {
+        // TODO count beforehand
+        return tax.vat().add(transfer().vat()).add(spot().vat()).add(margin().vat()).getValue();
+    }
 }

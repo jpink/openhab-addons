@@ -12,11 +12,18 @@
  */
 package org.openhab.binding.entsoe.internal.common;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.entsoe.internal.Translations;
 import org.opentest4j.AssertionFailedError;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Abstract unit test class containing helper methods.
@@ -25,6 +32,24 @@ import org.opentest4j.AssertionFailedError;
  */
 @NonNullByDefault
 public abstract class AbstractTest {
+    public Path generatedResourcePath(String name) {
+        var packages = getClass().getPackageName().split("\\.");
+        var more = new String[packages.length + 1];
+        more[0] = "generated-test-resources";
+        System.arraycopy(packages, 0, more, 1, packages.length);
+        var path = Path.of("target", more);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            fail(e);
+        }
+        return path.resolve(name);
+    }
+
+    public File generatedResourceFile(String name) {
+        return generatedResourcePath(name).toFile();
+    }
+
     private String readResource(String name) {
         try (var input = getClass().getResourceAsStream(name)) {
             if (input == null) {
@@ -43,5 +68,13 @@ public abstract class AbstractTest {
 
     public String readXml(String name) {
         return readResource(name + ".xml");
+    }
+
+    protected Translations translations() {
+        return translations(Locale.ENGLISH);
+    }
+
+    protected Translations translations(Locale locale) {
+        return new TestTranslator(locale);
     }
 }
