@@ -29,15 +29,15 @@ public class Log {
      */
     private static final String ONE = "{}";
 
-    public static void debug(Logger logger, String message) {
+    public static void debug(Logger logger, Object message) {
         logger.debug(ONE, message);
     }
 
-    public static void error(Logger logger, String message, Exception exception) {
+    public static void error(Logger logger, Object message, Exception exception) {
         logger.error(ONE, message, exception);
     }
 
-    public static void trace(Logger logger, String message) {
+    public static void trace(Logger logger, Object message) {
         logger.trace(ONE, message);
     }
 }

@@ -98,6 +98,7 @@ public class EntsoeClient {
         XSTREAM.registerConverter(new EnergyUnitConverter());
         XSTREAM.allowTypeHierarchy(Acknowledgement.class);
         XSTREAM.allowTypeHierarchy(Publication.class);
+        XSTREAM.setClassLoader(EntsoeClient.class.getClassLoader());
         XSTREAM.processAnnotations(Acknowledgement.class);
         XSTREAM.processAnnotations(Publication.class);
         XSTREAM.ignoreUnknownElements();

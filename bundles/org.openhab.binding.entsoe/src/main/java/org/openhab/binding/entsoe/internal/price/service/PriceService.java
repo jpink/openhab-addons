@@ -102,7 +102,17 @@ public class PriceService implements Interval {
     private Publication getDayAheadPrices(ZonedDateTime start)
             throws Bug, InterruptedException, TimeoutException, Unauthorized {
         try {
-            return (Publication) searchDayAheadPrices(start);
+            var document = searchDayAheadPrices(start);
+            if (document instanceof Publication publication) {
+                return publication;
+            }
+            debug(logger, document);
+            document = searchDayAheadPrices(start.minusDays(1));
+            if (document instanceof Publication publication) {
+                return publication;
+            }
+            debug(logger, document);
+            return (Publication) searchDayAheadPrices(start.minusDays(2));
         } catch (ClassCastException e) {
             return bug(e);
         }
@@ -132,7 +142,7 @@ public class PriceService implements Interval {
                 if (document instanceof Publication publication) {
                     cache = new PriceCache(config, publication);
                 } else {
-                    debug(logger, document.toString());
+                    debug(logger, document);
                 }
             } else {
                 logger.debug("Waiting for tomorrow's publication.");
