@@ -13,6 +13,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.text.G2TextMeasurer;
 import org.jfree.chart.text.TextBlock;
 import org.jfree.chart.text.TextUtils;
@@ -42,9 +43,23 @@ public class PriceGraph {
         }
     }
 
+    private static final Color // For bar series
+            BLUE = new Color(38, 49, 109), // Like letters in the ENTSO-E logo.
+            GREEN = new Color(0, 101, 46), // Like in the Finnish Tax Administration logo.
+            YELLOW = new Color(252, 196, 15), // Like in ENTSO-E logo.
+            RED = new Color(213, 18, 30), // Like Fingrid logo.
+            TEAL = new Color(26, 116, 131); // Like the homepage footer of the Ministry of Finance in Finland.
+
+    private static final StackedBarRenderer RENDERER = new StackedBarRenderer();
     private static final CategoryAxis X_AXIS = new ZonedDateTimeAxis();
 
     static {
+        RENDERER.setSeriesPaint(0, GREEN); // VAT
+        RENDERER.setSeriesPaint(1, RED); // transfer
+        RENDERER.setSeriesPaint(2, BLUE); // spot
+        RENDERER.setSeriesPaint(3, YELLOW); // margin
+        RENDERER.setSeriesPaint(4, TEAL); // tax
+
         X_AXIS.setCategoryMargin(0.0);
         X_AXIS.setLowerMargin(0.0);
         X_AXIS.setUpperMargin(0.0);
@@ -93,6 +108,7 @@ public class PriceGraph {
         );
         var plot = chart.getCategoryPlot();
         plot.setDomainAxis(X_AXIS);
+        plot.setRenderer(RENDERER);
         plot.setNoDataMessage(t.noData());
         return chart;
     }

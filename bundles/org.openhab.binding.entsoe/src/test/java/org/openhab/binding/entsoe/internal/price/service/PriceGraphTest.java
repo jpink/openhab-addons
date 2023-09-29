@@ -8,6 +8,7 @@ import org.openhab.binding.entsoe.internal.common.AbstractTest;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.CZ_FILE_2015;
 import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.FI_FILE_2022;
 import static org.openhab.binding.entsoe.internal.client.EntsoeClientTest.FI_FILE_2023;
 
@@ -21,6 +22,11 @@ class PriceGraphTest extends AbstractTest {
         } catch (IOException e) {
             fail(e);
         }
+    }
+
+    @Test
+    void writeCz2015() {
+        write(new PriceCacheTest().createCz2015(), CZ_FILE_2015);
     }
 
     @Test
