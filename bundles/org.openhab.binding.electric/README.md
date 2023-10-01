@@ -9,7 +9,7 @@ Different tariffs, energy tax, value added tax, transfer, sales, spot and margin
 ## Supported Things
 
 - [`price`: Bridge](#price-bridge-configuration) calculates and provides final consumer prices and draws graphs of them. It needs a one child thing to provide transfer price and one child thing or bridge to provide selling price.
-  - [`one`: Thing](#one-thing-configuration) provides the configured transfer and/or sales prices based on the one-time electricity tariff to the [`price` bridge](#price-bridge-configuration).
+  - [`fixed`: Thing](#fixed-thing-configuration) provides the configured transfer and/or sales prices based on the fixed tariff electricity to the [`price` bridge](#price-bridge-configuration).
   - [`spot`: Bridge](#spot-bridge-configuration) provides exchange electricity spot prices to the [`price` bridge](#price-bridge-configuration). It needs a one child thing as a data source:
      - [`entsoe`: Thing](#entsoe-thing-configuration) reads spot prices from [<img alt="ENTSO-e" height="18px" src="doc/entsoe.svg" /> Transparency Platfom](https://transparency.entsoe.eu/) and provides them to the [`spot` bridge](#spot-bridge-configuration).
 
@@ -27,6 +27,7 @@ Different tariffs, energy tax, value added tax, transfer, sales, spot and margin
 ## Discovery
 
 Always discovers the `price` bridge and configures following parameters:
+
 - `currency`: Defines system default currency.
 - `subunit`: Defines localized subunit symbol if the currency is any dollar, euro or any pound.
 - `energy`: Defines `kWh` if using the currency subunit.
@@ -37,10 +38,12 @@ Always discovers the `price` bridge and configures following parameters:
 - `scale`: Defaults to two digits.
 
 Discovers an `entsoe` thing in Europe and configures following parameters:
+
 - `area`: Defines the [Energy Identification Code](https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas) of the current country.
 - `token`: **You need to request your own [Security Token](#steps-to-request-access-to-the-entso-e-transparency-platform-api) before accessing data.**
 
 Discovers a `spot` bridge if `entsoe` is discovered and configures following parameters:
+
 - `resolution`: Now _one hour_ and later _15 minutes_, when one is put into use somewhere.
 - `margin`: Enter the margin price of your electricity sales company.
 
@@ -50,43 +53,43 @@ Add the `entsoe` thing and the `spot` bridge only if you have a stock exchange e
 
 ### `price` Bridge Configuration
 
-| Name      | Type    | Description                                                               | Default | Required | Advanced |
-|-----------|---------|---------------------------------------------------------------------------|--------:|:--------:|:--------:|
-| currency  | text    | [Currency code](https://en.wikipedia.org/wiki/ISO_4217) of the used currency in the parameters, read data and output units. | N/A | no | no |
-| subunit   | text    | Localized currency 1⁄100 subunit symbols (e.g. `c`, `¢`, `p`, `snt`) if used in the parameters and output. | N/A | no | no |
-| energy    | text    | Energy unit (e.g. `MWh`, `kWh`) used in the parameters and output.        |   `MWh` | yes      | no       |
-| tax       | decimal | Energy tax in the units selected above. Hidden if zero.                   |   `0.0` | yes      | no       |
-| vat       | integer | General VAT rate percent which is included in the prices. Hidden if zero. |     `0` | yes      | no       |
-| sales     | integer | Electricity sales VAT rate percent. Defaults to _General VAT rate_.       |     N/A | no       | yes      |
-| precision | integer | Digits used for mathematical operations (divisions).                      |     `7` | yes      | yes      |
-| scale     | integer | Fraction digits of the final rounded values. Not applied for percents.    |     `2` | yes      | yes      |
+| Name      | Type    | Description                                                                                                                 | Default | Required | Advanced |
+|-----------|---------|-----------------------------------------------------------------------------------------------------------------------------|--------:|:--------:|:--------:|
+| currency  | text    | [Currency code](https://en.wikipedia.org/wiki/ISO_4217) of the used currency in the parameters, read data and output units. |     N/A |    no    |    no    |
+| subunit   | text    | Localized currency 1⁄100 subunit symbols (e.g. `c`, `¢`, `p`, `snt`) if used in the parameters and output.                  |     N/A |    no    |    no    |
+| energy    | text    | Energy unit (e.g. `MWh`, `kWh`) used in the parameters and output.                                                          |   `MWh` |   yes    |    no    |
+| tax       | decimal | Energy tax in the units selected above. Hidden if zero.                                                                     |   `0.0` |   yes    |    no    |
+| vat       | integer | General VAT rate percent which is included in the prices. Hidden if zero.                                                   |     `0` |   yes    |    no    |
+| sales     | integer | Electricity sales VAT rate percent. Defaults to _General VAT rate_.                                                         |     N/A |    no    |   yes    |
+| precision | integer | Digits used for mathematical operations (divisions).                                                                        |     `7` |   yes    |   yes    |
+| scale     | integer | Fraction digits of the final rounded values. Not applied for percents.                                                      |     `2` |   yes    |   yes    |
 
-### `one` Thing Configuration
+### `fixed` Thing Configuration
 
-Add `one` thing per your _one-time tariff_ electricity company under [`price` bridge](#price-bridge-configuration) and it's recommended to label them using those company names.
+Add `fixed` thing per your _fixed tariff_ electricity company under [`price` bridge](#price-bridge-configuration) and it's recommended to label them using those company names.
 
-| Name       | Type    | Description                                                              | Default | Required | Advanced |
-|------------|---------|--------------------------------------------------------------------------|--------:|:--------:|:--------:|
-| selling    | decimal | Selling price of the electricity using the units defined for the [`price` bridge](#price-bridge-configuration). | N/A | no | no |
-| transfer   | decimal | Transfer price of the electricity using the units defined for the [`price` bridge](#price-bridge-configuration). | N/A | no | no |
+| Name     | Type    | Description                                                                                                      | Default | Required | Advanced |
+|----------|---------|------------------------------------------------------------------------------------------------------------------|--------:|:--------:|:--------:|
+| selling  | decimal | Selling price of the electricity using the units defined for the [`price` bridge](#price-bridge-configuration).  |     N/A |    no    |    no    |
+| transfer | decimal | Transfer price of the electricity using the units defined for the [`price` bridge](#price-bridge-configuration). |     N/A |    no    |    no    |
 
 ### `spot` Bridge Configuration
 
 Add only one `spot` bridge under [`price` bridge](#price-bridge-configuration) if you have a stock exchange electricity and it's recommended to label it using the name of your electricity sales company.
 
-| Name       | Type    | Description                                                              | Default | Required | Advanced |
-|------------|---------|--------------------------------------------------------------------------|--------:|:--------:|:--------:|
-| margin     | decimal | Margin price of the electricity sales company using the units defined for the [`price` bridge](#price-bridge-configuration). Hidden if zero. | `0.0` | yes | no |
-| resolution | text    | [Duration](https://en.wikipedia.org/wiki/ISO_8601) between possible price changes. | `PT1H` | yes | yes |
+| Name       | Type    | Description                                                                                                                                  | Default | Required | Advanced |
+|------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------|--------:|:--------:|:--------:|
+| margin     | decimal | Margin price of the electricity sales company using the units defined for the [`price` bridge](#price-bridge-configuration). Hidden if zero. |   `0.0` |   yes    |    no    |
+| resolution | text    | [Duration](https://en.wikipedia.org/wiki/ISO_8601) between possible price changes.                                                           |  `PT1H` |   yes    |   yes    |
 
 ### `entsoe` Thing Configuration
 
 Add only one `entsoe` thing if you live in Europe and have a stock exchange electricity.
 
-| Name  | Type | Description                                                                      | Default | Required | Advanced |
-|-------|------|----------------------------------------------------------------------------------|--------:|:--------:|:--------:|
-| token | text | [Security Token](https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_authentication_and_authorisation) required to access the API. | N/A | yes | no |
-| area  | text | Area [Energy Identification Code](https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas) for which spot prices are read. | N/A | yes | yes |
+| Name  | Type | Description                                                                                                                                                                 | Default | Required | Advanced |
+|-------|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------:|:--------:|:--------:|
+| token | text | [Security Token](https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_authentication_and_authorisation) required to access the API. |     N/A |   yes    |    no    |
+| area  | text | Area [Energy Identification Code](https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas) for which spot prices are read.       |     N/A |   yes    |   yes    |
 
 The `entsoe` thing updates the [`spot` bridge](#spot-bridge-configuration) `resolution` parameter and ensures that the read currency is the same as defined in the [`price` bridge](#price-bridge-configuration).
 
@@ -123,13 +126,14 @@ The `entsoe` thing updates the [`spot` bridge](#spot-bridge-configuration) `reso
 ```java
 Bridge electric:price:home  "Electricity price service" @ "Home"    [
         currency="EUR", subunit="snt",  energy="kWh", tax=2.79, vat=24              ] {
-  Thing   one     ese  "ESE-Verkko Oy"                  @ "Mikkeli" [ transfer=3.4  ]
+  Thing   fixed   ese  "ESE-Verkko Oy"                  @ "Mikkeli" [ transfer=3.4  ]
   Bridge  spot    oomi "Oomi Oy"                        @ "Vantaa"  [ margin  =0.25 ] {
     Thing entsoe  fi   "ENTSO-E Transparency Platform"  @ "Finland" [
             area="10YFI-1--------U",  token="f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454"  ]
   }
 }
 ```
+
 ### Item Configuration
 
 ```java

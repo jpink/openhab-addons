@@ -27,6 +27,8 @@ public class ElectricBindingConstants {
     private static final String BINDING_ID = "electric";
 
     // List of all Thing Type UIDs
+    public static final ThingTypeUID BRIDGE_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
+    public static final ThingTypeUID THING_TYPE_SINGLE = new ThingTypeUID(BINDING_ID, "single");
     public static final ThingTypeUID THING_TYPE_SAMPLE = new ThingTypeUID(BINDING_ID, "sample");
 
     // List of all Channel ids

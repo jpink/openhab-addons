@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
@@ -35,21 +36,25 @@ import org.osgi.service.component.annotations.Component;
 @Component(configurationPid = "binding.electric", service = ThingHandlerFactory.class)
 public class ElectricHandlerFactory extends BaseThingHandlerFactory {
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_SAMPLE);
+    private static final Set<ThingTypeUID> SUPPORTED = Set.of(BRIDGE_TYPE_PRICE, THING_TYPE_SINGLE);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID);
+        return SUPPORTED.contains(thingTypeUID);
     }
 
     @Override
     protected @Nullable ThingHandler createHandler(Thing thing) {
-        ThingTypeUID thingTypeUID = thing.getThingTypeUID();
-
-        if (THING_TYPE_SAMPLE.equals(thingTypeUID)) {
-            return new ElectricHandler(thing);
+        var type = thing.getThingTypeUID();
+        if (thing instanceof Bridge bridge) {
+            if (BRIDGE_TYPE_PRICE.equals(type)) {
+                return new PriceService(bridge);
+            }
+        } else {
+            if (THING_TYPE_SINGLE.equals(type)) {
+                return new SingleTimeTariff(thing);
+            }
         }
-
         return null;
     }
 }
