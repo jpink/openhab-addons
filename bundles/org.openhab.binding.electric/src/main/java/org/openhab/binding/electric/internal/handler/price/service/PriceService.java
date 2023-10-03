@@ -12,11 +12,11 @@
  */
 package org.openhab.binding.electric.internal.handler.price.service;
 
-import static org.openhab.binding.electric.internal.imp.common.Log.debug;
-import static org.openhab.binding.electric.internal.imp.common.Time.convert;
-import static org.openhab.binding.electric.internal.imp.common.Time.evenHour;
-import static org.openhab.binding.electric.internal.imp.common.Time.gone;
-import static org.openhab.binding.electric.internal.imp.common.Time.set;
+import static org.openhab.binding.electric.common.Log.debug;
+import static org.openhab.binding.electric.common.Time.convert;
+import static org.openhab.binding.electric.common.Time.evenHour;
+import static org.openhab.binding.electric.common.Time.gone;
+import static org.openhab.binding.electric.common.Time.set;
 
 import java.time.Duration;
 import java.time.OffsetTime;

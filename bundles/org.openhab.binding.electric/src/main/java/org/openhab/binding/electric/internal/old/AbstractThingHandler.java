@@ -12,8 +12,8 @@
  */
 package org.openhab.binding.electric.internal.old;
 
-import static org.openhab.binding.electric.internal.imp.common.Log.debug;
-import static org.openhab.binding.electric.internal.imp.common.Log.error;
+import static org.openhab.binding.electric.common.Log.debug;
+import static org.openhab.binding.electric.common.Log.error;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;

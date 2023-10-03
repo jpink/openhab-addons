@@ -13,11 +13,11 @@
 package org.openhab.binding.electric.internal.handler.price.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.openhab.binding.electric.common.Time.set;
 import static org.openhab.binding.electric.internal.handler.entsoe.EntsoeClientTest.*;
 import static org.openhab.binding.electric.internal.handler.price.PriceConfigTest.HELSINKI;
 import static org.openhab.binding.electric.internal.handler.price.PriceConfigTest.PRAGUE;
 import static org.openhab.binding.electric.internal.handler.price.service.PriceService.*;
-import static org.openhab.binding.electric.internal.imp.common.Time.set;
 
 import java.time.ZonedDateTime;
 

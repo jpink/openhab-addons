@@ -13,7 +13,7 @@
 package org.openhab.binding.electric.common.monetary;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.*;
+import static org.openhab.binding.electric.common.monetary.Monetary.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -34,9 +34,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.openhab.binding.electric.internal.imp.monetary.MonetaryQuantity;
-
-import tech.units.indriya.format.SimpleUnitFormat;
 
 /**
  * Monetary unit tests.
@@ -91,7 +88,7 @@ class MonetaryTest {
     @ParameterizedTest
     @MethodSource
     void getUnitsSymbolUnique(Unit<?> unit) {
-        assertEquals(unit, SimpleUnitFormat.getInstance().parse(unit.toString()));
+        assertEquals(unit, parseUnit(unit.toString()));
     }
 
     @ParameterizedTest
@@ -116,7 +113,7 @@ class MonetaryTest {
             "0.25 c/kWh,2.5 €/MWh" // margin
     })
     void isEquivalentTo(String a, String b) {
-        var qa = quantity(a, org.openhab.binding.electric.internal.imp.monetary.MonetaryQuantity.class);
+        var qa = quantity(a, org.openhab.binding.electric.common.monetary.MonetaryQuantity.class);
         var qb = quantity(b, MonetaryQuantity.class);
         if (!qa.isEquivalentTo(qb)) {
             assertEquals(b, qb.toString());

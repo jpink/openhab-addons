@@ -12,15 +12,15 @@
  */
 package org.openhab.binding.electric.internal.handler.price.service;
 
-import static org.openhab.binding.electric.internal.imp.common.Json.DURATION;
-import static org.openhab.binding.electric.internal.imp.common.Json.LOCAL_DATE_TIME;
-import static org.openhab.binding.electric.internal.imp.common.Json.STRING;
-import static org.openhab.binding.electric.internal.imp.common.Json.ZONE;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.bigDecimal;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.divide;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.energyPrice;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.percent;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.taxPrice;
+import static org.openhab.binding.electric.common.monetary.Monetary.bigDecimal;
+import static org.openhab.binding.electric.common.monetary.Monetary.divide;
+import static org.openhab.binding.electric.common.monetary.Monetary.energyPrice;
+import static org.openhab.binding.electric.common.monetary.Monetary.percent;
+import static org.openhab.binding.electric.common.monetary.Monetary.taxPrice;
+import static org.openhab.binding.electric.common.openhab.json.Json.DURATION;
+import static org.openhab.binding.electric.common.openhab.json.Json.LOCAL_DATE_TIME;
+import static org.openhab.binding.electric.common.openhab.json.Json.STRING;
+import static org.openhab.binding.electric.common.openhab.json.Json.ZONE;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,10 +35,10 @@ import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.electric.common.monetary.EnergyPrice;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Interval;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
 import org.openhab.binding.electric.internal.handler.price.PriceConfig;
-import org.openhab.binding.electric.internal.imp.monetary.EnergyPrice;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

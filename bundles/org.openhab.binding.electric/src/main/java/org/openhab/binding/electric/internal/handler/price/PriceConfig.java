@@ -12,12 +12,12 @@
  */
 package org.openhab.binding.electric.internal.handler.price;
 
-import static org.openhab.binding.electric.internal.imp.common.Time.convert;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.EURO_CENT_PER_KILOWATT_HOUR;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.EURO_PER_MEGAWATT_HOUR;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.energyPriceUnit;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.moneyCentUnit;
-import static org.openhab.binding.electric.internal.imp.monetary.Monetary.taxPriceOfSum;
+import static org.openhab.binding.electric.common.Time.convert;
+import static org.openhab.binding.electric.common.monetary.Monetary.EURO_CENT_PER_KILOWATT_HOUR;
+import static org.openhab.binding.electric.common.monetary.Monetary.EURO_PER_MEGAWATT_HOUR;
+import static org.openhab.binding.electric.common.monetary.Monetary.energyPriceUnit;
+import static org.openhab.binding.electric.common.monetary.Monetary.moneyCentUnit;
+import static org.openhab.binding.electric.common.monetary.Monetary.taxPriceOfSum;
 import static org.openhab.binding.electric.internal.old.Constants.UNIT_CENT_PER_KWH;
 import static org.openhab.binding.electric.internal.old.Constants.UNIT_CURRENCY_PER_MWH;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
@@ -35,10 +35,10 @@ import javax.measure.quantity.Energy;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.monetary.EnergyPrice;
+import org.openhab.binding.electric.common.monetary.Monetary;
+import org.openhab.binding.electric.common.monetary.TaxPrice;
 import org.openhab.binding.electric.internal.handler.price.service.CurrencyMismatch;
-import org.openhab.binding.electric.internal.imp.monetary.EnergyPrice;
-import org.openhab.binding.electric.internal.imp.monetary.Monetary;
-import org.openhab.binding.electric.internal.imp.monetary.TaxPrice;
 
 /**
  * The {@link PriceConfig} class contains fields mapping thing configuration parameters.

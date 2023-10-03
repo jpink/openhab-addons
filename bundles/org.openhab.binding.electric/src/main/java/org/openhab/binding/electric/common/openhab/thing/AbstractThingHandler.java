@@ -115,8 +115,9 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
 
     protected C getConfiguration() {
         var configuration = getConfigAs(configurationClass);
-        if (configuration == null)
+        if (configuration == null) {
             throw new IllegalStateException("Can't create " + configurationClass.getName());
+        }
         return configuration;
     }
 

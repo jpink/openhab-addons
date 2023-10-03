@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.monetary.Monetary;
 import org.openhab.binding.electric.internal.handler.EntsoeHandlerFactory;
 import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
 import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidArea;
@@ -30,7 +31,6 @@ import org.openhab.binding.electric.internal.handler.entsoe.exception.Unauthoriz
 import org.openhab.binding.electric.internal.handler.price.service.Bug;
 import org.openhab.binding.electric.internal.handler.price.service.CurrencyMismatch;
 import org.openhab.binding.electric.internal.handler.price.service.PriceService;
-import org.openhab.binding.electric.internal.imp.monetary.Monetary;
 import org.openhab.binding.electric.internal.old.AbstractThingHandler;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.ChannelUID;
@@ -169,6 +169,7 @@ public class PriceHandler extends AbstractThingHandler {
         }
     }
 
+    @SuppressWarnings("AvoidScheduleAtFixedRateCheck")
     private void scheduleUpdateCurrentJob(Duration resolution) {
         cancel(updateCurrentJob);
         var resolutionInMinutes = resolution.toMinutes();

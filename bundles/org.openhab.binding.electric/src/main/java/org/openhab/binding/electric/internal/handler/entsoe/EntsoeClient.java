@@ -12,8 +12,8 @@
  */
 package org.openhab.binding.electric.internal.handler.entsoe;
 
-import static org.openhab.binding.electric.internal.imp.common.Log.trace;
-import static org.openhab.binding.electric.internal.imp.common.Time.utc;
+import static org.openhab.binding.electric.common.Log.trace;
+import static org.openhab.binding.electric.common.Time.utc;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;

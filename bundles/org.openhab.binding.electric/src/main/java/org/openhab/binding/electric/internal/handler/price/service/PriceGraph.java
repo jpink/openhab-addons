@@ -1,6 +1,20 @@
+/**
+ * Copyright (c) 2010-2023 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
 package org.openhab.binding.electric.internal.handler.price.service;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.io.Serial;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +38,11 @@ import org.jfree.svg.SVGGraphics2D;
 import org.openhab.binding.electric.internal.handler.Translations;
 import org.openhab.binding.electric.internal.handler.price.PriceConfig;
 
+/**
+ * Price graph.
+ *
+ * @author Jukka Papinkivi - Initial contribution
+ */
 @NonNullByDefault
 public class PriceGraph {
     private static class ZonedDateTimeAxis extends CategoryAxis {
@@ -109,8 +128,7 @@ public class PriceGraph {
     public String toSvgElement() {
         JFreeChart chart = createChart(createDataset());
         SVGGraphics2D g2 = new SVGGraphics2D(640, 480);
-        Rectangle r = new Rectangle(0, 0, 640, 480);
-        chart.draw(g2, r);
+        chart.draw(g2, new Rectangle(0, 0, 640, 480));
         return g2.getSVGElement();
     }
 }

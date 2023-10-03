@@ -13,6 +13,11 @@
 package org.openhab.binding.electric.common.monetary;
 
 import static javax.measure.Quantity.Scale.RELATIVE;
+import static org.openhab.binding.electric.common.Reflections.constructor;
+import static org.openhab.binding.electric.common.Reflections.create;
+import static org.openhab.binding.electric.common.Reflections.invoke;
+import static org.openhab.binding.electric.common.Reflections.method;
+import static org.openhab.binding.electric.common.Reflections.type;
 import static org.openhab.binding.electric.common.Text.splitWhitespace;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
@@ -21,15 +26,19 @@ import static org.openhab.core.library.unit.Units.YEAR;
 import static org.openhab.core.library.unit.Units.getInstance;
 import static tech.units.indriya.quantity.Quantities.getQuantity;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Currency;
 import java.util.List;
 
+import javax.measure.Dimension;
 import javax.measure.MetricPrefix;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import javax.measure.format.UnitFormat;
 import javax.measure.quantity.Dimensionless;
 import javax.measure.quantity.Energy;
 import javax.measure.quantity.Time;
@@ -37,11 +46,7 @@ import javax.measure.quantity.Time;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import tech.units.indriya.AbstractSystemOfUnits;
-import tech.units.indriya.ComparableQuantity;
-import tech.units.indriya.format.SimpleUnitFormat;
 import tech.units.indriya.format.UnitStyle;
-import tech.units.indriya.unit.BaseUnit;
-import tech.units.indriya.unit.UnitDimension;
 
 /**
  * Monetary system of units.
@@ -148,23 +153,19 @@ public class Monetary extends AbstractSystemOfUnits {
         return quantity(amount, unit).asType(type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(long amount, Unit<Q> unit,
-            Class<Q> type) {
+    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(long amount, Unit<Q> unit, Class<Q> type) {
         return monetary(bigDecimal(amount), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(double amount, Unit<Q> unit,
-            Class<Q> type) {
+    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(double amount, Unit<Q> unit, Class<Q> type) {
         return monetary(bigDecimal(amount), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(String amount, Unit<Q> unit,
-            Class<Q> type) {
+    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(String amount, Unit<Q> unit, Class<Q> type) {
         return monetary(bigDecimal(amount), unit, type);
     }
 
-    public static <Q extends MonetaryQuantity<Q>> ComparableQuantity<Q> monetary(BigDecimal amount, Unit<Q> unit,
-            Class<Q> type) {
+    public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(BigDecimal amount, Unit<Q> unit, Class<Q> type) {
         return getQuantity(amount, unit, RELATIVE).asType(type);
     }
 
@@ -189,7 +190,11 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     public static Unit<Money> moneyUnit(String symbols) {
-        return (Unit<Money>) SimpleUnitFormat.getInstance().parse(symbols);
+        return (Unit<Money>) parseUnit(symbols);
+    }
+
+    public static Unit<?> parseUnit(String symbols) {
+        return INSTANCE.simpleUnitFormat.parse(symbols);
     }
 
     public static Quantity<Dimensionless> percent(int percentage) {
@@ -275,7 +280,7 @@ public class Monetary extends AbstractSystemOfUnits {
             unit = tech.units.indriya.unit.Units.getInstance().getUnit(symbols);
         }
         if (unit == null) {
-            unit = SimpleUnitFormat.getInstance().parse(symbols);
+            unit = parseUnit(symbols);
         }
         return unit;
     }
@@ -304,7 +309,28 @@ public class Monetary extends AbstractSystemOfUnits {
         return INSTANCE.addUnit(unit, name, symbol, aliases);
     }
 
+    private final UnitFormat simpleUnitFormat;
+
+    /** SimpleUnitFormat.alias(Unit? unit, String alias) return Unit? */
+    private final Method simpleUnitFormatAliasUnitAlias;
+
+    /** UnitDimension.parse(char symbol) return UnitDimension */
+    private final Method unitDimensionParseSymbol;
+
+    /**
+     * new BaseUnit<Q extends Quantity
+     * <Q>>(String symbol, String name, Dimension dimension)
+     */
+    private final Constructor<Unit<Money>> newBaseUnitSymbolNameDimension;
+
     private Monetary() {
+        var impl = "tech.units.indriya.";
+        var clazz = type(impl + "format.SimpleUnitFormat");
+        simpleUnitFormat = invoke(clazz, "getInstance");
+        simpleUnitFormatAliasUnitAlias = method(clazz, "alias", Unit.class, String.class);
+        unitDimensionParseSymbol = method(impl + "unit.UnitDimension", "parse", char.class);
+        newBaseUnitSymbolNameDimension = constructor(impl + "unit.BaseUnit", String.class, String.class,
+                Dimension.class);
     }
 
     public List<Unit<?>> getBaseCurrencies() {
@@ -314,14 +340,14 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     private Unit<Money> addCurrency(String currencyCode, String symbol, char dimension) {
-        return addUnit(new BaseUnit<>(symbol, currencyCode, UnitDimension.parse(dimension)), currencyCode, symbol,
-                currencyCode);
+        return addUnit(create(newBaseUnitSymbolNameDimension, symbol, currencyCode,
+                invoke(unitDimensionParseSymbol, dimension)), currencyCode, symbol, currencyCode);
     }
 
     private <U extends Unit<?>> U addUnit(U unit, String name, String symbol, String... aliases) {
         Helper.addUnit(units, unit, name, symbol, UnitStyle.SYMBOL_AND_LABEL);
         for (String alias : aliases) {
-            SimpleUnitFormat.getInstance().alias(unit, alias);
+            invoke(simpleUnitFormat, simpleUnitFormatAliasUnitAlias, unit, alias);
         }
         return unit;
     }

@@ -18,9 +18,9 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.electric.common.monetary.EnergyPrice;
+import org.openhab.binding.electric.common.monetary.TaxPrice;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Interval;
-import org.openhab.binding.electric.internal.imp.monetary.EnergyPrice;
-import org.openhab.binding.electric.internal.imp.monetary.TaxPrice;
 
 /**
  * Electricity price record.
