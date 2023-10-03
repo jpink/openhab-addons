@@ -12,7 +12,6 @@
  */
 package org.openhab.binding.electric.common;
 
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.extension.ExtendWith;

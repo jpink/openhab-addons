@@ -1,48 +1,227 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<thing:thing-descriptions bindingId="electric"
+<thing:thing-descriptions bindingId="entsoe"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
-	<!-- Sample Thing Type -->
-	<thing-type id="sample">
-		<!-- Comment this in for Things which need a Bridge to function.
-			<supported-bridge-type-refs>
-			<bridge-type-ref id="ElectricBridge" />
-			</supported-bridge-type-refs>
-		-->
-
-		<label>Electric Binding Thing</label>
-		<description>Sample thing for Electric Binding</description>
+	<thing-type id="price">
+		<label>Electricity Price</label>
+		<description>This service offers the day ahead electricity prices.</description>
 
 		<channels>
-			<channel id="channel1" typeId="sample-channel"/>
+			<channel id="current" typeId="price-channel"/>
+			<channel id="rank" typeId="rank-channel"/>
+			<channel id="normalized" typeId="percent-channel"/>
+			<channel id="graph" typeId="image-channel"/>
+			<channel id="data" typeId="json-channel"/>
+			<channel id="updated" typeId="datetime-channel"/>
 		</channels>
 
 		<config-description>
-			<parameter name="hostname" type="text" required="true">
-				<context>network-address</context>
-				<label>Hostname</label>
-				<description>Hostname or IP address of the device</description>
-			</parameter>
-			<parameter name="password" type="text" required="true">
+			<parameter-group name="entsoe">
+				<label>ENTSO-E</label>
+				<description>ENTSO-E Transparency Platform parameters.</description>
+			</parameter-group>
+
+			<parameter-group name="price">
+				<label>Price Components</label>
+				<description>Price additions to the spot price.</description>
+			</parameter-group>
+
+			<parameter name="token" type="text" required="true" groupName="entsoe" min="36" max="36"
+				pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$">
 				<context>password</context>
-				<label>Password</label>
-				<description>Password to access the device</description>
+				<label>Security Token</label>
+				<description>To request access token (UUID), register on the Transparency Platform and email to
+					transparency@entsoe.eu with "Restful API access" in the subject and the email address what you used
+					in registration
+					in the body. You should get response in 3 working days and there is more
+					instructions.
+				</description>
 			</parameter>
-			<parameter name="refreshInterval" type="integer" unit="s" min="1">
-				<label>Refresh Interval</label>
-				<description>Interval the device is polled in sec.</description>
-				<default>600</default>
+
+			<parameter name="area" type="text" required="true" groupName="entsoe" min="2" max="16">
+				<label>Area Code</label>
+				<description>The name of the energy grid operator which value is the Energy Identification Code (EIC).
+					The discovery
+					service try to select this based on your country.
+				</description>
+				<options>
+					<option value="10YAL-KESH-----5">Albania</option>
+					<option value="10Y1001A1001B004">Armenia</option>
+					<option value="10YAT-APG------L">Austria</option>
+					<option value="10Y1001A1001B05V">Azerbaijan</option>
+					<option value="10YBA-JPCC-----D">Bosnia and Herzegovina</option>
+					<option value="10YBE----------2">Belgium</option>
+					<option value="10YCA-BULGARIA-R">Bulgaria</option>
+					<option value="BY">Belarus</option>
+					<option value="10YCH-SWISSGRIDZ">Switzerland</option>
+					<option value="10YCY-1001A0003J">Cyprus</option>
+					<option value="10YCZ-CEPS-----N">Czech Republic</option>
+					<option value="10Y1001A1001A83F">Germany</option>
+					<option value="10Y1001A1001A65H">Denmark</option>
+					<option value="10Y1001A1001A39I">Estonia</option>
+					<option value="10YES-REE------0">Spain</option>
+					<option value="10YFI-1--------U">Finland</option>
+					<option value="10YFR-RTE------C">France</option>
+					<option value="10Y1001A1001B012">Georgia</option>
+					<option value="10YGR-HTSO-----Y">Greece</option>
+					<option value="10YHR-HEP------M">Croatia</option>
+					<option value="10YHU-MAVIR----U">Hungary</option>
+					<option value="10YIE-1001A00010">Ireland</option>
+					<option value="IS">Iceland</option>
+					<option value="10YIT-GRTN-----B">Italy</option>
+					<option value="10YLT-1001A0008Q">Lithuania</option>
+					<option value="10YLU-CEGEDEL-NQ">Luxembourg</option>
+					<option value="10YLV-1001A00074">Latvia</option>
+					<option value="10Y1001A1001A990">Moldova</option>
+					<option value="10YCS-CG-TSO---S">Montenegro</option>
+					<option value="10YMK-MEPSO----8">North Macedonia</option>
+					<option value="10Y1001A1001A93C">Malta</option>
+					<option value="10YNL----------L">Netherlands</option>
+					<option value="10YNO-0--------C">Norway</option>
+					<option value="10YPL-AREA-----S">Poland</option>
+					<option value="10YPT-REN------W">Portugal</option>
+					<option value="10YRO-TEL------P">Romania</option>
+					<option value="10YCS-SERBIATSOV">Serbia</option>
+					<option value="RU">Russia</option>
+					<option value="10YSE-1--------K">Sweden</option>
+					<option value="10YSI-ELES-----O">Slovenia</option>
+					<option value="10YSK-SEPS-----K">Slovakia</option>
+					<option value="10YTR-TEIAS----W">Turkey</option>
+					<option value="10Y1001C--00003F">Ukraine</option>
+					<option value="10Y1001A1001A92E">United Kingdom</option>
+				</options>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="currency" type="text" groupName="price">
+				<label>Input Currency</label>
+				<description>The input currency which you use in the price parameters. Shows error if ENTSO-E returns
+					prices in
+					different currency. By default, using same currency as in the API.
+				</description>
+				<options>
+					<option value="ALL">Albanian lek (Lekë)</option>
+					<option value="AMD">Armenian dram (֏)</option>
+					<option value="AZN">Azerbaijani manat (₼)</option>
+					<option value="BAM">Bosnia and Herzegovina convertible mark (KM)</option>
+					<option value="BGN">Bulgarian lev (лв)</option>
+					<option value="BYN">Belarusian ruble (Rbl)</option>
+					<option value="CHF">Swiss franc (SFr)</option>
+					<option value="CZK">Czech koruna (Kč)</option>
+					<option value="DKK">Danish krone (DKr)</option>
+					<option value="EUR">Euro (€)</option>
+					<option value="GBP">Pound sterling (£)</option>
+					<option value="GEL">Georgian lari (ლ)</option>
+					<option value="HUF">Hungarian forint (Ft)</option>
+					<option value="ISK">Icelandic króna (Kr)</option>
+					<option value="MDL">Moldovan leu (L)</option>
+					<option value="MKD">Macedonian denar (den)</option>
+					<option value="NOK">Norwegian krone (NKr)</option>
+					<option value="PLN">Polish złoty (zł)</option>
+					<option value="RON">Romanian leu (lei)</option>
+					<option value="RSD">Serbian dinar (РСД)</option>
+					<option value="RUB">Russian ruble (₽)</option>
+					<option value="SEK">Swedish krona (SKr)</option>
+					<option value="TRY">Turkish lira (₺)</option>
+					<option value="UAH">Ukrainian hryvnia (₴)</option>
+				</options>
+				<limitToOptions>true</limitToOptions>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="unit" type="text" groupName="price">
+				<label>Price Unit</label>
+				<description>Which unit should be used for prices. By default, using same unit as in the API.
+				</description>
+				<options>
+					<option value="c/kWh">c/kWh</option>
+					<option value="¤/MWh">¤/MWh</option>
+				</options>
+				<limitToOptions>true</limitToOptions>
+				<default>¤/MWh</default>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="transfer" type="decimal" groupName="price" min="0.0">
+				<label>Transfer Price</label>
+				<description>The fixed transfer price in the set unit. Schedule updates if using night or season
+					tariffs.
+				</description>
+				<default>0.0</default>
+			</parameter>
+
+			<parameter name="tax" type="decimal" groupName="price" min="0.0">
+				<label>Tax Amount</label>
+				<description>The fixed tax amount in the set unit.</description>
+				<default>0.0</default>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="margin" type="decimal" groupName="price" min="0.0">
+				<label>Margin Price</label>
+				<description>The fixed margin price in the set unit. Remember to change when contract changes!
+				</description>
+				<default>0.0</default>
+			</parameter>
+
+			<parameter name="general" type="integer" groupName="price" min="0" max="100">
+				<label>General VAT Rate</label>
+				<description>The value added tax (VAT) percent that is included in the transfer fee and tax amount.</description>
+				<default>0</default>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="seller" type="integer" groupName="price" min="0" max="100">
+				<label>Seller VAT Rate</label>
+				<description>The value added tax (VAT) percent that is used for spot price and included in seller's margin price.</description>
+				<default>0</default>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="precision" type="integer" groupName="price" min="0" max="34">
+				<label>Price Precision</label>
+				<description>The number of digits to be used for mathematical operations. The results are rounded to
+					this precision.
+				</description>
+				<default>7</default>
+				<advanced>true</advanced>
+			</parameter>
+
+			<parameter name="scale" type="integer" groupName="price" min="0" max="34">
+				<label>Price Scale</label>
+				<description>The number of digits are always shown on the right of the price's decimal point. Values are stored
+					using the precision.
+				</description>
+				<default>2</default>
 				<advanced>true</advanced>
 			</parameter>
 		</config-description>
 	</thing-type>
 
-	<!-- Sample Channel Type -->
-	<channel-type id="sample-channel">
-		<item-type>Number:Temperature</item-type>
-		<label>Example Temperature</label><!-- Use uppercase words, except prepositions. 2-3 words, max 25 chars -->
-		<description>Sample channel for Electric Binding</description>
+	<channel-type id="price-channel">
+		<item-type>Number</item-type>
+		<label>Electricity Price</label><!-- Use uppercase words, except prepositions. 2-3 words, max 25 chars -->
+	</channel-type>
+	<channel-type id="percent-channel">
+		<item-type>Dimmer</item-type>
+		<label>Normalized Price</label>
+	</channel-type>
+	<channel-type id="rank-channel">
+		<item-type>Number</item-type>
+		<label>Price Rank</label>
+	</channel-type>
+	<channel-type id="json-channel">
+		<item-type>String</item-type>
+		<label>JSON Data</label>
+	</channel-type>
+	<channel-type id="image-channel">
+		<item-type>Image</item-type>
+		<label>Image Data</label>
+	</channel-type>
+	<channel-type id="datetime-channel">
+		<item-type>DateTime</item-type>
+		<label>Date Time</label>
 	</channel-type>
 </thing:thing-descriptions>

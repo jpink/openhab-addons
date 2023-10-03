@@ -10,26 +10,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal;
+package org.openhab.binding.electric.internal.old;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
 
 /**
- * The {@link ElectricBindingConstants} class defines common constants, which are
- * used across the whole binding.
+ * The {@link Constants} class defines common constants, which are used across the whole binding.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class ElectricBindingConstants {
+public class Constants {
 
-    private static final String BINDING_ID = "electric";
+    public static final String BINDING_ID = "entsoe";
 
     // List of all Thing Type UIDs
-    public static final ThingTypeUID BRIDGE_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
-    public static final ThingTypeUID THING_TYPE_SINGLE = new ThingTypeUID(BINDING_ID, "single");
+    public static final ThingTypeUID THING_TYPE_CHEAP = new ThingTypeUID(BINDING_ID, "cheap");
 
-    // List of all Channel ids
-    public static final String CHANNEL_1 = "channel1";
+    public static final ThingTypeUID THING_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
+
+    public static final String UNIT_CENT_PER_KWH = "c/kWh";
+    public static final String UNIT_CURRENCY_PER_MWH = "¤/MWh";
 }
