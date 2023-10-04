@@ -26,19 +26,16 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public class PriceConfigTest {
-    public static final ZoneId //
-    HELSINKI = ZoneId.of("Europe/Helsinki"), //
+    public static final ZoneId HELSINKI = ZoneId.of("Europe/Helsinki"), //
             PRAGUE = ZoneId.of("Europe/Prague");
-    public static final BigDecimal //
-    FI_TRANSFER = BigDecimal.valueOf(3.4), // ESE-Verkko Oy
+    public static final BigDecimal FI_TRANSFER = BigDecimal.valueOf(3.4), // ESE-Verkko Oy
             FI_TAX = BigDecimal.valueOf(2.79), // The energy tax in Finland is actually 2.79372 c/kWh.
             FI_MARGIN = BigDecimal.valueOf(0.25); // Oomi Oy
-    public static final int //
-    CZ_GENERAL = 21, //
+    public static final int CZ_GENERAL = 21, //
             FI_GENERAL = 24, //
             FI_SELLER_2022 = 10; // Temporary VAT rate in Finland at winter 2022-2023.
-    public static final PriceConfig //
-    CZ_CONFIG = new PriceConfig(PRAGUE, UNIT_CENT_PER_KWH, FI_TRANSFER, FI_TAX, FI_MARGIN, CZ_GENERAL, CZ_GENERAL), //
+    public static final PriceConfig CZ_CONFIG = new PriceConfig(PRAGUE, UNIT_CENT_PER_KWH, FI_TRANSFER, FI_TAX,
+            FI_MARGIN, CZ_GENERAL, CZ_GENERAL), //
             FI_CONFIG = new PriceConfig(HELSINKI, UNIT_CENT_PER_KWH, FI_TRANSFER, FI_TAX, FI_MARGIN, FI_GENERAL,
                     FI_GENERAL), //
             FI_CONFIG_2022 = new PriceConfig(HELSINKI, UNIT_CENT_PER_KWH, FI_TRANSFER, FI_TAX, FI_MARGIN, FI_GENERAL,

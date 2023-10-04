@@ -60,8 +60,9 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
         if (childHandler instanceof TariffContract tariff) {
             switch (tariff.getProduct()) {
                 case TRANSFER -> {
+                    var distributor = this.distributor;
                     if (distributor == null) {
-                        distributor = tariff;
+                        this.distributor = tariff;
                         logger.info("Assembled {} as a distributor.", typeId.getId());
                     } else {
                         logger.error("Ignored {} distributor because {} is already the distributor!", typeId.getId(),
@@ -69,8 +70,9 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
                     }
                 }
                 case SALES -> {
+                    var seller = this.seller;
                     if (seller == null) {
-                        seller = tariff;
+                        this.seller = tariff;
                         logger.info("Assembled {} as a seller.", typeId.getId());
                     } else {
                         logger.error("Ignored {} seller because {} is already the seller!", typeId.getId(),

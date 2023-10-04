@@ -169,7 +169,6 @@ public class PriceHandler extends AbstractThingHandler {
         }
     }
 
-    @SuppressWarnings("*")
     private void scheduleUpdateCurrentJob(Duration resolution) {
         cancel(updateCurrentJob);
         var resolutionInMinutes = resolution.toMinutes();

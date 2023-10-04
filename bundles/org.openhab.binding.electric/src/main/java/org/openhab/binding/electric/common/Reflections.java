@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.electric.common;
 
+import java.io.Serial;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,7 +27,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 @SuppressWarnings("unchecked")
 public class Reflections {
-    private static class DoesNotReflect extends RuntimeException {
+    private static final class DoesNotReflect extends RuntimeException {
+        @Serial
+        private static final long serialVersionUID = 1;
+
         private DoesNotReflect(Exception cause) {
             super(cause);
         }

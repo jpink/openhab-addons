@@ -26,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @NonNullByDefault
 public abstract class UnitTest<I> extends AbstractTest {
     /** An instance of the class to be unit tested. The mock is only to avoid NPE warnings. */
-    @SuppressWarnings("unchecked")
     private @Nullable I instance;
 
     /**

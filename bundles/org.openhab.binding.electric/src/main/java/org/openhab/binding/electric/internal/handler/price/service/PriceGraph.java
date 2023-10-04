@@ -48,6 +48,7 @@ public class PriceGraph {
         private static final long serialVersionUID = -7835789623702120751L;
 
         @Override
+        @SuppressWarnings("rawtypes")
         protected TextBlock createLabel(@Nullable Comparable category, float width, @Nullable RectangleEdge edge,
                 @Nullable Graphics2D g2) {
             return TextUtils.createTextBlock(
