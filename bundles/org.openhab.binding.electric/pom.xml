@@ -14,16 +14,26 @@
 
   <name>openHAB Add-ons :: Bundles :: Electric Binding</name>
 
+  <properties>
+    <bnd.importpackage>
+      com.orsonpdf.*;resolution:=optional,
+      org.jfree.graphics2d.svg.*;resolution:=optional,
+      org.jfree.pdf.*;resolution:=optional
+    </bnd.importpackage>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.5.3</version>
+      <version>1.5.4</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>org.jfree.svg</artifactId>
       <version>5.0.5</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 

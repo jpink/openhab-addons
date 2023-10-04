@@ -39,8 +39,6 @@ import org.openhab.binding.electric.internal.handler.Translations;
 import org.openhab.binding.electric.internal.handler.price.PriceConfig;
 
 /**
- * Price graph.
- *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
@@ -128,7 +126,8 @@ public class PriceGraph {
     public String toSvgElement() {
         JFreeChart chart = createChart(createDataset());
         SVGGraphics2D g2 = new SVGGraphics2D(640, 480);
-        chart.draw(g2, new Rectangle(0, 0, 640, 480));
+        Rectangle r = new Rectangle(0, 0, 640, 480);
+        chart.draw(g2, r);
         return g2.getSVGElement();
     }
 }

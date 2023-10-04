@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.price;
+package org.openhab.binding.electric.internal.handler.price.service;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.openhab.binding.electric.internal.handler.entsoe.EntsoeClientTest.CZ_FILE_2015;
@@ -23,8 +23,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.jfree.svg.SVGUtils;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.electric.common.AbstractTest;
-import org.openhab.binding.electric.internal.handler.price.service.PriceCache;
-import org.openhab.binding.electric.internal.handler.price.service.PriceGraph;
 
 /**
  * Price graph unit tests.

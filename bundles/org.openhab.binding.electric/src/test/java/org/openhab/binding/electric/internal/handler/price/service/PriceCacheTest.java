@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.price;
+package org.openhab.binding.electric.internal.handler.price.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.openhab.binding.electric.internal.handler.entsoe.EntsoeClientTest.CZ_FILE_2015;
@@ -28,8 +28,7 @@ import org.openhab.binding.electric.common.AbstractTest;
 import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
 import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClientTest;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
-import org.openhab.binding.electric.internal.handler.price.service.CurrencyMismatch;
-import org.openhab.binding.electric.internal.handler.price.service.PriceCache;
+import org.openhab.binding.electric.internal.handler.price.PriceConfig;
 import org.opentest4j.AssertionFailedError;
 
 import com.google.gson.Gson;
