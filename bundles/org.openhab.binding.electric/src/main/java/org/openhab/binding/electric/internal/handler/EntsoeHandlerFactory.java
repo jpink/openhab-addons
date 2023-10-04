@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.electric.internal.handler;
 
-import static org.openhab.binding.electric.internal.old.Constants.*;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.BRIDGE_TYPE_PRICE;
 
 import java.util.Set;
 
@@ -50,7 +50,7 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
         this.timeZoneProvider = timeZoneProvider;
     }
 
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_CHEAP, THING_TYPE_PRICE);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(BRIDGE_TYPE_PRICE);
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -61,7 +61,7 @@ public class EntsoeHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (THING_TYPE_PRICE.equals(thingTypeUID)) {
+        if (BRIDGE_TYPE_PRICE.equals(thingTypeUID)) {
             return new PriceHandler(thing, this);
         }
 

@@ -45,9 +45,6 @@ import javax.measure.quantity.Time;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import tech.units.indriya.AbstractSystemOfUnits;
-import tech.units.indriya.format.UnitStyle;
-
 /**
  * Monetary system of units.
  * <a href="https://www.entsoe.eu/about/inside-entsoe/members/"></a>
@@ -57,7 +54,7 @@ import tech.units.indriya.format.UnitStyle;
  */
 @SuppressWarnings("unchecked")
 @NonNullByDefault
-public class Monetary extends AbstractSystemOfUnits {
+public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     public static final Monetary INSTANCE = new Monetary();
     public static final Unit<Time> MONTH = add(YEAR.divide(12), "Month", "mo", "kk");
     public static final Unit<Money> ALL = add("ALL", "Lekë", 'ë');
@@ -345,7 +342,7 @@ public class Monetary extends AbstractSystemOfUnits {
     }
 
     private <U extends Unit<?>> U addUnit(U unit, String name, String symbol, String... aliases) {
-        Helper.addUnit(units, unit, name, symbol, UnitStyle.SYMBOL_AND_LABEL);
+        Helper.addUnit(units, unit, name, symbol, tech.units.indriya.format.UnitStyle.SYMBOL_AND_LABEL);
         for (String alias : aliases) {
             invoke(simpleUnitFormat, simpleUnitFormatAliasUnitAlias, unit, alias);
         }

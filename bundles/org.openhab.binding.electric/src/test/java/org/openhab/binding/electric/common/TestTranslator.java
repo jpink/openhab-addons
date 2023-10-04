@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.electric.common;
 
-import static org.openhab.binding.electric.internal.old.Constants.BINDING_ID;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.BINDING_ID;
 
 import java.text.MessageFormat;
 import java.util.Locale;

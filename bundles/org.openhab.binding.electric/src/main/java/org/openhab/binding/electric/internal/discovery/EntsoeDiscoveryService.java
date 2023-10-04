@@ -12,14 +12,14 @@
  */
 package org.openhab.binding.electric.internal.discovery;
 
-import static org.openhab.binding.electric.internal.old.Constants.THING_TYPE_PRICE;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.BINDING_ID;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.BRIDGE_TYPE_PRICE;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Area;
-import org.openhab.binding.electric.internal.old.Constants;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResultBuilder;
 import org.openhab.core.config.discovery.DiscoveryService;
@@ -35,13 +35,13 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-@Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + Constants.BINDING_ID)
+@Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + BINDING_ID)
 @NonNullByDefault
 public class EntsoeDiscoveryService extends AbstractDiscoveryService {
     @Activate
     public EntsoeDiscoveryService(@Reference TranslationProvider i18nProvider, @Reference LocaleProvider localeProvider)
             throws IllegalArgumentException {
-        super(Set.of(THING_TYPE_PRICE), 10, false);
+        super(Set.of(BRIDGE_TYPE_PRICE), 10, false);
         this.i18nProvider = i18nProvider;
         this.localeProvider = localeProvider;
     }
@@ -60,7 +60,7 @@ public class EntsoeDiscoveryService extends AbstractDiscoveryService {
             return;
         }
         var country = locale.getCountry();
-        var builder = DiscoveryResultBuilder.create(new ThingUID(THING_TYPE_PRICE, country))
+        var builder = DiscoveryResultBuilder.create(new ThingUID(BRIDGE_TYPE_PRICE, country))
                 .withProperty("area", area.code).withRepresentationProperty("area");
         if ("FI".equals(country)) {
             builder.withProperty("tax", BigDecimal.valueOf(2.79)); // 2.79372 TODO move to resource bundle

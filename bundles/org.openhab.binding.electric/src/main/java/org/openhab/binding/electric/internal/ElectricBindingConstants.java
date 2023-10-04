@@ -24,7 +24,7 @@ import org.openhab.core.thing.ThingTypeUID;
 @NonNullByDefault
 public class ElectricBindingConstants {
 
-    private static final String BINDING_ID = "electric";
+    public static final String BINDING_ID = "electric";
 
     // List of all Thing Type UIDs
     public static final ThingTypeUID BRIDGE_TYPE_PRICE = new ThingTypeUID(BINDING_ID, "price");
@@ -32,4 +32,7 @@ public class ElectricBindingConstants {
 
     // List of all Channel ids
     public static final String CHANNEL_1 = "channel1";
+
+    public static final String UNIT_CENT_PER_KWH = "c/kWh";
+    public static final String UNIT_CURRENCY_PER_MWH = "¤/MWh";
 }

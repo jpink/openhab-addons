@@ -26,7 +26,7 @@ import org.openhab.binding.electric.internal.handler.Translations;
 import org.opentest4j.AssertionFailedError;
 
 /**
- * Abstract unit test class containing helper methods.
+ * Abstract test class containing helper methods.
  *
  * @author Jukka Papinkivi - Initial contribution
  */

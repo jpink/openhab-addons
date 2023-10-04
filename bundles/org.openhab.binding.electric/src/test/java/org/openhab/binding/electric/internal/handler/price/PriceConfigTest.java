@@ -12,7 +12,7 @@
  */
 package org.openhab.binding.electric.internal.handler.price;
 
-import static org.openhab.binding.electric.internal.old.Constants.UNIT_CENT_PER_KWH;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.UNIT_CENT_PER_KWH;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;

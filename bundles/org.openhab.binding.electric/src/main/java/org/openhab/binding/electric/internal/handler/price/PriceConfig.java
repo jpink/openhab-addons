@@ -18,8 +18,8 @@ import static org.openhab.binding.electric.common.monetary.Monetary.EURO_PER_MEG
 import static org.openhab.binding.electric.common.monetary.Monetary.energyPriceUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.moneyCentUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.taxPriceOfSum;
-import static org.openhab.binding.electric.internal.old.Constants.UNIT_CENT_PER_KWH;
-import static org.openhab.binding.electric.internal.old.Constants.UNIT_CURRENCY_PER_MWH;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.UNIT_CENT_PER_KWH;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.UNIT_CURRENCY_PER_MWH;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
