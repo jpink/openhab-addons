@@ -14,10 +14,25 @@ package org.openhab.binding.electric.internal.handler.price;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.monetary.EnergyPrice;
 import org.openhab.binding.electric.common.openhab.thing.AbstractBridgeHandler;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.binding.ThingHandler;
+
+import javax.measure.MetricPrefix;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import javax.measure.quantity.Dimensionless;
+import java.math.BigDecimal;
+import java.util.Currency;
+
+import static org.openhab.binding.electric.common.monetary.Monetary.DEFAULT_CURRENCY;
+import static org.openhab.binding.electric.common.monetary.Monetary.energyPriceUnit;
+import static org.openhab.binding.electric.common.monetary.Monetary.moneyUnit;
+import static org.openhab.binding.electric.common.monetary.Monetary.parseEnergyUnit;
+import static org.openhab.binding.electric.common.monetary.Monetary.percent;
+import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 
 /**
  * Price service.
@@ -27,14 +42,55 @@ import org.openhab.core.thing.binding.ThingHandler;
 @NonNullByDefault
 public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     public static class Config {
-
+        String currency = DEFAULT_CURRENCY.getCurrencyCode();
+        String subunit = "";
+        String energy = MEGAWATT_HOUR.toString();
+        BigDecimal tax = BigDecimal.ZERO;
+        int vat;
+        @Nullable Integer sales;
+        int precision = 7;
+        int scale = 2;
     }
 
-    private @Nullable TariffContract distributor;
-    private @Nullable TariffContract seller;
+    private @Nullable PriceProvider<?> distributor;
+    private @Nullable PriceProvider<?> seller;
+
+    private Currency currency = DEFAULT_CURRENCY;
+    private Unit<EnergyPrice> unit = energyPriceUnit(currency, MEGAWATT_HOUR);
+    private Quantity<Dimensionless> vatRate = percent(0);
+    private Quantity<Dimensionless> salesVatRate = vatRate;
 
     public PriceService(Bridge bridge) {
         super(bridge, Config.class);
+    }
+
+    @Override
+    public void initialize() {
+        try {
+            var config = getConfiguration();
+            currency = Currency.getInstance(config.currency);
+            var money = moneyUnit(currency);
+            if (!config.subunit.isBlank()) {
+                money = MetricPrefix.CENTI(money);
+                // TODO register sub unit
+            }
+            unit = energyPriceUnit(money, parseEnergyUnit(config.energy));
+            vatRate = percent(config.vat);
+            var sales = config.sales;
+            salesVatRate = sales == null ? vatRate : percent(sales);
+        } catch (Exception e) {
+            setOfflineConfigurationError();
+            logger.error("Failed to initialize!", e);
+        }
+        setOffline();
+    }
+
+    public Unit<EnergyPrice> getUnit() {
+        return unit;
+    }
+
+    public Quantity<Dimensionless> getVatRate(Product product) {
+        return Product.SALES.equals(product) ? salesVatRate : vatRate;
     }
 
     private void checkStatus() {
@@ -50,14 +106,9 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     }
 
     @Override
-    public void initialize() {
-        setOffline();
-    }
-
-    @Override
     public void childHandlerInitialized(ThingHandler childHandler, Thing childThing) {
         var typeId = childThing.getThingTypeUID();
-        if (childHandler instanceof TariffContract tariff) {
+        if (childHandler instanceof PriceProvider<?> tariff) {
             switch (tariff.getProduct()) {
                 case TRANSFER -> {
                     var distributor = this.distributor;

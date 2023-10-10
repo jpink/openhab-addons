@@ -29,9 +29,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.Interval;
 import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Area;
-import org.openhab.binding.electric.internal.handler.entsoe.dto.Interval;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.MarketDocument;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
 import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidParameter;

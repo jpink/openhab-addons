@@ -17,6 +17,12 @@ import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import java.util.Objects;
+
+import static org.openhab.binding.electric.common.monetary.Monetary.add;
+import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 /**
  * Taxable price created by amount.
@@ -28,7 +34,7 @@ public record TaxPriceByAmount<Q extends MonetaryQuantity<Q>> (Quantity<Q> amoun
         Quantity<Dimensionless> vatRate) implements TaxPrice<Q> {
     @Override
     public Quantity<Q> sum() {
-        return amount.add(vat());
+        return add(amount, vat());
     }
 
     @Override
@@ -44,5 +50,10 @@ public record TaxPriceByAmount<Q extends MonetaryQuantity<Q>> (Quantity<Q> amoun
     @Override
     public TaxPrice<Q> bySum() {
         return new TaxPriceBySum<>(vatRate, sum());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        return this == o || o instanceof TaxPrice<?> p && amount.equals(p.amount()) && vatRate.equals(p.vatRate());
     }
 }

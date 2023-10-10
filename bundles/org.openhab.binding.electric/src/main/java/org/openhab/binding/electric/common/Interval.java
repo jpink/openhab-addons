@@ -20,10 +20,11 @@ import java.time.ZonedDateTime;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Zoned time interval.
+ * Zoned time interval interface.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
+@Deprecated
 @NonNullByDefault
 public interface Interval {
     ZonedDateTime start();

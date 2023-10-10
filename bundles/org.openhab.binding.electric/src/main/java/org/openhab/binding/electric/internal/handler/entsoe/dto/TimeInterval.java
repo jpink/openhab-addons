@@ -14,6 +14,8 @@ package org.openhab.binding.electric.internal.handler.entsoe.dto;
 
 import java.time.ZonedDateTime;
 
+import org.openhab.binding.electric.common.Interval;
+
 /**
  * Time interval data transfer object.
  *

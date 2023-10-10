@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 
+import org.openhab.binding.electric.common.Reflections;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -127,11 +128,14 @@ public abstract class ThingHandlerTest<I extends AbstractThingHandler<C>, C> ext
 
         @Override
         public @Nullable Bridge getBridge(ThingUID thingUID) {
-            return null;
+            var bridge = test.bridge;
+            return bridge != null && bridge.getUID().equals(thingUID) ? bridge : null;
         }
     }
 
     protected final Thing thing;
+
+    private @Nullable Bridge bridge;
 
     protected final Callback<I, C> callback = new Callback<>(this);
 
@@ -144,10 +148,11 @@ public abstract class ThingHandlerTest<I extends AbstractThingHandler<C>, C> ext
     }
 
     @Override
-    protected final I create() {
+    public final I create() {
         var instance = create(thing);
         assertEquals(thing, instance.getThing());
         instance.setCallback(callback);
+        thing.setHandler(instance);
         return instance;
     }
 
@@ -157,14 +162,28 @@ public abstract class ThingHandlerTest<I extends AbstractThingHandler<C>, C> ext
      * @param thing Mock of the thing object.
      * @return The thing handler to be tested.
      */
-    protected abstract I create(Thing thing);
+    protected I create(Thing thing) {
+        var testClass = getClass().getName();
+        return Reflections.create(Reflections.constructor(testClass.substring(0, testClass.length() - 4), Thing.class),
+                thing);
+    }
+
+    protected void setBridge(Class<? extends BridgeHandlerTest<?, ?>> type) {
+        var test = Reflections.create(type);
+        var handler = test.create();
+        handler.initialize();
+        bridge = (Bridge) handler.getThing();
+        thing.setBridgeUID(bridge.getUID());
+    }
 
     protected void setParameter(String name, Object value) {
         thing.getConfiguration().put(name, value);
     }
 
-    protected void initialize() {
-        getInstance().initialize();
+    protected I initialize() {
+        var instance = getInstance();
+        instance.initialize();
+        return instance;
     }
 
     @AfterEach

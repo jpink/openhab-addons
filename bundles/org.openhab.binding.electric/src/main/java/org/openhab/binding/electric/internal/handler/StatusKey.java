@@ -25,7 +25,8 @@ import org.openhab.core.thing.ThingStatusDetail;
  */
 @NonNullByDefault
 public enum StatusKey implements ThingStatusKey {
-    MISSING_PRICE(ThingStatusDetail.CONFIGURATION_ERROR);
+    MISSING_PRICE(ThingStatusDetail.CONFIGURATION_ERROR),
+    MISSING_PRICE_BRIDGE(ThingStatusDetail.CONFIGURATION_ERROR);
 
     private final @Nullable ThingStatus status;
     private final @Nullable ThingStatusDetail detail;

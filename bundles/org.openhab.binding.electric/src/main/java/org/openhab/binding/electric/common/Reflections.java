@@ -16,6 +16,7 @@ import java.io.Serial;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -46,6 +47,14 @@ public class Reflections {
 
     public static <T> Constructor<T> constructor(String type, Class<?>... parameters) {
         return constructor(type(type), parameters);
+    }
+
+    public static <T> T create(String type, Object... arguments) {
+        return create(type(type), arguments);
+    }
+
+    public static <T> T create(Class<T> type, Object... arguments) {
+        return create(constructor(type, Arrays.stream(arguments).map(Object::getClass).toArray(Class[]::new)), arguments);
     }
 
     public static <T> T create(Constructor<T> constructor, Object... arguments) {

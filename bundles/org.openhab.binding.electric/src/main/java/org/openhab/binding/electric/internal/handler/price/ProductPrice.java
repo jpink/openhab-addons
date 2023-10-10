@@ -12,21 +12,16 @@
  */
 package org.openhab.binding.electric.internal.handler.price;
 
-import java.time.LocalDateTime;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.electric.common.Interval;
+import org.openhab.binding.electric.common.HasInterval;
 import org.openhab.binding.electric.common.monetary.EnergyPrice;
-import org.openhab.core.thing.binding.ThingHandler;
+import org.openhab.binding.electric.common.monetary.TaxPrice;
+import org.threeten.extra.Interval;
 
 /**
- * Represents a single electricity product and tariff that the company charges.
+ * Product price
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public interface TariffContract extends Interval, ThingHandler {
-    Product getProduct();
-
-    EnergyPrice getPrice(LocalDateTime time);
-}
+public record ProductPrice(Product product, TaxPrice<EnergyPrice> price, Interval interval) implements HasInterval {}

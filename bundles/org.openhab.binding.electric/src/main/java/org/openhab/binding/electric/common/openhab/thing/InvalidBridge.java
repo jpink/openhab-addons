@@ -10,18 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.price;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
+package org.openhab.binding.electric.common.openhab.thing;
 
 /**
- * Product of electricity
+ * The thing bridge is missing or invalid.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-@NonNullByDefault
-public enum Product {
-    SALES,
-    TAX,
-    TRANSFER,
+public class InvalidBridge extends IllegalStateException {
 }

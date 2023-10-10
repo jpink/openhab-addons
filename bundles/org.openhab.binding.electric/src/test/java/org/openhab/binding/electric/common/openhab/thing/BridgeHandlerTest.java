@@ -13,6 +13,7 @@
 package org.openhab.binding.electric.common.openhab.thing;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.electric.common.Reflections;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -24,9 +25,7 @@ import org.openhab.core.thing.binding.builder.BridgeBuilder;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public abstract class BridgeHandlerTest<I extends AbstractBridgeHandler<C>, C> extends ThingHandlerTest<I, C> {
-
-    protected final Bridge bridge = (Bridge) thing;
+public abstract class BridgeHandlerTest<I extends AbstractThingHandler<C>, C> extends ThingHandlerTest<I, C> {
 
     protected BridgeHandlerTest(ThingTypeUID type) {
         super(BridgeBuilder.create(type, "test").build());
@@ -38,9 +37,13 @@ public abstract class BridgeHandlerTest<I extends AbstractBridgeHandler<C>, C> e
      * @param bridge Mock of the bridge object.
      * @return The bridge handler to be tested.
      */
-    protected abstract I create(Bridge bridge);
+    protected I create(Bridge bridge) {
+        var testClass = getClass().getName();
+        return Reflections.create(Reflections.constructor(testClass.substring(0, testClass.length() - 4), Bridge.class),
+                bridge);
+    }
 
     protected final I create(Thing thing) {
-        return create(bridge);
+        return create((Bridge) thing);
     }
 }

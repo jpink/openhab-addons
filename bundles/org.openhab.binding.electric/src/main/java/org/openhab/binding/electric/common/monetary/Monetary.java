@@ -14,18 +14,19 @@ package org.openhab.binding.electric.common.monetary;
 
 import static javax.measure.Quantity.Scale.RELATIVE;
 import static org.openhab.binding.electric.common.Text.splitWhitespace;
+import static org.openhab.core.library.unit.Units.JOULE;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 import static org.openhab.core.library.unit.Units.PERCENT;
 import static org.openhab.core.library.unit.Units.YEAR;
 import static org.openhab.core.library.unit.Units.getInstance;
-import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 import javax.measure.MetricPrefix;
 import javax.measure.Quantity;
@@ -46,6 +47,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @SuppressWarnings("unchecked")
 @NonNullByDefault
 public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
+    public static final Currency DEFAULT_CURRENCY = Currency.getInstance(Locale.getDefault());
     public static final Monetary INSTANCE = new Monetary();
     public static final Unit<Time> MONTH = add(YEAR.divide(12), "Month", "mo", "kk");
     public static final Unit<Money> ALL = add("ALL", "Lekë", 'ë');
@@ -80,6 +82,12 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     public static final Unit<Money> USD = add("USD");
     public static final Unit<Money> USD_CENT = addCent(USD, "Dollar cent", "¢");
     public static MathContext mathContext = MathContext.DECIMAL32;
+    public static final Quantity<Dimensionless> ZERO = percent(0);
+
+    public static <Q extends Quantity<Q>> Quantity<Q> add(Quantity<Q> quantity, Quantity<Q> addend) {
+        var sum = quantity.add(addend);
+        return quantity(sum.getValue(), sum.getUnit());
+    }
 
     public static BigDecimal bigDecimal(BigDecimal value) {
         return (value.precision() > mathContext.getPrecision()
@@ -118,15 +126,15 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
 
     public static Quantity<?> divide(Quantity<?> dividend, Quantity<?> divisor) {
         var quantity = dividend.divide(divisor);
-        return getQuantity(bigDecimal(quantity.getValue()), quantity.getUnit());
+        return quantity(quantity.getValue(), quantity.getUnit());
     }
 
     public static Quantity<EnergyPrice> energyPrice(String amountAndUnit) {
-        return (Quantity<EnergyPrice>) getQuantity(amountAndUnit);
+        return (Quantity<EnergyPrice>) quantity(amountAndUnit);
     }
 
-    public static Quantity<EnergyPrice> energyPrice(Number amount, Unit<EnergyPrice> unit) {
-        return getQuantity(amount, unit, RELATIVE);
+    public static Quantity<EnergyPrice> energyPrice(Number value, Unit<EnergyPrice> unit) {
+        return quantity(value, unit);
     }
 
     public static Unit<EnergyPrice> energyPriceUnit(Currency currency, Unit<Energy> energy) {
@@ -154,15 +162,15 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     }
 
     public static <Q extends MonetaryQuantity<Q>> Quantity<Q> monetary(BigDecimal amount, Unit<Q> unit, Class<Q> type) {
-        return getQuantity(amount, unit, RELATIVE).asType(type);
+        return quantity(amount, unit).asType(type); // TODO remove asType
     }
 
     public static Quantity<Money> money(String amountAndUnit) {
-        return (Quantity<Money>) getQuantity(amountAndUnit);
+        return (Quantity<Money>) quantity(amountAndUnit);
     }
 
     public static Quantity<Money> money(Number amount, Unit<Money> unit) {
-        return getQuantity(amount, unit, RELATIVE);
+        return quantity(amount, unit);
     }
 
     public static Unit<Money> moneyCentUnit(Currency currency) {
@@ -181,16 +189,24 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
         return (Unit<Money>) parseUnit(symbols);
     }
 
+    public static Unit<Energy> parseEnergyUnit(String symbols) {
+        var unit = parseUnit(symbols);
+        if (unit.isCompatible(JOULE)) {
+            return (Unit<Energy>) unit;
+        }
+        throw new IllegalArgumentException("'" + symbols + "' isn't energy unit!");
+    }
+
     public static Unit<?> parseUnit(String symbols) {
         return INSTANCE.simpleUnitFormat.parse(symbols);
     }
 
     public static Quantity<Dimensionless> percent(int percentage) {
-        return getQuantity(percentage, PERCENT, RELATIVE);
+        return quantity(percentage, PERCENT);
     }
 
     public static Quantity<Dimensionless> percent(Number percentage) {
-        return getQuantity(percentage, PERCENT, RELATIVE);
+        return quantity(percentage, PERCENT);
     }
 
     public static Quantity<?> quantity(String amountAndUnit) {
@@ -205,8 +221,12 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
         return quantity(amountAndUnit).asType(type);
     }
 
-    public static Quantity<?> quantity(String amount, String unit) {
-        return getQuantity(bigDecimal(amount), unit(unit), RELATIVE);
+    public static Quantity<?> quantity(String value, String unit) {
+        return tech.units.indriya.quantity.Quantities.getQuantity(bigDecimal(value), unit(unit), RELATIVE);
+    }
+
+    public static <Q extends Quantity<Q>> Quantity<Q> quantity(Number value, Unit<Q> unit) {
+        return tech.units.indriya.quantity.Quantities.getQuantity(bigDecimal(value), unit, RELATIVE);
     }
 
     public static void setPrecision(int precision) {
@@ -219,7 +239,7 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Number amount, Unit<Q> unit,
             Quantity<Dimensionless> vatRate) {
-        return taxPrice(getQuantity(amount, unit, RELATIVE), vatRate);
+        return taxPrice(quantity(amount, unit), vatRate);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPrice(Quantity<Q> amount,
@@ -238,7 +258,7 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Number sum, Unit<Q> unit,
             Quantity<Dimensionless> vatRate) {
-        return taxPriceOfSum(getQuantity(sum, unit, RELATIVE), vatRate);
+        return taxPriceOfSum(quantity(sum, unit), vatRate);
     }
 
     public static <Q extends MonetaryQuantity<Q>> TaxPrice<Q> taxPriceOfSum(Quantity<Q> sum,
@@ -252,11 +272,15 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     }
 
     public static Quantity<TemporalPrice> temporalPrice(String amountAndUnit) {
-        return (Quantity<TemporalPrice>) getQuantity(amountAndUnit);
+        return (Quantity<TemporalPrice>) quantity(amountAndUnit);
     }
 
     public static Quantity<TemporalPrice> temporalPrice(Number amount, Unit<TemporalPrice> unit) {
-        return getQuantity(amount, unit, RELATIVE);
+        return quantity(amount, unit);
+    }
+
+    public static <Q extends Quantity<Q>> Quantity<Q> to(Quantity<Q> quantity, Unit<Q> unit) {
+        return quantity(quantity.to(unit).getValue(), unit);
     }
 
     public static Unit<?> unit(String symbols) {

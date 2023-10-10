@@ -13,6 +13,7 @@
 package org.openhab.binding.electric.common.monetary;
 
 import static org.openhab.binding.electric.common.monetary.Monetary.divide;
+import static org.openhab.binding.electric.common.monetary.Monetary.to;
 import static tech.units.indriya.AbstractQuantity.ONE;
 
 import javax.measure.Quantity;
@@ -20,6 +21,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Taxable price created by the sum.
@@ -32,7 +34,7 @@ public record TaxPriceBySum<Q extends MonetaryQuantity<Q>> (Quantity<Dimensionle
         Quantity<Q> sum) implements TaxPrice<Q> {
     @Override
     public Quantity<Q> amount() {
-        return ((Quantity<Q>) divide(sum, vatRate.add(ONE))).to(unit());
+        return to((Quantity<Q>) divide(sum, vatRate.add(ONE)), unit());
     }
 
     @Override
@@ -48,5 +50,10 @@ public record TaxPriceBySum<Q extends MonetaryQuantity<Q>> (Quantity<Dimensionle
     @Override
     public TaxPrice<Q> bySum() {
         return this;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+        return this == o || o instanceof TaxPrice<?> p && vatRate.equals(p.vatRate()) && sum.equals(p.sum());
     }
 }

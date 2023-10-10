@@ -24,20 +24,9 @@ import org.openhab.core.thing.Bridge;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-class PriceServiceTest extends BridgeHandlerTest<PriceService, PriceService.Config> {
+public class PriceServiceTest extends BridgeHandlerTest<PriceService, PriceService.Config> {
 
-    PriceServiceTest() {
+    public PriceServiceTest() {
         super(BRIDGE_TYPE_PRICE);
-    }
-
-    /**
-     * Create a new bridge handler instance before each test.
-     *
-     * @param bridge Mock of the bridge object.
-     * @return The bridge handler to be tested.
-     */
-    @Override
-    protected PriceService create(Bridge bridge) {
-        return new PriceService(bridge);
     }
 }

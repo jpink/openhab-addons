@@ -35,8 +35,8 @@ import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.electric.common.Interval;
 import org.openhab.binding.electric.common.monetary.EnergyPrice;
-import org.openhab.binding.electric.internal.handler.entsoe.dto.Interval;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
 import org.openhab.binding.electric.internal.handler.price.PriceConfig;
 

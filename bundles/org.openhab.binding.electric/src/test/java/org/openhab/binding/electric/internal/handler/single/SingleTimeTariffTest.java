@@ -12,14 +12,23 @@
  */
 package org.openhab.binding.electric.internal.handler.single;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.openhab.binding.electric.common.monetary.Monetary.EURO_PER_MEGAWATT_HOUR;
+import static org.openhab.binding.electric.common.monetary.Monetary.ZERO;
+import static org.openhab.binding.electric.common.monetary.Monetary.taxPrice;
 import static org.openhab.binding.electric.internal.ElectricBindingConstants.THING_TYPE_SINGLE;
 import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.electric.common.openhab.thing.ThingHandlerTest;
-import org.openhab.core.thing.Thing;
+import org.openhab.binding.electric.internal.handler.price.PriceServiceTest;
+import org.openhab.binding.electric.internal.handler.price.Product;
+import org.openhab.binding.electric.internal.handler.price.ProductPrice;
+import org.threeten.extra.Interval;
+
+import java.util.Collections;
 
 /**
  * Single-time tariff unit tests.
@@ -31,17 +40,7 @@ class SingleTimeTariffTest extends ThingHandlerTest<SingleTimeTariff, SingleTime
 
     protected SingleTimeTariffTest() {
         super(THING_TYPE_SINGLE);
-    }
-
-    /**
-     * Create a new thing handler instance before each test.
-     *
-     * @param thing Mock of the thing object.
-     * @return The thing handler to be tested.
-     */
-    @Override
-    protected SingleTimeTariff create(Thing thing) {
-        return new SingleTimeTariff(thing);
+        setBridge(PriceServiceTest.class);
     }
 
     @Test
@@ -52,12 +51,45 @@ class SingleTimeTariffTest extends ThingHandlerTest<SingleTimeTariff, SingleTime
     }
 
     @Test
-    @Disabled
-    public void initializeWhenTransferPriceThenOnline() {
-        setParameter("transfer", 3.4);
+    public void initializeWhenPriceThenOnline() {
+        setParameter("price", 3.4);
 
         initialize();
 
         assertOnline();
+    }
+
+    @Test
+    public void getProductWhenDefaultThenTransfer() {
+        assertEquals(Product.TRANSFER, initialize().getProduct());
+    }
+
+    @Test
+    public void getProductWhenSalesThenSales() {
+        setParameter("product", "SALES");
+        assertEquals(Product.SALES, initialize().getProduct());
+    }
+
+    @Test
+    public void getProductWhenTransferThenTransfer() {
+        setParameter("product", "TRANSFER");
+        assertEquals(Product.TRANSFER, initialize().getProduct());
+    }
+
+    @Test
+    public void getPricesWhenDefaultThenEmpty() {
+        assertTrue(initialize().getPrices().isEmpty());
+    }
+
+    @Test
+    public void getPricesWhenPriceThenSingle() {
+        var price = 3.4;
+        setParameter("price", price);
+        var expected = Collections.singletonList(new ProductPrice(Product.TRANSFER,
+                taxPrice(price, EURO_PER_MEGAWATT_HOUR, ZERO), Interval.ALL));
+
+        var prices = initialize().getPrices();
+
+        assertEquals(expected, prices);
     }
 }

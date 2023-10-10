@@ -28,11 +28,13 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseThingHandler;
+import org.openhab.core.thing.binding.builder.BridgeBuilder;
 import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * Abstract thing handler.
  *
  * @author Jukka Papinkivi - Initial contribution
+ * @see org.openhab.core.thing.binding.BaseBridgeHandler
  */
 @NonNullByDefault
 public abstract class AbstractThingHandler<C> extends BaseThingHandler {
@@ -56,6 +59,7 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
      * Creates a new instance of this class for the {@link Thing}.
      *
      * @param thing the thing that should be handled, not null
+     * @param configurationClass the configuration class
      */
     public AbstractThingHandler(Thing thing, Class<C> configurationClass) {
         super(thing);
@@ -113,9 +117,19 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
      * }
      */
 
+    protected BridgeBuilder editBridge() {
+        if (thing instanceof Bridge) {
+            return BridgeBuilder.create(thing.getThingTypeUID(), thing.getUID()).withBridge(thing.getBridgeUID())
+                    .withChannels(thing.getChannels()).withConfiguration(thing.getConfiguration())
+                    .withLabel(thing.getLabel()).withLocation(thing.getLocation()).withProperties(thing.getProperties());
+        }
+        throw new NotBridge();
+    }
+
     protected C getConfiguration() {
         var configuration = getConfigAs(configurationClass);
         if (configuration == null) {
+            setOfflineConfigurationError();
             throw new IllegalStateException("Can't create " + configurationClass.getName());
         }
         return configuration;
@@ -149,7 +163,7 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
         updateStatus(OFFLINE);
     }
 
-    protected final void setOfflineConfigurationPending() {
+    protected final void setOfflineConfigurationError() {
         updateStatus(OFFLINE, CONFIGURATION_ERROR);
     }
 

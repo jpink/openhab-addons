@@ -10,18 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.price;
+package org.openhab.binding.electric.common;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.threeten.extra.Interval;
 
 /**
- * Product of electricity
+ * Has interval.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-@NonNullByDefault
-public enum Product {
-    SALES,
-    TAX,
-    TRANSFER,
+public interface HasInterval {
+    Interval interval();
 }
