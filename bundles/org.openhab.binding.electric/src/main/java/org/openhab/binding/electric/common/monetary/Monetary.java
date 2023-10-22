@@ -47,7 +47,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @SuppressWarnings("unchecked")
 @NonNullByDefault
 public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
-    public static final Currency DEFAULT_CURRENCY = Currency.getInstance(Locale.getDefault());
     public static final Monetary INSTANCE = new Monetary();
     public static final Unit<Time> MONTH = add(YEAR.divide(12), "Month", "mo", "kk");
     public static final Unit<Money> ALL = add("ALL", "Lekë", 'ë');
@@ -61,6 +60,7 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     public static final Unit<Money> DKK = add("DKK", "DKr", '߾');
     public static final Unit<Money> EUR = add("EUR", "€", '₠');
     public static final Unit<Money> EUR_CENT = addCent(EUR, "Euro cent", "c", "snt");
+    public static final Currency EURO = Currency.getInstance("EUR");
     public static final Unit<EnergyPrice> EURO_PER_MEGAWATT_HOUR = energyPriceUnit(EUR, MEGAWATT_HOUR);
     public static final Unit<EnergyPrice> EURO_CENT_PER_KILOWATT_HOUR = energyPriceUnit(EUR_CENT, KILOWATT_HOUR);
     public static final Unit<Money> GBP = add("GBP");
@@ -127,6 +127,10 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
     public static Quantity<?> divide(Quantity<?> dividend, Quantity<?> divisor) {
         var quantity = dividend.divide(divisor);
         return quantity(quantity.getValue(), quantity.getUnit());
+    }
+
+    public static Currency defaultCurrency() {
+        return Currency.getInstance(Locale.getDefault());
     }
 
     public static Quantity<EnergyPrice> energyPrice(String amountAndUnit) {

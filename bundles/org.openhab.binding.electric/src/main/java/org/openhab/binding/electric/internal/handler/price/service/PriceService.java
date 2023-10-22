@@ -34,12 +34,6 @@ import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Area;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.MarketDocument;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidParameter;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooLong;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooMany;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooShort;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.Unauthorized;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.UnknownResponse;
 import org.openhab.binding.electric.internal.handler.price.PriceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class PriceService implements Interval {
+public class PriceService {
     /**
      * An about time when tomorrow prices are published.
      *
@@ -62,108 +56,108 @@ public class PriceService implements Interval {
     private final Logger logger = LoggerFactory.getLogger(PriceService.class);
     private final PriceConfig config;
     private final EntsoeClient client;
-    private PriceCache cache;
+//    private PriceCache cache;
 
     public PriceService(PriceConfig config, EntsoeClient client)
-            throws Bug, CurrencyMismatch, InterruptedException, TimeoutException, Unauthorized {
+            throws Bug, CurrencyMismatch, InterruptedException, TimeoutException {
         this.config = config;
         this.client = client;
-        cache = new PriceCache(config, getDayAheadPrices(evenHour()));
+//        cache = new PriceCache(config, getDayAheadPrices(evenHour()));
     }
 
-    @Override
-    public ZonedDateTime start() {
-        return cache.start();
-    }
-
-    @Override
-    public ZonedDateTime end() {
-        return cache.end();
-    }
-
-    public Duration resolution() {
-        return cache.resolution;
-    }
+//    @Override
+//    public ZonedDateTime start() {
+//        return cache.start();
+//    }
+//
+//    @Override
+//    public ZonedDateTime end() {
+//        return cache.end();
+//    }
+//
+//    public Duration resolution() {
+//        return cache.resolution;
+//    }
 
     private <T> T bug(Throwable t) throws Bug {
         logger.error("Please report the following bug!", t);
         throw new Bug(t);
     }
 
-    private MarketDocument searchDayAheadPrices(ZonedDateTime start)
-            throws Bug, InterruptedException, TimeoutException, Unauthorized {
-        try {
-            return client.getDayAheadPrices(start, start.plusDays(1));
-        } catch (ExecutionException | InvalidParameter | TooLong | TooMany | TooShort | UnknownResponse e) {
-            return bug(e);
-        }
-    }
+//    private MarketDocument searchDayAheadPrices(ZonedDateTime start)
+//            throws Bug, InterruptedException, TimeoutException {
+//        try {
+//            return client.getDayAheadPrices(start, start.plusDays(1));
+//        } catch (ExecutionException e) {
+//            return bug(e);
+//        }
+//    }
 
-    private Publication getDayAheadPrices(ZonedDateTime start)
-            throws Bug, InterruptedException, TimeoutException, Unauthorized {
-        try {
-            var document = searchDayAheadPrices(start);
-            if (document instanceof Publication publication) {
-                return publication;
-            }
-            debug(logger, document);
-            document = searchDayAheadPrices(start.minusDays(1));
-            if (document instanceof Publication publication) {
-                return publication;
-            }
-            debug(logger, document);
-            return (Publication) searchDayAheadPrices(start.minusDays(2));
-        } catch (ClassCastException e) {
-            return bug(e);
-        }
-    }
+//    private Publication getDayAheadPrices(ZonedDateTime start)
+//            throws Bug, InterruptedException, TimeoutException {
+//        try {
+//            var document = searchDayAheadPrices(start);
+//            if (document instanceof Publication publication) {
+//                return publication;
+//            }
+//            debug(logger, document);
+//            document = searchDayAheadPrices(start.minusDays(1));
+//            if (document instanceof Publication publication) {
+//                return publication;
+//            }
+//            debug(logger, document);
+//            return (Publication) searchDayAheadPrices(start.minusDays(2));
+//        } catch (ClassCastException e) {
+//            return bug(e);
+//        }
+//    }
 
-    public @Nullable ElectricityPrice currentPrice() throws Bug {
-        try {
-            var now = ZonedDateTime.now();
-            if (contains(now)) {
-                return cache.currentPrice(now);
-            } else {
-                logger.warn("Data is too old!");
-                return null;
-            }
-        } catch (Exception e) {
-            return bug(e);
-        }
-    }
+//    public @Nullable ElectricityPrice currentPrice() throws Bug {
+//        try {
+//            var now = ZonedDateTime.now();
+//            if (contains(now)) {
+//                return cache.currentPrice(now);
+//            } else {
+//                logger.warn("Data is too old!");
+//                return null;
+//            }
+//        } catch (Exception e) {
+//            return bug(e);
+//        }
+//    }
 
-    public ZonedDateTime refresh() throws Bug, CurrencyMismatch, InterruptedException, TimeoutException, Unauthorized {
-        var now = ZonedDateTime.now();
-        if (contains(now) && ENOUGH_DATA.compareTo(Duration.between(now, end())) < 0) {
-            logger.trace("Enough data already fetched.");
-        } else {
-            if (gone(set(now, PUBLISHED))) {
-                var document = searchDayAheadPrices(end());
-                if (document instanceof Publication publication) {
-                    cache = new PriceCache(config, publication);
-                } else {
-                    debug(logger, document);
-                }
-            } else {
-                logger.debug("Waiting for tomorrow's publication.");
-            }
-        }
-        return cache.zonedCreated;
-    }
+//    public ZonedDateTime refresh() throws Bug, CurrencyMismatch, InterruptedException, TimeoutException {
+//        var now = ZonedDateTime.now();
+//        if (contains(now) && ENOUGH_DATA.compareTo(Duration.between(now, end())) < 0) {
+//            logger.trace("Enough data already fetched.");
+//        } else {
+//            if (gone(set(now, PUBLISHED))) {
+//                var document = searchDayAheadPrices(end());
+//                if (document instanceof Publication publication) {
+//                    cache = new PriceCache(config, publication);
+//                } else {
+//                    debug(logger, document);
+//                }
+//            } else {
+//                logger.debug("Waiting for tomorrow's publication.");
+//            }
+//        }
+//        return cache.zonedCreated;
+//    }
 
-    public Map<String, String> updateProperties(Map<String, String> properties) {
-        properties.put("currency", config.responseCurrency.getDisplayName());
-        String domain = cache.domain;
-        try {
-            domain = Area.valueOf(domain).meaning;
-        } catch (IllegalArgumentException ignored) {
-        }
-        properties.put("domain", domain);
-        properties.put("measure", config.responseMeasure.toString());
-        properties.put("published", set(convert(ZonedDateTime.now(), config.zone), PUBLISHED).toString());
-        properties.put("resolution", resolution().toMinutes() + " min");
-        properties.put("start", start().format(DateTimeFormatter.ISO_TIME));
-        properties.put("unit", config.spotUnit.toString());
-        return properties;
-    }
+//    public Map<String, String> updateProperties(Map<String, String> properties) {
+//        properties.put("currency", config.responseCurrency.getDisplayName());
+//        String domain = cache.domain;
+//        try {
+//            domain = Area.valueOf(domain).meaning;
+//        } catch (IllegalArgumentException ignored) {
+//        }
+//        properties.put("domain", domain);
+//        properties.put("measure", config.responseMeasure.toString());
+//        properties.put("published", set(convert(ZonedDateTime.now(), config.zone), PUBLISHED).toString());
+//        properties.put("resolution", resolution().toMinutes() + " min");
+//        properties.put("start", start().format(DateTimeFormatter.ISO_TIME));
+//        properties.put("unit", config.spotUnit.toString());
+//        return properties;
+//    }
 }

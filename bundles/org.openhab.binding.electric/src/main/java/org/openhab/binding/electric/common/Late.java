@@ -10,30 +10,37 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.entsoe.exception;
-
-import java.io.Serial;
+package org.openhab.binding.electric.common;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import java.util.function.Supplier;
+
 /**
- * Unknown response exception.
+ * Late initialization variable.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
+public class Late<T> implements Supplier<T> {
+    private @Nullable T instance;
 
-public class UnknownResponse extends Exception {
+    /**
+     * Gets a result.
+     *
+     * @return a result
+     */
+    @Override
+    public T get() {
+        var value = instance;
+        if (value == null) {
+            throw new NullPointerException("Late initialization variable not yet initialized!");
+        }
+        return value;
+    }
 
-    @Serial
-    private static final long serialVersionUID = -3279306525482845066L;
-    public final String url;
-    public final int status;
-
-    public UnknownResponse(String url, int status, String content, @Nullable Exception cause) {
-        super(content, cause);
-        this.status = status;
-        this.url = url;
+    public void set(T instance) {
+        this.instance = instance;
     }
 }

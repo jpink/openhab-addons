@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.single;
+package org.openhab.binding.electric.internal.handler.fixed;
 
 import static org.openhab.binding.electric.common.monetary.Monetary.taxPriceOfSum;
 import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE;
@@ -32,7 +32,7 @@ import org.threeten.extra.Interval;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class SingleTimeTariff extends PriceProvider<SingleTimeTariff.Config> {
+public class FixedPrice extends PriceProvider<FixedPrice.Config> {
     public static class Config {
         Product product = Product.TRANSFER;
         BigDecimal price = BigDecimal.ZERO;
@@ -41,7 +41,7 @@ public class SingleTimeTariff extends PriceProvider<SingleTimeTariff.Config> {
     private Product product = Product.TRANSFER;
     private List<ProductPrice> prices = Collections.emptyList();
 
-    public SingleTimeTariff(Thing thing) {
+    public FixedPrice(Thing thing) {
         super(thing, Config.class);
     }
 

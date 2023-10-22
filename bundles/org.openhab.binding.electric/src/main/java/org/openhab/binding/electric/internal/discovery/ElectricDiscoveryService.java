@@ -37,9 +37,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(service = DiscoveryService.class, immediate = true, configurationPid = "discovery." + BINDING_ID)
 @NonNullByDefault
-public class EntsoeDiscoveryService extends AbstractDiscoveryService {
+public class ElectricDiscoveryService extends AbstractDiscoveryService {
     @Activate
-    public EntsoeDiscoveryService(@Reference TranslationProvider i18nProvider, @Reference LocaleProvider localeProvider)
+    public ElectricDiscoveryService(@Reference TranslationProvider i18nProvider, @Reference LocaleProvider localeProvider)
             throws IllegalArgumentException {
         super(Set.of(BRIDGE_TYPE_PRICE), 10, false);
         this.i18nProvider = i18nProvider;

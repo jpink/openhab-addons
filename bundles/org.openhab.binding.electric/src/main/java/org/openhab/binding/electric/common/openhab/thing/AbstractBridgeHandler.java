@@ -14,6 +14,7 @@ package org.openhab.binding.electric.common.openhab.thing;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.Bridge;
+import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.binding.BridgeHandler;
 import org.openhab.core.thing.binding.builder.BridgeBuilder;
 
@@ -26,8 +27,9 @@ import org.openhab.core.thing.binding.builder.BridgeBuilder;
 @NonNullByDefault
 public abstract class AbstractBridgeHandler<C> extends AbstractThingHandler<C> implements BridgeHandler {
 
-    public AbstractBridgeHandler(Bridge bridge, Class<C> configurationClass) {
+    public AbstractBridgeHandler(Thing bridge, Class<C> configurationClass) {
         super(bridge, configurationClass);
+        if (!(bridge instanceof Bridge)) throw new IllegalArgumentException("Bridge needed!");
     }
 
     @Override

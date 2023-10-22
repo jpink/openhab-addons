@@ -14,19 +14,18 @@ package org.openhab.binding.electric.internal.handler;
 
 import static org.openhab.binding.electric.internal.ElectricBindingConstants.*;
 
-import java.util.Set;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.openhab.thing.AbstractThingHandlerFactory;
+import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
 import org.openhab.binding.electric.internal.handler.price.PriceService;
-import org.openhab.binding.electric.internal.handler.single.SingleTimeTariff;
-import org.openhab.core.thing.Bridge;
-import org.openhab.core.thing.Thing;
-import org.openhab.core.thing.ThingTypeUID;
-import org.openhab.core.thing.binding.BaseThingHandlerFactory;
-import org.openhab.core.thing.binding.ThingHandler;
+import org.openhab.binding.electric.internal.handler.fixed.FixedPrice;
+import org.openhab.core.i18n.TimeZoneProvider;
+import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * The {@link ElectricHandlerFactory} is responsible for creating things and thing
@@ -36,27 +35,12 @@ import org.osgi.service.component.annotations.Component;
  */
 @NonNullByDefault
 @Component(configurationPid = "binding.electric", service = ThingHandlerFactory.class)
-public class ElectricHandlerFactory extends BaseThingHandlerFactory {
-
-    private static final Set<ThingTypeUID> SUPPORTED = Set.of(BRIDGE_TYPE_PRICE, THING_TYPE_SINGLE);
-
-    @Override
-    public boolean supportsThingType(ThingTypeUID thingTypeUID) {
-        return SUPPORTED.contains(thingTypeUID);
-    }
-
-    @Override
-    protected @Nullable ThingHandler createHandler(Thing thing) {
-        var type = thing.getThingTypeUID();
-        if (thing instanceof Bridge bridge) {
-            if (BRIDGE_TYPE_PRICE.equals(type)) {
-                return new PriceService(bridge);
-            }
-        } else {
-            if (THING_TYPE_SINGLE.equals(type)) {
-                return new SingleTimeTariff(thing);
-            }
-        }
-        return null;
+public class ElectricHandlerFactory extends AbstractThingHandlerFactory {
+    public ElectricHandlerFactory(@Reference HttpClientFactory client, @Reference TimeZoneProvider zone) {
+        super(Map.of( //
+                BRIDGE_TYPE_PRICE, PriceService::new, //
+                THING_TYPE_ENTSOE, thing -> new EntsoeClient(client, thing), //
+                THING_TYPE_FIXED, FixedPrice::new
+        ));
     }
 }

@@ -21,7 +21,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public enum Product {
+    MARGIN,
     SALES,
+    SPOT,
     TAX,
     TRANSFER,
 }

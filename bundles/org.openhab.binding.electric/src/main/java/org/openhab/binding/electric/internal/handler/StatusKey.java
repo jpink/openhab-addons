@@ -25,8 +25,12 @@ import org.openhab.core.thing.ThingStatusDetail;
  */
 @NonNullByDefault
 public enum StatusKey implements ThingStatusKey {
+    ENTSOE_INVALID_AREA(ThingStatusDetail.CONFIGURATION_ERROR),
+    ENTSOE_INVALID_TOKEN(ThingStatusDetail.CONFIGURATION_ERROR),
+    INVALID_BASE_URL(ThingStatusDetail.CONFIGURATION_ERROR),
     MISSING_PRICE(ThingStatusDetail.CONFIGURATION_ERROR),
-    MISSING_PRICE_BRIDGE(ThingStatusDetail.CONFIGURATION_ERROR);
+    MISSING_PRICE_BRIDGE(ThingStatusDetail.CONFIGURATION_ERROR),
+    UNAUTHORIZED(ThingStatusDetail.CONFIGURATION_ERROR);
 
     private final @Nullable ThingStatus status;
     private final @Nullable ThingStatusDetail detail;

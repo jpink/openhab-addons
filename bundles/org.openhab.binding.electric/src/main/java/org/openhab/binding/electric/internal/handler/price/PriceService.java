@@ -27,7 +27,7 @@ import javax.measure.quantity.Dimensionless;
 import java.math.BigDecimal;
 import java.util.Currency;
 
-import static org.openhab.binding.electric.common.monetary.Monetary.DEFAULT_CURRENCY;
+import static org.openhab.binding.electric.common.monetary.Monetary.EURO;
 import static org.openhab.binding.electric.common.monetary.Monetary.energyPriceUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.moneyUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.parseEnergyUnit;
@@ -42,7 +42,7 @@ import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 @NonNullByDefault
 public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     public static class Config {
-        String currency = DEFAULT_CURRENCY.getCurrencyCode();
+        String currency = "EUR";
         String subunit = "";
         String energy = MEGAWATT_HOUR.toString();
         BigDecimal tax = BigDecimal.ZERO;
@@ -55,12 +55,12 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     private @Nullable PriceProvider<?> distributor;
     private @Nullable PriceProvider<?> seller;
 
-    private Currency currency = DEFAULT_CURRENCY;
+    private Currency currency = EURO;
     private Unit<EnergyPrice> unit = energyPriceUnit(currency, MEGAWATT_HOUR);
     private Quantity<Dimensionless> vatRate = percent(0);
     private Quantity<Dimensionless> salesVatRate = vatRate;
 
-    public PriceService(Bridge bridge) {
+    public PriceService(Thing bridge) {
         super(bridge, Config.class);
     }
 
@@ -84,6 +84,8 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
         }
         setOffline();
     }
+
+    public Currency getCurrency() { return currency; }
 
     public Unit<EnergyPrice> getUnit() {
         return unit;

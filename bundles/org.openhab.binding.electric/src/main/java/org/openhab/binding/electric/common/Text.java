@@ -17,6 +17,8 @@ import java.util.Locale;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import static org.openhab.binding.electric.common.Core.elvis;
+
 /**
  * Text helper functions.
  *
@@ -24,12 +26,10 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 @NonNullByDefault
 public class Text {
+    public static String[] EMPTY_ARRAY = new String[0];
+
     public static String[] splitWhitespace(@Nullable String str) {
-        String[] splitted = null;
-        if (str != null) {
-            splitted = str.split("\\s");
-        }
-        return splitted == null ? new String[0] : splitted;
+        return str == null ? EMPTY_ARRAY : str.split("\\s");
     }
 
     public static String toExponent(int exponent) {
@@ -41,6 +41,10 @@ public class Text {
         };
     }
 
+    public static String toIdentityHashcodeHex(Object x) {
+        return Integer.toHexString(System.identityHashCode(x));
+    }
+
     /** Generates translation key from enumeration name. */
     public static String toTranslationKey(Enum<?> enumeration) {
         return toTranslationKey(enumeration.name());
@@ -49,5 +53,9 @@ public class Text {
     /** Converts to translation key. */
     public static String toTranslationKey(String name) {
         return name.toLowerCase(Locale.ROOT).replace('_', '-');
+    }
+
+    public static String decapitalize(String text) {
+        return text.isEmpty() ? text : text.substring(0, 1).toLowerCase() + text.substring(1);
     }
 }

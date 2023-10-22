@@ -10,23 +10,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.entsoe.exception;
-
-import java.io.Serial;
+package org.openhab.binding.electric.common.openhab.rest;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Invalid area exception.
+ * REST API Response.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class InvalidArea extends Exception {
-    @Serial
-    private static final long serialVersionUID = -745040893268448199L;
-
-    public InvalidArea(String area) {
-        super(area);
+public record Response(int status, String content) {
+    boolean success() {
+        return 200 <= status && status < 300;
+    }
+    boolean clientError() {
+        return 400 <= status && status < 500;
+    }
+    boolean serverError() {
+        return 500 <= status && status < 600;
     }
 }

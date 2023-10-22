@@ -66,6 +66,10 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
         this.configurationClass = configurationClass;
     }
 
+    private void bug(Exception exception) {
+        logger.error("Please report the following stacktrace as a bug!", exception);
+    }
+
     protected void cancel(@Nullable ScheduledFuture<?>... jobs) {
         for (var job : jobs) {
             if (job != null) {
@@ -161,6 +165,18 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
 
     protected final void setOffline() {
         updateStatus(OFFLINE);
+    }
+
+    protected final void setOfflineCommunicationBug(Exception exception) {
+        bug(exception);
+        updateStatus(OFFLINE, COMMUNICATION_ERROR);
+    }
+    protected final void setOfflineCommunicationError() {
+        updateStatus(OFFLINE, COMMUNICATION_ERROR);
+    }
+    protected final void setOfflineCommunicationError(Exception exception) {
+        logger.warn("Temporary communication error", exception);
+        updateStatus(OFFLINE, COMMUNICATION_ERROR);
     }
 
     protected final void setOfflineConfigurationError() {

@@ -10,20 +10,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.single;
+package org.openhab.binding.electric.internal.handler.fixed;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.openhab.binding.electric.common.monetary.Monetary.EURO_PER_MEGAWATT_HOUR;
 import static org.openhab.binding.electric.common.monetary.Monetary.ZERO;
 import static org.openhab.binding.electric.common.monetary.Monetary.taxPrice;
-import static org.openhab.binding.electric.internal.ElectricBindingConstants.THING_TYPE_SINGLE;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.BRIDGE_TYPE_PRICE;
+import static org.openhab.binding.electric.internal.ElectricBindingConstants.THING_TYPE_FIXED;
 import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
-import org.openhab.binding.electric.common.openhab.thing.ThingHandlerTest;
-import org.openhab.binding.electric.internal.handler.price.PriceServiceTest;
+import org.openhab.binding.electric.internal.handler.ElectricHandlerTest;
 import org.openhab.binding.electric.internal.handler.price.Product;
 import org.openhab.binding.electric.internal.handler.price.ProductPrice;
 import org.threeten.extra.Interval;
@@ -36,11 +36,10 @@ import java.util.Collections;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-class SingleTimeTariffTest extends ThingHandlerTest<SingleTimeTariff, SingleTimeTariff.Config> {
+class FixedPriceTest extends ElectricHandlerTest<FixedPrice> {
 
-    protected SingleTimeTariffTest() {
-        super(THING_TYPE_SINGLE);
-        setBridge(PriceServiceTest.class);
+    protected FixedPriceTest() {
+        super(THING_TYPE_FIXED, BRIDGE_TYPE_PRICE);
     }
 
     @Test

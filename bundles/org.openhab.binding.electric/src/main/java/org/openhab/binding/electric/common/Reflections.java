@@ -17,6 +17,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -71,6 +73,10 @@ public class Reflections {
         } catch (ClassNotFoundException e) {
             throw new DoesNotReflect(e);
         }
+    }
+
+    public static Set<Class<?>> types(String[] names) {
+        return Arrays.stream(names).map(Reflections::type).collect(Collectors.toSet());
     }
 
     public static Method method(String type, String method, Class<?>... parameters) {

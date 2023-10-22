@@ -15,28 +15,38 @@ package org.openhab.binding.electric.common;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import java.util.function.Supplier;
+
 /**
- * Abstract unit tests.
+ * Lazy initialization pattern implementation.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-//@ExtendWith(MockitoExtension.class)
 @NonNullByDefault
-public abstract class UnitTest<I> extends AbstractTest {
-    /** An instance of the class to be unit tested. The mock is only to avoid NPE warnings. */
-    private @Nullable I instance;
+public class Lazy<T> implements Supplier<T> {
+    private final Supplier<T> factory;
+    private @Nullable T instance;
+
+    public Lazy(Supplier<T> factory) {
+        this.factory = factory;
+    }
 
     /**
-     * Create a new instance before each test.
+     * Gets a result.
      *
-     * @return The instance to be tested.
+     * @return a result
      */
-    protected abstract I create();
-
-    protected I getInstance() {
-        if (instance == null) {
-            instance = create();
+    @Override
+    public synchronized T get() {
+        var value = instance;
+        if (value == null) {
+            value = factory.get();
+            instance = value;
         }
-        return instance;
+        return value;
+    }
+
+    public boolean initialized() {
+        return instance != null;
     }
 }

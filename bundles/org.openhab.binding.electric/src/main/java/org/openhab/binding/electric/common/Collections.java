@@ -12,11 +12,14 @@
  */
 package org.openhab.binding.electric.common;
 
+import static java.util.Collections.emptyEnumeration;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -29,8 +32,27 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 @NonNullByDefault
 public class Collections {
+    public static <E> Enumeration<E> empty(@Nullable Enumeration<E> enumeration) {
+        return enumeration == null ? emptyEnumeration() : enumeration;
+    }
     public static <E> @Nullable E find(Collection<E> collection, Predicate<? super E> predicate) {
         return collection.stream().filter(predicate).findFirst().orElse(null);
+    }
+
+    public static <E> E first(Collection<E> collection, Predicate<? super E> predicate) {
+        return collection.stream().filter(predicate).findFirst().orElseThrow();
+    }
+
+    public static <E> boolean isEmpty(E[] array) {
+        return array.length == 0;
+    }
+
+    public static <E> E @Nullable[] nullify(E[] array) {
+        return array.length == 0 ? null : array;
+    }
+
+    public static <E> E @Nullable[] nullify(Collection<E> collection, IntFunction<E[]> generator) {
+        return collection.isEmpty() ? null : collection.toArray(generator);
     }
 
     public static <E extends Comparable<? super E>> List<E> sort(List<E> list) {

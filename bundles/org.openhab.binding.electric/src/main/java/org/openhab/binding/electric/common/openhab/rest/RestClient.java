@@ -10,26 +10,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.electric.internal.handler.entsoe.exception;
-
-import java.io.Serial;
+package org.openhab.binding.electric.common.openhab.rest;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.electric.internal.handler.entsoe.dto.MarketDocument;
+
+import java.net.URL;
 
 /**
- * Too many requests exception.
+ * REST API Client.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
+public abstract class RestClient {
+    private final URL base;
 
-public class TooMany extends ErrorResponse {
-
-    @Serial
-    private static final long serialVersionUID = -995333382226355244L;
-
-    public TooMany(MarketDocument document) {
-        super(document);
+    protected RestClient(URL base) {
+        this.base = base;
     }
 }

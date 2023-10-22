@@ -12,36 +12,39 @@
  */
 package org.openhab.binding.electric.internal.handler.entsoe;
 
-import static org.openhab.binding.electric.common.Log.trace;
 import static org.openhab.binding.electric.common.Time.utc;
+import static org.openhab.binding.electric.common.monetary.Monetary.EURO;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jetty.client.HttpClient;
-import org.openhab.binding.electric.common.openhab.xml.EnergyUnitConverter;
+import org.eclipse.jetty.http.HttpMethod;
+import org.openhab.binding.electric.common.openhab.Xml;
+import org.openhab.binding.electric.internal.handler.StatusKey;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Acknowledgement;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.MarketDocument;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Publication;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidArea;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidParameter;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.InvalidToken;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooLong;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooMany;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.TooShort;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.Unauthorized;
-import org.openhab.binding.electric.internal.handler.entsoe.exception.UnknownResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openhab.binding.electric.internal.handler.price.PriceProvider;
+import org.openhab.binding.electric.internal.handler.price.Product;
+import org.openhab.binding.electric.internal.handler.price.ProductPrice;
+import org.openhab.core.io.net.http.HttpClientFactory;
+import org.openhab.core.thing.Thing;
 
-import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
  * The {@link EntsoeClient} class is HTTP API client, which fetches data from ENTSO-E Transparency Platform.
@@ -51,27 +54,19 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
  *      guide</a>
  */
 @NonNullByDefault
-public class EntsoeClient {
-    public static final String BASE = "https://web-api.tp.entsoe.eu/api?securityToken=";
-    private static final String DAY_AHEAD_PRICES_DOCUMENT = "&documentType=A44";
-    private static final Duration DAY_AHEAD_PRICES_MIN = Duration.ofDays(1);
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
-    private static final Duration MAX_RANGE = Duration.ofDays(366);
-    private static final XStream XSTREAM = new XStream(new StaxDriver());
-
-    /**
-     * @param securityToken Web Api Security Token
-     * @param area <A href=
-     *            "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_areas">Area
-     *            EIC code</A>
-     */
-    public static String buildDayAheadPricesEndpoint(UUID securityToken, String area) throws InvalidArea {
-        return switch (area.length()) {
-            case 2, 16 ->
-                BASE + securityToken + DAY_AHEAD_PRICES_DOCUMENT + "&in_Domain=" + area + "&out_Domain=" + area;
-            default -> throw new InvalidArea(area);
-        };
+public class EntsoeClient extends PriceProvider<EntsoeClient.Config> {
+    private static final String DEFAULT_BASE = "https://web-api.tp.entsoe.eu/api";
+    public static class Config {
+        /**
+         * REST API Base URL. Known values: <a href="https://web-api.tp.entsoe.eu/api">Default</a>
+         * <a href="https://iop-transparency.entsoe.eu/api">Code sample</a>
+         */
+        String base = DEFAULT_BASE;
+        String token = "";
+        String area = "";
     }
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    private static final Xml XML = new Xml(Acknowledgement.class, Publication.class);
 
     /**
      * Formats {@link ZonedDateTime} to `yyyyMMddHHmm` and expresses it always in UTC.
@@ -84,50 +79,71 @@ public class EntsoeClient {
     }
 
     public static MarketDocument parseDocument(String content) {
-        return (MarketDocument) XSTREAM.fromXML(content);
-    }
-
-    public static UUID parseToken(String text) throws InvalidToken {
-        try {
-            return UUID.fromString(text);
-        } catch (IllegalArgumentException ex) {
-            throw new InvalidToken(ex);
-        }
-    }
-
-    static {
-        XSTREAM.registerConverter(new EnergyUnitConverter());
-        XSTREAM.allowTypeHierarchy(Acknowledgement.class);
-        XSTREAM.allowTypeHierarchy(Publication.class);
-        XSTREAM.setClassLoader(EntsoeClient.class.getClassLoader());
-        XSTREAM.processAnnotations(Acknowledgement.class);
-        XSTREAM.processAnnotations(Publication.class);
-        XSTREAM.ignoreUnknownElements();
+        return (MarketDocument) XML.deserialize(content);
     }
 
     private final HttpClient client;
-    private final String dayAheadPricesEndpoint;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private URI baseUrl = URI.create(DEFAULT_BASE);
+    private String securityToken = "";
+    private String areaCode = "";
+    private Currency currency = EURO;
 
-    public EntsoeClient(HttpClient client, String token, String area) throws InvalidArea, InvalidToken {
-        this(client, parseToken(token), area);
+    public EntsoeClient(HttpClientFactory clientFactory, Thing thing) {
+        super(thing, Config.class);
+        client = clientFactory.getCommonHttpClient();
     }
 
-    public EntsoeClient(HttpClient client, UUID token, String area) throws InvalidArea {
-        this.client = client;
-        dayAheadPricesEndpoint = buildDayAheadPricesEndpoint(token, area);
-        logger.debug("Created for `{}` area.", area);
+    @Override
+    public void initialize() {
+        var config = getConfiguration();
+        try {
+            baseUrl = new URL(config.base.trim()).toURI();
+        } catch (MalformedURLException | URISyntaxException e) {
+            logger.error("Invalid base URL '{}'", config.base, e);
+            setStatus(StatusKey.INVALID_BASE_URL);
+            return;
+        }
+        try {
+            securityToken = UUID.fromString(config.token.trim()).toString();
+        } catch (IllegalArgumentException e) {
+            logger.error("Token '{}' isn't valid UUID!", config.token, e);
+            setStatus(StatusKey.ENTSOE_INVALID_TOKEN);
+            return;
+        }
+        var area = config.area.trim();
+        switch (area.length()) {
+            case 2, 16 -> areaCode = area;
+            default -> {
+                logger.error("Area '{}' must be 2 or 16 characters!", area);
+                setStatus(StatusKey.ENTSOE_INVALID_AREA);
+                return;
+            }
+        }
+        currency = getPriceService().getCurrency();
+        setUnknown();
     }
 
-    public String buildDayAheadPricesUrl(ZonedDateTime periodStart, ZonedDateTime periodEnd) throws TooLong, TooShort {
-        var duration = Duration.between(periodStart, periodEnd);
-        if (DAY_AHEAD_PRICES_MIN.compareTo(duration) > 0) {
-            throw new TooShort(duration, DAY_AHEAD_PRICES_MIN);
+    @Override
+    public Product getProduct() {
+        return Product.SPOT;
+    }
+
+    @Override
+    public List<ProductPrice> getPrices() {
+        return Collections.emptyList();// TODO
+    }
+
+    private void tryGetDayAheadPrices() {
+        try {
+            getDayAheadPrices(ZonedDateTime.now(), ZonedDateTime.now());// TODO
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            setOfflineCommunicationBug(e);
+        } catch (IllegalStateException e) {
+            logger.error("Unauthorized. Missing or invalid security token!", e);
+            setStatus(StatusKey.UNAUTHORIZED);
+        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            setOfflineCommunicationError(e);
         }
-        if (MAX_RANGE.compareTo(duration) < 0) {
-            throw new TooLong(duration, MAX_RANGE);
-        }
-        return dayAheadPricesEndpoint + "&periodStart=" + format(periodStart) + "&periodEnd=" + format(periodEnd);
     }
 
     /**
@@ -135,29 +151,47 @@ public class EntsoeClient {
      *      "https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html#_day_ahead_prices_12_1_d">4.2.10.
      *      Day Ahead Prices [12.1.D]</a>
      */
-    public MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
-            throws ExecutionException, InterruptedException, InvalidParameter, TimeoutException, TooLong, TooMany,
-            TooShort, Unauthorized, UnknownResponse {
-        logger.debug("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);
-        var url = buildDayAheadPricesUrl(periodStart, periodEnd);
-        logger.trace("GET {}", url);
-        var response = client.GET(url);
+    private MarketDocument getDayAheadPrices(ZonedDateTime periodStart, ZonedDateTime periodEnd)
+            throws ExecutionException, InterruptedException, TimeoutException {
+        logger.info("Getting day ahead prices for {}/{} period.", periodStart, periodEnd);
+        var duration = Duration.between(periodStart, periodEnd);
+        if (duration.toDays() < 1) {
+            throw new IllegalArgumentException("Range " + duration + " must be at least one day!");
+        }
+        if (periodEnd.compareTo(periodStart.plusYears(1)) > 0) { // Handles leap years also.
+            throw new IllegalArgumentException("Range " + duration + " must be a year at most!");
+        }
+        var request = client.newRequest(baseUrl).method(HttpMethod.GET) //
+                .param("securityToken", securityToken) //
+                .param("documentType", "A44") //
+                .param("in_Domain", areaCode) //
+                .param("out_Domain", areaCode) //
+                .param("periodStart", format(periodStart)) //
+                .param("periodEnd", format(periodEnd));
+        if (logger.isDebugEnabled()) {
+            // Hiding security token from logs.
+            logger.debug("GET {}", request.getURI().toString().replace(securityToken, "…"));
+        }
+        var stopwatch = StopWatch.createStarted();
+        var response = request.send();
+        stopwatch.stop();
         var status = response.getStatus();
         var content = response.getContentAsString();
-        trace(logger, content);
+        logger.trace("Got response in {} with status {} and content:\n{}\n", stopwatch, status, content);
         try {
             var document = parseDocument(content);
             switch (status) {
                 case 200 -> {
                     return document;
                 }
-                case 400 -> throw new InvalidParameter(document);
-                case 401 -> throw new Unauthorized(document);
-                case 429 -> throw new TooMany(document);
-                default -> throw new UnknownResponse(url, status, content, null);
+                case 400 -> throw new IllegalArgumentException("Invalid query parameter: " + document);
+                case 401 -> throw new IllegalStateException(document.toString());
+                case 429 -> throw new IllegalArgumentException(
+                        "Too many requests - max allowed 400 per minutes from each unique IP: " + document);
+                default -> throw new UnsupportedOperationException("Unknown response status " + status + "!");
             }
-        } catch (ClassCastException | XStreamException e) {
-            throw new UnknownResponse(url, status, content, e);
+        } catch (ClassCastException | UnsupportedOperationException | XStreamException e) {
+            throw new UnsupportedOperationException("Unknown response: " + content, e);
         }
     }
 }

@@ -15,8 +15,7 @@ package org.openhab.binding.electric.internal.handler.price;
 import static org.openhab.binding.electric.internal.ElectricBindingConstants.BRIDGE_TYPE_PRICE;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.openhab.binding.electric.common.openhab.thing.BridgeHandlerTest;
-import org.openhab.core.thing.Bridge;
+import org.openhab.binding.electric.internal.handler.ElectricHandlerTest;
 
 /**
  * Price service unit tests.
@@ -24,7 +23,7 @@ import org.openhab.core.thing.Bridge;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public class PriceServiceTest extends BridgeHandlerTest<PriceService, PriceService.Config> {
+public class PriceServiceTest extends ElectricHandlerTest<PriceService> {
 
     public PriceServiceTest() {
         super(BRIDGE_TYPE_PRICE);

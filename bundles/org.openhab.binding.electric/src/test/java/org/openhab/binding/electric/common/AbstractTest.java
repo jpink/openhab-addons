@@ -26,9 +26,10 @@ import org.openhab.binding.electric.internal.handler.Translations;
 import org.opentest4j.AssertionFailedError;
 
 /**
- * Abstract test class containing helper methods.
+ * Abstract test class containing helper methods. Name tests MethodNameWhenStateUnderTestThenExpectedBehavior.
  *
  * @author Jukka Papinkivi - Initial contribution
+ * @see <a href="https://medium.com/@stefanovskyi/unit-test-naming-conventions-dd9208eadbea">Naming Conventions</a>
  */
 @NonNullByDefault
 public abstract class AbstractTest {

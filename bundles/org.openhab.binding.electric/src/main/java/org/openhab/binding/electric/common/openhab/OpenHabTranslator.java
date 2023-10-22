@@ -20,6 +20,8 @@ import org.openhab.core.i18n.LocaleProvider;
 import org.openhab.core.i18n.TranslationProvider;
 import org.osgi.framework.Bundle;
 
+import static org.openhab.binding.electric.common.Core.elvis;
+
 /**
  * OpenHAB translator.
  *
@@ -44,13 +46,11 @@ public class OpenHabTranslator implements Translator {
 
     @Override
     public String getText(String key) {
-        var text = translationProvider.getText(bundle, key, key, getLocale());
-        return text == null ? key : text;
+        return elvis(translationProvider.getText(bundle, key, key, getLocale()), key);
     }
 
     @Override
     public String getText(String key, Object... arguments) {
-        var text = translationProvider.getText(bundle, key, key, getLocale(), arguments);
-        return text == null ? key : text;
+        return elvis(translationProvider.getText(bundle, key, key, getLocale(), arguments), key);
     }
 }
