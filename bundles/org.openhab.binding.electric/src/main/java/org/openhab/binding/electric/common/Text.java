@@ -17,8 +17,6 @@ import java.util.Locale;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import static org.openhab.binding.electric.common.Core.elvis;
-
 /**
  * Text helper functions.
  *
@@ -27,6 +25,10 @@ import static org.openhab.binding.electric.common.Core.elvis;
 @NonNullByDefault
 public class Text {
     public static String[] EMPTY_ARRAY = new String[0];
+
+    public static boolean isBlank(@Nullable String value) {
+        return value == null || value.isBlank();
+    }
 
     public static String[] splitWhitespace(@Nullable String str) {
         return str == null ? EMPTY_ARRAY : str.split("\\s");

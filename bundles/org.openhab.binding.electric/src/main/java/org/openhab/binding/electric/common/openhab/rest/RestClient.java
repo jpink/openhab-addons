@@ -12,9 +12,9 @@
  */
 package org.openhab.binding.electric.common.openhab.rest;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 import java.net.URL;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * REST API Client.

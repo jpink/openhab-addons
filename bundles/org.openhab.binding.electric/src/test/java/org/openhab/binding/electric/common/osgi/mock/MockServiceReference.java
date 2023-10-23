@@ -12,6 +12,13 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
+import static org.openhab.binding.electric.common.Text.decapitalize;
+import static org.openhab.binding.electric.common.osgi.mock.MockFramework.cast;
+
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
@@ -20,13 +27,6 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceException;
 import org.osgi.framework.ServiceReference;
-
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.openhab.binding.electric.common.Text.decapitalize;
-import static org.openhab.binding.electric.common.osgi.mock.MockFramework.cast;
 
 /**
  * Service reference mock.
@@ -113,7 +113,8 @@ public class MockServiceReference<S> extends MockBundleReference implements Serv
         return "Reference to " + decapitalize(registration.toString());
     }
 
-    @Nullable S getService(MockBundleContext bundleContext) {
+    @Nullable
+    S getService(MockBundleContext bundleContext) {
         try {
             var first = requester.get();
             var bundle = bundleContext.bundle;

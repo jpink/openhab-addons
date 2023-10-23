@@ -15,19 +15,17 @@ package org.openhab.binding.electric.common.openhab.thing;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.openhab.core.thing.util.ThingHandlerHelper.isHandlerInitialized;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Test;
-import org.openhab.binding.electric.common.Reflections;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.openhab.binding.electric.common.Reflections;
 import org.openhab.binding.electric.common.osgi.ComponentTest;
 import org.openhab.core.config.core.ConfigDescription;
 import org.openhab.core.config.core.ConfigDescriptionRegistry;
@@ -42,11 +40,9 @@ import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.ThingUID;
-import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.BridgeHandler;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerCallback;
-import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.openhab.core.thing.binding.builder.BridgeBuilder;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
@@ -62,8 +58,8 @@ import org.openhab.core.types.State;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-//@ExtendWith(OsgiContextExtension.class)
-//@ExtendWith(MockitoExtension.class)
+// @ExtendWith(OsgiContextExtension.class)
+// @ExtendWith(MockitoExtension.class)
 @NonNullByDefault({})
 public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C extends AbstractThingHandlerFactory>
         extends ComponentTest<I, C> {
@@ -169,8 +165,8 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
     private final ThingTypeUID thingType;
     private final @Nullable ThingTypeUID bridgeType;
     private final Configuration bridgeConfiguration = new Configuration();
-    protected Function<ThingTypeUID, BridgeHandler> bridgeHandlerFactory =
-            type -> (BridgeHandler) create(type, bridgeConfiguration);
+    protected Function<ThingTypeUID, BridgeHandler> bridgeHandlerFactory = type -> (BridgeHandler) create(type,
+            bridgeConfiguration);
     private final Configuration configuration = new Configuration();
 
     @Deprecated
@@ -193,7 +189,8 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
     }
 
     @Override
-    protected void configureComponent() {}
+    protected void configureComponent() {
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -204,11 +201,13 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
             bridgeId = bridgeHandlerFactory.apply(bridgeType).getThing().getUID();
         }
         return (I) create(thingType, configuration, bridgeId);
-        /*var instance = create(thing);
-        assertEquals(thing, instance.getThing());
-        instance.setCallback(callback);
-        thing.setHandler(instance);
-        return instance;*/
+        /*
+         * var instance = create(thing);
+         * assertEquals(thing, instance.getThing());
+         * instance.setCallback(callback);
+         * thing.setHandler(instance);
+         * return instance;
+         */
     }
 
     /**
@@ -235,7 +234,8 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
     protected ThingHandler create(ThingTypeUID type, Configuration configuration, @Nullable ThingUID bridgeUID) {
         var factory = getComponent();
         var thing = factory.createThing(type, configuration, null, bridgeUID);
-        if (thing == null) throw new IllegalStateException("Unable create a thing!");
+        if (thing == null)
+            throw new IllegalStateException("Unable create a thing!");
         return factory.registerHandler(thing);
     }
 
@@ -243,13 +243,13 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
         return (BridgeHandler) create(type, configuration);
     }
 
-//    protected void setBridge(Class<? extends BridgeHandlerTest<?, ?>> type) {
-//        var test = Reflections.create(type);
-//        var handler = test.create();
-//        handler.initialize();
-//        bridge = (Bridge) handler.getThing();
-//        thing.setBridgeUID(bridge.getUID());
-//    }
+    // protected void setBridge(Class<? extends BridgeHandlerTest<?, ?>> type) {
+    // var test = Reflections.create(type);
+    // var handler = test.create();
+    // handler.initialize();
+    // bridge = (Bridge) handler.getThing();
+    // thing.setBridgeUID(bridge.getUID());
+    // }
 
     protected void setBridgeParameter(String name, Object value) {
         bridgeConfiguration.put(name, value);
@@ -266,8 +266,7 @@ public abstract class ThingHandlerTest<I extends ThingHandler, @Nullable C exten
     }
 
     @AfterEach
-    public void tearDown()
-    {
+    public void tearDown() {
         getInstance().dispose();
     }
 

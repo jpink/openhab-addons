@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.Nullable;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-//@ExtendWith(MockitoExtension.class)
+// @ExtendWith(MockitoExtension.class)
 @NonNullByDefault
 public abstract class UnitTest<I> extends AbstractTest {
     /** An instance of the class to be unit tested. The mock is only to avoid NPE warnings. */

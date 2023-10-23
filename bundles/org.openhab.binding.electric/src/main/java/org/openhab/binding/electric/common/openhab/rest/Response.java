@@ -24,9 +24,11 @@ public record Response(int status, String content) {
     boolean success() {
         return 200 <= status && status < 300;
     }
+
     boolean clientError() {
         return 400 <= status && status < 500;
     }
+
     boolean serverError() {
         return 500 <= status && status < 600;
     }

@@ -12,27 +12,28 @@
  */
 package org.openhab.binding.electric.internal.handler.price;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.electric.common.monetary.EnergyPrice;
-import org.openhab.binding.electric.common.openhab.thing.AbstractBridgeHandler;
-import org.openhab.core.thing.Bridge;
-import org.openhab.core.thing.Thing;
-import org.openhab.core.thing.binding.ThingHandler;
-
-import javax.measure.MetricPrefix;
-import javax.measure.Quantity;
-import javax.measure.Unit;
-import javax.measure.quantity.Dimensionless;
-import java.math.BigDecimal;
-import java.util.Currency;
-
 import static org.openhab.binding.electric.common.monetary.Monetary.EURO;
+import static org.openhab.binding.electric.common.monetary.Monetary.currency;
 import static org.openhab.binding.electric.common.monetary.Monetary.energyPriceUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.moneyUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.parseEnergyUnit;
 import static org.openhab.binding.electric.common.monetary.Monetary.percent;
 import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
+
+import java.math.BigDecimal;
+import java.util.Currency;
+
+import javax.measure.MetricPrefix;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import javax.measure.quantity.Dimensionless;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.binding.electric.common.monetary.EnergyPrice;
+import org.openhab.binding.electric.common.openhab.thing.AbstractBridgeHandler;
+import org.openhab.core.thing.Thing;
+import org.openhab.core.thing.binding.ThingHandler;
 
 /**
  * Price service.
@@ -42,14 +43,14 @@ import static org.openhab.core.library.unit.Units.MEGAWATT_HOUR;
 @NonNullByDefault
 public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     public static class Config {
-        String currency = "EUR";
-        String subunit = "";
-        String energy = MEGAWATT_HOUR.toString();
-        BigDecimal tax = BigDecimal.ZERO;
-        int vat;
-        @Nullable Integer sales;
-        int precision = 7;
-        int scale = 2;
+        public @Nullable String currency;
+        public @Nullable String subunit;
+        public String energy = MEGAWATT_HOUR.toString();
+        public BigDecimal tax = BigDecimal.ZERO;
+        public int vat;
+        public @Nullable Integer sales;
+        public int precision = 7;
+        public int scale = 2;
     }
 
     private @Nullable PriceProvider<?> distributor;
@@ -68,9 +69,10 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
     public void initialize() {
         try {
             var config = getConfiguration();
-            currency = Currency.getInstance(config.currency);
+            currency = currency(config.currency);
             var money = moneyUnit(currency);
-            if (!config.subunit.isBlank()) {
+            var subunit = config.subunit;
+            if (subunit != null && !subunit.isBlank()) {
                 money = MetricPrefix.CENTI(money);
                 // TODO register sub unit
             }
@@ -85,7 +87,9 @@ public class PriceService extends AbstractBridgeHandler<PriceService.Config> {
         setOffline();
     }
 
-    public Currency getCurrency() { return currency; }
+    public Currency getCurrency() {
+        return currency;
+    }
 
     public Unit<EnergyPrice> getUnit() {
         return unit;

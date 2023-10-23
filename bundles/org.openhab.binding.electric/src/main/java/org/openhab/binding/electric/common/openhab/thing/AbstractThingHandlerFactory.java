@@ -1,5 +1,8 @@
 package org.openhab.binding.electric.common.openhab.thing;
 
+import java.util.Map;
+import java.util.function.Function;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.thing.Thing;
@@ -9,9 +12,6 @@ import org.openhab.core.thing.binding.ThingHandler;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.function.Function;
 
 @NonNullByDefault
 public abstract class AbstractThingHandlerFactory extends BaseThingHandlerFactory {

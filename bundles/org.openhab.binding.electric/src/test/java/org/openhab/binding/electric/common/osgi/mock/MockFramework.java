@@ -12,23 +12,9 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceEvent;
-import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.launch.Framework;
-import org.osgi.framework.startlevel.BundleStartLevel;
-import org.osgi.framework.startlevel.FrameworkStartLevel;
+import static org.openhab.binding.electric.common.Collections.first;
+import static org.openhab.binding.electric.common.Reflections.type;
+import static org.osgi.framework.FrameworkUtil.createFilter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,9 +33,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-import static org.openhab.binding.electric.common.Collections.first;
-import static org.openhab.binding.electric.common.Reflections.type;
-import static org.osgi.framework.FrameworkUtil.createFilter;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Filter;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
 
 /**
  * Framework mock.
@@ -58,7 +58,8 @@ import static org.osgi.framework.FrameworkUtil.createFilter;
  */
 @NonNullByDefault({})
 public class MockFramework extends MockBundle implements Framework {
-    record FilteredServiceListener(ServiceListener listener, @Nullable Filter filter) { }
+    record FilteredServiceListener(ServiceListener listener, @Nullable Filter filter) {
+    }
 
     static class ActivatorError extends BundleException {
         ActivatorError(String name, String message, Exception cause) {
@@ -92,7 +93,8 @@ public class MockFramework extends MockBundle implements Framework {
 
         @Override
         public void setStartLevel(int startLevel, FrameworkListener... listeners) {
-            logger.info("Modify active start level from {} to {}. Notify {} listeners.", active, startLevel, listeners.length);
+            logger.info("Modify active start level from {} to {}. Notify {} listeners.", active, startLevel,
+                    listeners.length);
             EXECUTOR.execute(() -> changeStartLevel(startLevel, listeners));
         }
 
@@ -163,11 +165,13 @@ public class MockFramework extends MockBundle implements Framework {
         headers.put(Constants.BUNDLE_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
         install(this);
     }
-    //#region MockBundle overrides
+
+    // #region MockBundle overrides
     @Override
     public void start() {
         logger.info("Start");
-        if (isStarting()) return;
+        if (isStarting())
+            return;
         active();
         fireFrameworkEvent(FrameworkEvent.STARTED);
     }
@@ -254,19 +258,20 @@ public class MockFramework extends MockBundle implements Framework {
             return null;
         }
     }
-    //#endregion
+    // #endregion
 
-    //#region Framework implementation
+    // #region Framework implementation
     @Override
     public void init() throws BundleException {
         logger.info("Init");
-        if (isStartingActiveOrStopping()) return;
+        if (isStartingActiveOrStopping())
+            return;
         properties.setProperty(Constants.FRAMEWORK_UUID, UUID.randomUUID().toString());
         starting();
         context = createContext(this);
-        //TODO Enable event handling
-        //TODO Install all bundles
-        //TODO Register framework services
+        // TODO Enable event handling
+        // TODO Install all bundles
+        // TODO Register framework services
         initialized = true;
         start();
     }
@@ -284,7 +289,7 @@ public class MockFramework extends MockBundle implements Framework {
         // TODO
         return new FrameworkEvent(FrameworkEvent.STOPPED, this, null);
     }
-    //#endregion
+    // #endregion
 
     void add(ServiceListener listener, @Nullable Filter filter) {
         logger.info("Add service listener {} with filter {}", listener, filter);
@@ -360,7 +365,8 @@ public class MockFramework extends MockBundle implements Framework {
         return new MockBundleContext(bundle, createActivator(bundle));
     }
 
-    @Nullable Bundle getBundle(long id) {
+    @Nullable
+    Bundle getBundle(long id) {
         logger.info("Get bundle #{}", id);
         return bundles.get(id);
     }
@@ -370,7 +376,8 @@ public class MockFramework extends MockBundle implements Framework {
         return bundles.values().toArray(MockBundle[]::new);
     }
 
-    @Nullable String getProperty(String key) {
+    @Nullable
+    String getProperty(String key) {
         var value = properties.getProperty(key);
         logger.info("Got property {} of value '{}'", key, value);
         return value;
@@ -405,6 +412,6 @@ public class MockFramework extends MockBundle implements Framework {
     }
 
     void unregister(ServiceRegistration<?> registration) {
-        //TODO
+        // TODO
     }
 }

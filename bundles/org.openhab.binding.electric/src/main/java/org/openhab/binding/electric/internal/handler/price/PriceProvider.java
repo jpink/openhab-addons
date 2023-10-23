@@ -12,14 +12,14 @@
  */
 package org.openhab.binding.electric.internal.handler.price;
 
+import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE_BRIDGE;
+
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.electric.common.openhab.thing.AbstractThingHandler;
 import org.openhab.binding.electric.common.openhab.thing.InvalidBridge;
 import org.openhab.core.thing.Thing;
-
-import java.util.List;
-
-import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE_BRIDGE;
 
 /**
  * Represents a single electricity product and tariff that the company charges.

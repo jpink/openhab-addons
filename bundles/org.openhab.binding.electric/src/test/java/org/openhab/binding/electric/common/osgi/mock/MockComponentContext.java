@@ -12,6 +12,9 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
@@ -20,17 +23,14 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.ComponentInstance;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
 /**
  * Component context and instance mock.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault({})
-public record MockComponentContext<@Nullable C>(MockBundleContext context, @Nullable MockServiceReference<C> reference)
-        implements ComponentContext, ComponentInstance<C> {
+public record MockComponentContext<@Nullable C> (MockBundleContext context,
+        @Nullable MockServiceReference<C> reference) implements ComponentContext, ComponentInstance<C> {
 
     @Override
     public Dictionary<String, Object> getProperties() {
@@ -84,7 +84,7 @@ public record MockComponentContext<@Nullable C>(MockBundleContext context, @Null
         return reference;
     }
 
-    //#region Component instance implementation
+    // #region Component instance implementation
     @Override
     public void dispose() {
         var reference = reference();
@@ -98,5 +98,5 @@ public record MockComponentContext<@Nullable C>(MockBundleContext context, @Null
         var reference = reference();
         return reference == null ? null : reference.getService(context);
     }
-    //#endregion
+    // #endregion
 }

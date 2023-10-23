@@ -16,7 +16,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.electric.common.osgi.mock.MockComponentContext;
 import org.openhab.binding.electric.common.osgi.mock.MockServiceReference;
-import org.openhab.binding.electric.common.osgi.mock.MockServiceRegistration;
 import org.osgi.framework.ServiceRegistration;
 
 /**
@@ -45,7 +44,8 @@ public abstract class ComponentTest<I, @Nullable C> extends BundleTest<I> {
     protected MockComponentContext<C> getComponentContext() {
         var context = componentContext;
         if (context == null) {
-            context = new MockComponentContext<>(bundleContext, (MockServiceReference<C>) registerComponent().getReference());
+            context = new MockComponentContext<>(bundleContext,
+                    (MockServiceReference<C>) registerComponent().getReference());
             componentContext = context;
             configureComponent();
         }

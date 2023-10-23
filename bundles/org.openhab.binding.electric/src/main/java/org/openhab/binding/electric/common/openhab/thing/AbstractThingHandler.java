@@ -125,7 +125,8 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
         if (thing instanceof Bridge) {
             return BridgeBuilder.create(thing.getThingTypeUID(), thing.getUID()).withBridge(thing.getBridgeUID())
                     .withChannels(thing.getChannels()).withConfiguration(thing.getConfiguration())
-                    .withLabel(thing.getLabel()).withLocation(thing.getLocation()).withProperties(thing.getProperties());
+                    .withLabel(thing.getLabel()).withLocation(thing.getLocation())
+                    .withProperties(thing.getProperties());
         }
         throw new NotBridge();
     }
@@ -171,9 +172,11 @@ public abstract class AbstractThingHandler<C> extends BaseThingHandler {
         bug(exception);
         updateStatus(OFFLINE, COMMUNICATION_ERROR);
     }
+
     protected final void setOfflineCommunicationError() {
         updateStatus(OFFLINE, COMMUNICATION_ERROR);
     }
+
     protected final void setOfflineCommunicationError(Exception exception) {
         logger.warn("Temporary communication error", exception);
         updateStatus(OFFLINE, COMMUNICATION_ERROR);

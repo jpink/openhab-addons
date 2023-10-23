@@ -13,6 +13,7 @@
 package org.openhab.binding.electric.common.monetary;
 
 import static javax.measure.Quantity.Scale.RELATIVE;
+import static org.openhab.binding.electric.common.Text.isBlank;
 import static org.openhab.binding.electric.common.Text.splitWhitespace;
 import static org.openhab.core.library.unit.Units.JOULE;
 import static org.openhab.core.library.unit.Units.KILOWATT_HOUR;
@@ -36,6 +37,7 @@ import javax.measure.quantity.Energy;
 import javax.measure.quantity.Time;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Monetary system of units.
@@ -114,6 +116,10 @@ public class Monetary extends tech.units.indriya.AbstractSystemOfUnits {
 
     public static BigDecimal bigDecimal(String value) {
         return new BigDecimal(value, mathContext).stripTrailingZeros();
+    }
+
+    public static Currency currency(@Nullable String currencyCode) {
+        return isBlank(currencyCode) ? defaultCurrency() : Currency.getInstance(currencyCode);
     }
 
     public static Currency currency(Unit<Money> unit) {

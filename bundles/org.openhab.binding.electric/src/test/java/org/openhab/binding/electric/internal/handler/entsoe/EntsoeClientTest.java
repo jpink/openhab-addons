@@ -26,7 +26,6 @@ import java.util.Currency;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jetty.client.HttpClient;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.electric.common.AbstractTest;
 import org.openhab.binding.electric.internal.handler.entsoe.dto.Acknowledgement;
@@ -48,7 +47,7 @@ public class EntsoeClientTest extends AbstractTest {
     static final ZonedDateTime START = ZonedDateTime.of(NEW_YEAR, PRAGUE);
     static final String TOKEN_TEXT = "f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454";
     static final UUID TOKEN_UUID = UUID.fromString(TOKEN_TEXT);
-//    static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
+    // static final String ENDPOINT = BASE + TOKEN_UUID + "&documentType=A44&in_Domain=" + CZ + "&out_Domain=" + CZ;
 
     void assertPublicationMarket(Publication document, Area area, ZonedDateTime created, ZonedDateTime start,
             ZonedDateTime end) {
@@ -68,35 +67,35 @@ public class EntsoeClientTest extends AbstractTest {
         assertEquals(end, timeInterval.end);
     }
 
-//    @Test
-//    void buildDayAheadPricesEndpointCzValid() throws Exception {
-//        assertEquals(ENDPOINT, buildDayAheadPricesEndpoint(TOKEN_UUID, CZ.code));
-//    }
-//
-//    @Test
-//    void buildDayAheadPricesEndpointEurInvalid() {
-//        assertThrows(InvalidArea.class, () -> buildDayAheadPricesEndpoint(TOKEN_UUID, "EUR"));
-//    }
-//
-//    @Test
-//    void buildDayAheadPricesUrlGuideOk() throws Exception {
-//        assertEquals(ENDPOINT + "&periodStart=201512312230&periodEnd=201612312230",
-//                createClient().buildDayAheadPricesUrl(START, START.plusYears(1)));
-//    }
-//
-//    @Test
-//    void buildDayAheadPricesUrlP367DTooLong() {
-//        assertThrows(TooLong.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusDays(367)));
-//    }
-//
-//    @Test
-//    void buildDayAheadPricesUrlPT23HTooShort() {
-//        assertThrows(TooShort.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusHours(23)));
-//    }
-//
-//    EntsoeClient createClient() throws Exception {
-//        return new EntsoeClient(new HttpClient(), TOKEN_UUID, CZ.code);
-//    }
+    // @Test
+    // void buildDayAheadPricesEndpointCzValid() throws Exception {
+    // assertEquals(ENDPOINT, buildDayAheadPricesEndpoint(TOKEN_UUID, CZ.code));
+    // }
+    //
+    // @Test
+    // void buildDayAheadPricesEndpointEurInvalid() {
+    // assertThrows(InvalidArea.class, () -> buildDayAheadPricesEndpoint(TOKEN_UUID, "EUR"));
+    // }
+    //
+    // @Test
+    // void buildDayAheadPricesUrlGuideOk() throws Exception {
+    // assertEquals(ENDPOINT + "&periodStart=201512312230&periodEnd=201612312230",
+    // createClient().buildDayAheadPricesUrl(START, START.plusYears(1)));
+    // }
+    //
+    // @Test
+    // void buildDayAheadPricesUrlP367DTooLong() {
+    // assertThrows(TooLong.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusDays(367)));
+    // }
+    //
+    // @Test
+    // void buildDayAheadPricesUrlPT23HTooShort() {
+    // assertThrows(TooShort.class, () -> createClient().buildDayAheadPricesUrl(START, START.plusHours(23)));
+    // }
+    //
+    // EntsoeClient createClient() throws Exception {
+    // return new EntsoeClient(new HttpClient(), TOKEN_UUID, CZ.code);
+    // }
 
     @Test
     void formatCz() {
@@ -174,13 +173,13 @@ public class EntsoeClientTest extends AbstractTest {
         assertPublicationMarket(document, FI, created, start, start.plusDays(2));
     }
 
-//    @Test
-//    void parseTokenGuideInvalid() {
-//        assertThrows(InvalidToken.class, () -> parseToken("MYTOKEN"));
-//    }
-//
-//    @Test
-//    void parseTokenSampleValid() throws InvalidToken {
-//        assertEquals(TOKEN_UUID, parseToken(TOKEN_TEXT));
-//    }
+    // @Test
+    // void parseTokenGuideInvalid() {
+    // assertThrows(InvalidToken.class, () -> parseToken("MYTOKEN"));
+    // }
+    //
+    // @Test
+    // void parseTokenSampleValid() throws InvalidToken {
+    // assertEquals(TOKEN_UUID, parseToken(TOKEN_TEXT));
+    // }
 }

@@ -29,7 +29,8 @@ public abstract class AbstractBridgeHandler<C> extends AbstractThingHandler<C> i
 
     public AbstractBridgeHandler(Thing bridge, Class<C> configurationClass) {
         super(bridge, configurationClass);
-        if (!(bridge instanceof Bridge)) throw new IllegalArgumentException("Bridge needed!");
+        if (!(bridge instanceof Bridge))
+            throw new IllegalArgumentException("Bridge needed!");
     }
 
     @Override

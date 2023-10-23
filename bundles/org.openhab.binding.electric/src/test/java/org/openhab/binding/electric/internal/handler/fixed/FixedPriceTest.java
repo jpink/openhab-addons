@@ -21,14 +21,14 @@ import static org.openhab.binding.electric.internal.ElectricBindingConstants.BRI
 import static org.openhab.binding.electric.internal.ElectricBindingConstants.THING_TYPE_FIXED;
 import static org.openhab.binding.electric.internal.handler.StatusKey.MISSING_PRICE;
 
+import java.util.Collections;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.openhab.binding.electric.internal.handler.ElectricHandlerTest;
 import org.openhab.binding.electric.internal.handler.price.Product;
 import org.openhab.binding.electric.internal.handler.price.ProductPrice;
 import org.threeten.extra.Interval;
-
-import java.util.Collections;
 
 /**
  * Single-time tariff unit tests.
@@ -84,8 +84,8 @@ class FixedPriceTest extends ElectricHandlerTest<FixedPrice> {
     public void getPricesWhenPriceThenSingle() {
         var price = 3.4;
         setParameter("price", price);
-        var expected = Collections.singletonList(new ProductPrice(Product.TRANSFER,
-                taxPrice(price, EURO_PER_MEGAWATT_HOUR, ZERO), Interval.ALL));
+        var expected = Collections.singletonList(
+                new ProductPrice(Product.TRANSFER, taxPrice(price, EURO_PER_MEGAWATT_HOUR, ZERO), Interval.ALL));
 
         var prices = initialize().getPrices();
 

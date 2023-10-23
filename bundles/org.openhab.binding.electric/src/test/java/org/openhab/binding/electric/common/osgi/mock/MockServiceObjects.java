@@ -27,7 +27,8 @@ public class MockServiceObjects<S> extends MockBundleReference implements Servic
     private final MockServiceReference<S> reference;
     private final MockBundleContext bundleContext;
     private int useCount = 0;
-    @Nullable S cached;
+    @Nullable
+    S cached;
 
     protected MockServiceObjects(MockServiceReference<S> reference, MockBundleContext bundleContext) {
         super(bundleContext.bundle);

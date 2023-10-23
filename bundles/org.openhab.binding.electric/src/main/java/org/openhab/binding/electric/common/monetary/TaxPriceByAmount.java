@@ -12,17 +12,14 @@
  */
 package org.openhab.binding.electric.common.monetary;
 
+import static org.openhab.binding.electric.common.monetary.Monetary.add;
+
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.quantity.Dimensionless;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-
-import java.util.Objects;
-
-import static org.openhab.binding.electric.common.monetary.Monetary.add;
-import static tech.units.indriya.quantity.Quantities.getQuantity;
 
 /**
  * Taxable price created by amount.

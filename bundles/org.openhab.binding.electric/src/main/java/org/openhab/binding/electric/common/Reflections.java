@@ -56,7 +56,8 @@ public class Reflections {
     }
 
     public static <T> T create(Class<T> type, Object... arguments) {
-        return create(constructor(type, Arrays.stream(arguments).map(Object::getClass).toArray(Class[]::new)), arguments);
+        return create(constructor(type, Arrays.stream(arguments).map(Object::getClass).toArray(Class[]::new)),
+                arguments);
     }
 
     public static <T> T create(Constructor<T> constructor, Object... arguments) {

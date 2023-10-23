@@ -12,6 +12,16 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
+import static org.osgi.framework.Constants.OBJECTCLASS;
+import static org.osgi.framework.Constants.SERVICE_BUNDLEID;
+import static org.osgi.framework.Constants.SERVICE_ID;
+import static org.osgi.framework.Constants.SERVICE_SCOPE;
+
+import java.util.Dictionary;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
@@ -21,26 +31,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.PrototypeServiceFactory;
 import org.osgi.framework.ServiceException;
 import org.osgi.framework.ServiceFactory;
-import org.osgi.framework.ServiceObjects;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-
-import static org.osgi.framework.Constants.OBJECTCLASS;
-import static org.osgi.framework.Constants.SERVICE_BUNDLEID;
-import static org.osgi.framework.Constants.SERVICE_ID;
-import static org.osgi.framework.Constants.SERVICE_SCOPE;
 
 /**
  * Service registration mocks.
@@ -65,13 +56,15 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
         }
 
         @Override
-        void releaseService(Bundle bundle, S service) {}
+        void releaseService(Bundle bundle, S service) {
+        }
 
         @Override
         public String toString() {
             return "Singleton" + super.toString();
         }
     }
+
     private static class AsBundle<S> extends MockServiceRegistration<S> {
         private final ServiceFactory<S> factory;
 
@@ -102,8 +95,10 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
             return "Bundle" + super.toString();
         }
     }
+
     private static class AsPrototype<S> extends MockServiceRegistration<S> {
         private final PrototypeServiceFactory<S> factory;
+
         protected AsPrototype(MockBundle registrant, Set<Class<?>> locators, PrototypeServiceFactory<S> factory,
                 @Nullable Dictionary<String, ?> properties) {
             super(registrant, locators, Constants.SCOPE_PROTOTYPE, properties);
@@ -127,16 +122,19 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
             return "Prototype" + super.toString();
         }
     }
+
     static <S> MockServiceRegistration<S> create(MockBundle registrant, Set<Class<?>> locators,
             ServiceFactory<S> factory, @Nullable Dictionary<String, ?> properties) {
         return factory instanceof PrototypeServiceFactory<S> prototypeFactory
                 ? new AsPrototype<>(registrant, locators, prototypeFactory, properties)
                 : new AsBundle<>(registrant, locators, factory, properties);
     }
+
     static <S> MockServiceRegistration<S> create(MockBundle registrant, Set<Class<?>> locators, S service,
             @Nullable Dictionary<String, ?> properties) {
         return new AsSingleton<>(registrant, locators, service, properties);
     }
+
     final long id;
     final Set<Class<?>> locators;
     Map<String, ?> properties;
@@ -175,7 +173,7 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
     public void setProperties(Dictionary<String, ?> properties) {
         logger.info("Set properties");
         this.properties = buildProperties(properties, (String) properties.get(SERVICE_SCOPE));
-        //TODO
+        // TODO
     }
 
     @Override
@@ -202,9 +200,8 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
 
     @Override
     public String toString() {
-        return " scoped service #" + id + " of " +
-                String.join(", ", locators.stream().map(Class::toString).toList()) + " registered by " +
-                super.toString();
+        return " scoped service #" + id + " of " + String.join(", ", locators.stream().map(Class::toString).toList())
+                + " registered by " + super.toString();
     }
 
     protected S getService(ServiceFactory<S> factory, Bundle bundle) {
@@ -218,9 +215,8 @@ public abstract class MockServiceRegistration<S> extends MockBundleReference
             var serviceType = service.getClass();
             for (var locator : locators) {
                 if (!locator.isAssignableFrom(serviceType)) {
-                    framework().fire(new FrameworkEvent(FrameworkEvent.ERROR, bundle,
-                            new ServiceException("Service doesn't implement " + locator + "!",
-                                    ServiceException.FACTORY_ERROR)));
+                    framework().fire(new FrameworkEvent(FrameworkEvent.ERROR, bundle, new ServiceException(
+                            "Service doesn't implement " + locator + "!", ServiceException.FACTORY_ERROR)));
                     return null;
                 }
             }

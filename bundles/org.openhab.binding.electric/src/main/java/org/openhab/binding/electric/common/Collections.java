@@ -35,6 +35,7 @@ public class Collections {
     public static <E> Enumeration<E> empty(@Nullable Enumeration<E> enumeration) {
         return enumeration == null ? emptyEnumeration() : enumeration;
     }
+
     public static <E> @Nullable E find(Collection<E> collection, Predicate<? super E> predicate) {
         return collection.stream().filter(predicate).findFirst().orElse(null);
     }
@@ -47,11 +48,11 @@ public class Collections {
         return array.length == 0;
     }
 
-    public static <E> E @Nullable[] nullify(E[] array) {
+    public static <E> E @Nullable [] nullify(E[] array) {
         return array.length == 0 ? null : array;
     }
 
-    public static <E> E @Nullable[] nullify(Collection<E> collection, IntFunction<E[]> generator) {
+    public static <E> E @Nullable [] nullify(Collection<E> collection, IntFunction<E[]> generator) {
         return collection.isEmpty() ? null : collection.toArray(generator);
     }
 

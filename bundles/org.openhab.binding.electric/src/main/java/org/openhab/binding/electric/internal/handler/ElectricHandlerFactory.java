@@ -19,11 +19,12 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.electric.common.openhab.thing.AbstractThingHandlerFactory;
 import org.openhab.binding.electric.internal.handler.entsoe.EntsoeClient;
-import org.openhab.binding.electric.internal.handler.price.PriceService;
 import org.openhab.binding.electric.internal.handler.fixed.FixedPrice;
+import org.openhab.binding.electric.internal.handler.price.PriceService;
 import org.openhab.core.i18n.TimeZoneProvider;
 import org.openhab.core.io.net.http.HttpClientFactory;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -33,14 +34,14 @@ import org.osgi.service.component.annotations.Reference;
  *
  * @author Jukka Papinkivi - Initial contribution
  */
-@NonNullByDefault
 @Component(configurationPid = "binding.electric", service = ThingHandlerFactory.class)
+@NonNullByDefault
 public class ElectricHandlerFactory extends AbstractThingHandlerFactory {
+    @Activate
     public ElectricHandlerFactory(@Reference HttpClientFactory client, @Reference TimeZoneProvider zone) {
         super(Map.of( //
                 BRIDGE_TYPE_PRICE, PriceService::new, //
                 THING_TYPE_ENTSOE, thing -> new EntsoeClient(client, thing), //
-                THING_TYPE_FIXED, FixedPrice::new
-        ));
+                THING_TYPE_FIXED, FixedPrice::new));
     }
 }

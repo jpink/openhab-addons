@@ -12,16 +12,17 @@
  */
 package org.openhab.binding.electric.common.openhab;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.converters.SingleValueConverter;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
+import javax.measure.Unit;
+import javax.measure.format.UnitFormat;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.measure.Unit;
-import javax.measure.format.UnitFormat;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.SingleValueConverter;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 /**
  * XStream adapter.
@@ -58,7 +59,8 @@ public class Xml {
     private final XStream xstream = new XStream(new StaxDriver());
 
     public Xml(Class<?>... models) {
-        if (models.length < 1) throw new IllegalArgumentException("At least one DTO needed!");
+        if (models.length < 1)
+            throw new IllegalArgumentException("At least one DTO needed!");
         xstream.setClassLoader(models[0].getClassLoader());
         xstream.registerConverter(new UnitConverter());
         for (Class<?> model : models) {

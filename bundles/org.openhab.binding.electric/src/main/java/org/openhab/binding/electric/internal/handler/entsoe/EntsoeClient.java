@@ -56,6 +56,7 @@ import com.thoughtworks.xstream.XStreamException;
 @NonNullByDefault
 public class EntsoeClient extends PriceProvider<EntsoeClient.Config> {
     private static final String DEFAULT_BASE = "https://web-api.tp.entsoe.eu/api";
+
     public static class Config {
         /**
          * REST API Base URL. Known values: <a href="https://web-api.tp.entsoe.eu/api">Default</a>
@@ -65,6 +66,7 @@ public class EntsoeClient extends PriceProvider<EntsoeClient.Config> {
         String token = "";
         String area = "";
     }
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
     private static final Xml XML = new Xml(Acknowledgement.class, Publication.class);
 

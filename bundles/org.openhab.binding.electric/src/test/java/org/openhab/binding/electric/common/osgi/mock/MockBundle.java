@@ -12,6 +12,12 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
+import static java.util.Collections.emptyMap;
+import static org.openhab.binding.electric.common.Collections.empty;
+import static org.openhab.binding.electric.common.Collections.nullify;
+import static org.openhab.binding.electric.common.Core.elvis;
+import static org.osgi.framework.Constants.BUNDLE_VERSION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,18 +47,13 @@ import org.osgi.framework.startlevel.BundleStartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.Collections.emptyMap;
-import static org.openhab.binding.electric.common.Collections.empty;
-import static org.openhab.binding.electric.common.Collections.nullify;
-import static org.openhab.binding.electric.common.Core.elvis;
-import static org.osgi.framework.Constants.BUNDLE_VERSION;
-
 /**
  * Bundle mock. Except resource/class loading operations (which are executed on
  * its internal class loader), the rest of the methods are dummies.
  *
  * @author Jukka Papinkivi
- * @see <a href="https://stackoverflow.com/questions/62938628/does-each-bundle-deployed-in-osgi-framework-has-its-own-bundlecontext-object">...</a>
+ * @see <a href=
+ *      "https://stackoverflow.com/questions/62938628/does-each-bundle-deployed-in-osgi-framework-has-its-own-bundlecontext-object">...</a>
  */
 @NonNullByDefault({})
 public class MockBundle implements Bundle {
@@ -138,7 +139,8 @@ public class MockBundle implements Bundle {
     protected @Nullable MockBundleContext context;
     private @Nullable Future<?> task;
 
-    MockBundle(@Nullable MockFramework mock, String location, Hashtable<String, @Nullable String> headers, int startLevel) {
+    MockBundle(@Nullable MockFramework mock, String location, Hashtable<String, @Nullable String> headers,
+            int startLevel) {
         if (mock == null) {
             framework = (MockFramework) this;
             id = 0;
@@ -152,7 +154,7 @@ public class MockBundle implements Bundle {
         level = new MockBundleStartLevel(this, startLevel);
     }
 
-    //#region Object overrides
+    // #region Object overrides
     @Override
     public boolean equals(@Nullable Object o) {
         return this == o || o instanceof MockBundle that && id == that.id;
@@ -171,9 +173,9 @@ public class MockBundle implements Bundle {
         }
         return elvis(name, location) + " bundle";
     }
-    //#endregion
+    // #endregion
 
-    //#region Bundle implementation
+    // #region Bundle implementation
     @Override
     public int getState() {
         return state.value;
@@ -196,7 +198,8 @@ public class MockBundle implements Bundle {
         }
 
         switch (state) {
-            case ACTIVE -> {}
+            case ACTIVE -> {
+            }
             case RESOLVED -> {
                 starting();
                 fireBundleEvent(BundleEvent.STARTING);
@@ -233,7 +236,7 @@ public class MockBundle implements Bundle {
                 fireBundleEvent(BundleEvent.STOPPING);
                 var context = this.context;
                 if (context == null) {
-                    throw new IllegalStateException(); //TODO
+                    throw new IllegalStateException(); // TODO
                 }
                 var activator = context.activator;
                 if (activator != null) {
@@ -248,7 +251,8 @@ public class MockBundle implements Bundle {
                 resolved();
                 fireBundleEvent(BundleEvent.STOPPED);
             }
-            case RESOLVED -> {}
+            case RESOLVED -> {
+            }
             default -> throw new IllegalStateException();
         }
     }
@@ -437,13 +441,13 @@ public class MockBundle implements Bundle {
         return null;
     }
 
-    //#region Comparable<Bundle> implementation
+    // #region Comparable<Bundle> implementation
     @Override
     public int compareTo(Bundle o) {
         return (int) (id - o.getBundleId());
     }
-    //#endregion
-    //#endregion
+    // #endregion
+    // #endregion
 
     void add(BundleListener listener) {
         if (listener instanceof SynchronousBundleListener synchronous) {
@@ -467,7 +471,8 @@ public class MockBundle implements Bundle {
 
     public void notUninstalled() {
         logger.info("Ensuring that the bundle isn't uninstalled.");
-        if (isUninstalled()) throw new IllegalStateException("The bundle is uninstalled!");
+        if (isUninstalled())
+            throw new IllegalStateException("The bundle is uninstalled!");
     }
 
     protected void waitTask() {

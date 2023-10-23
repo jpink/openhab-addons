@@ -15,7 +15,6 @@ package org.openhab.binding.electric.common;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -53,7 +52,8 @@ public class Maps {
     }
 
     public static <K, V> Map<K, V> of(Dictionary<K, V> dictionary) {
-        return Collections.list(dictionary.keys()).stream().collect(Collectors.toMap(Function.identity(), dictionary::get));
+        return Collections.list(dictionary.keys()).stream()
+                .collect(Collectors.toMap(Function.identity(), dictionary::get));
     }
 
     public static <K, V> Map<K, V> plus(Map<K, V> source, Map<K, V> overrides) {

@@ -24,4 +24,5 @@ import org.threeten.extra.Interval;
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public record ProductPrice(Product product, TaxPrice<EnergyPrice> price, Interval interval) implements HasInterval {}
+public record ProductPrice(Product product, TaxPrice<EnergyPrice> price, Interval interval) implements HasInterval {
+}

@@ -12,6 +12,9 @@
  */
 package org.openhab.binding.electric.internal.handler;
 
+import static org.mockito.Mockito.mock;
+import static org.openhab.binding.electric.common.Core.uncheckedCast;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.electric.common.openhab.thing.ThingHandlerTest;
@@ -22,16 +25,14 @@ import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
 import org.osgi.framework.ServiceRegistration;
 
-import static org.mockito.Mockito.mock;
-import static org.openhab.binding.electric.common.Core.uncheckedCast;
-
 /**
  * Abstract electric handler unit tests.
  *
  * @author Jukka Papinkivi - Initial contribution
  */
 @NonNullByDefault
-public abstract class ElectricHandlerTest<I extends ThingHandler> extends ThingHandlerTest<I, @Nullable ElectricHandlerFactory> {
+public abstract class ElectricHandlerTest<I extends ThingHandler>
+        extends ThingHandlerTest<I, @Nullable ElectricHandlerFactory> {
     private final HttpClientFactory client = mock();
 
     private final TimeZoneProvider zone = mock();

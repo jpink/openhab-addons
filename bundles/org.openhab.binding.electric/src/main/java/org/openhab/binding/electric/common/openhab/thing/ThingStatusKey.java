@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.openhab.core.i18n.I18nUtil;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 
@@ -54,6 +55,7 @@ public interface ThingStatusKey {
      */
     String name();
 
+    /** @see org.openhab.core.i18n.I18nUtil.CONSTANT_PATTERN */
     default String getDescription() {
         var builder = new StringBuilder("@text/");
         var detail = getStatusDetail();

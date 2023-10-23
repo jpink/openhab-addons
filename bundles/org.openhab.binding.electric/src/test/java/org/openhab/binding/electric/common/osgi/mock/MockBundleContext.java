@@ -12,6 +12,25 @@
  */
 package org.openhab.binding.electric.common.osgi.mock;
 
+import static java.util.Collections.singleton;
+import static org.openhab.binding.electric.common.Collections.find;
+import static org.openhab.binding.electric.common.Collections.first;
+import static org.openhab.binding.electric.common.Collections.nullify;
+import static org.openhab.binding.electric.common.Reflections.type;
+import static org.openhab.binding.electric.common.Reflections.types;
+import static org.openhab.binding.electric.common.osgi.mock.MockFramework.cast;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.jar.Manifest;
+import java.util.stream.Collectors;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.AllServiceListener;
@@ -30,25 +49,6 @@ import org.osgi.framework.ServiceObjects;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.singleton;
-import static org.openhab.binding.electric.common.Collections.find;
-import static org.openhab.binding.electric.common.Collections.first;
-import static org.openhab.binding.electric.common.Collections.nullify;
-import static org.openhab.binding.electric.common.Reflections.type;
-import static org.openhab.binding.electric.common.Reflections.types;
-import static org.openhab.binding.electric.common.osgi.mock.MockFramework.cast;
-
 /**
  * Bundle context mock.
  *
@@ -62,8 +62,8 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
     private final Set<ServiceListener> serviceListeners = new LinkedHashSet<>();
     private boolean invalid;
 
-    //private final Map<MockServiceReference<?>, Integer> useCounts = new HashMap<>();
-    //private final Map<MockServiceReference<?>, Object> cache = new HashMap<>();
+    // private final Map<MockServiceReference<?>, Integer> useCounts = new HashMap<>();
+    // private final Map<MockServiceReference<?>, Object> cache = new HashMap<>();
 
     MockBundleContext(MockBundle bundle, @Nullable BundleActivator activator) {
         super(bundle);
@@ -95,7 +95,8 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
 
     @Override
     public Bundle installBundle(String location) throws BundleException {
-        throw new BundleException("Installing bundle only by location '" + location + "' isn't supported!", BundleException.RESOLVE_ERROR);
+        throw new BundleException("Installing bundle only by location '" + location + "' isn't supported!",
+                BundleException.RESOLVE_ERROR);
     }
 
     @Override
@@ -115,7 +116,8 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
         logger.info("Add service listener {} with filter {}.", listener, filter);
         ensureValid();
         if (serviceListeners.add(listener)) {
-            framework().add(listener, listener instanceof AllServiceListener || filter == null ? null : createFilter(filter));
+            framework().add(listener,
+                    listener instanceof AllServiceListener || filter == null ? null : createFilter(filter));
         } else {
             logger.warn("Listener already added!");
         }
@@ -213,12 +215,14 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
     }
 
     @Override
-    public ServiceRegistration<?> registerService(String locator, Object service, @Nullable Dictionary<String, ?> properties) {
+    public ServiceRegistration<?> registerService(String locator, Object service,
+            @Nullable Dictionary<String, ?> properties) {
         return registerService(new String[] { locator }, service, properties);
     }
 
     @Override
-    public <S> ServiceRegistration<S> registerService(Class<S> locator, S service, @Nullable Dictionary<String, ?> properties) {
+    public <S> ServiceRegistration<S> registerService(Class<S> locator, S service,
+            @Nullable Dictionary<String, ?> properties) {
         logger.info("Registering {} type of service.", locator);
         ensureValid();
         return framework().register(MockServiceRegistration.create(bundle, singleton(locator), service, properties));
@@ -233,14 +237,16 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
     }
 
     @Override
-    public ServiceReference<?> @Nullable [] getServiceReferences(@Nullable String clazz, @Nullable String filter) throws InvalidSyntaxException {
+    public ServiceReference<?> @Nullable [] getServiceReferences(@Nullable String clazz, @Nullable String filter)
+            throws InvalidSyntaxException {
         ensureValid();
         return nullify(framework().references(clazz, filter)
                 .filter(reference -> reference.isAssignableTo(bundle, clazz)).toArray(ServiceReference[]::new));
     }
 
     @Override
-    public ServiceReference<?> @Nullable [] getAllServiceReferences(@Nullable String clazz, @Nullable String filter) throws InvalidSyntaxException {
+    public ServiceReference<?> @Nullable [] getAllServiceReferences(@Nullable String clazz, @Nullable String filter)
+            throws InvalidSyntaxException {
         ensureValid();
         return nullify(framework().references(clazz, filter).toArray(ServiceReference[]::new));
     }
@@ -325,7 +331,7 @@ public class MockBundleContext extends MockBundleReference implements BundleCont
     /** Things to do after being invalid. */
     void dispose() {
         invalid = true;
-        //TODO
+        // TODO
     }
 
     @Override

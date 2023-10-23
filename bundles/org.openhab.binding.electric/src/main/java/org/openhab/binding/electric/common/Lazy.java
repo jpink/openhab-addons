@@ -12,10 +12,10 @@
  */
 package org.openhab.binding.electric.common;
 
+import java.util.function.Supplier;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-
-import java.util.function.Supplier;
 
 /**
  * Lazy initialization pattern implementation.

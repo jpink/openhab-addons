@@ -12,29 +12,26 @@
  */
 package org.openhab.binding.electric.common.osgi;
 
-import org.eclipse.jdt.annotation.NonNull;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.util.Dictionary;
+import java.util.Map;
+import java.util.jar.Manifest;
+
+import javax.xml.stream.XMLInputFactory;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.openhab.binding.electric.common.UnitTest;
-import org.openhab.binding.electric.common.osgi.mock.MockBundleContext;
 import org.openhab.binding.electric.common.osgi.mock.MockBundle;
+import org.openhab.binding.electric.common.osgi.mock.MockBundleContext;
 import org.openhab.binding.electric.common.osgi.mock.MockFramework;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-
-import javax.xml.stream.XMLInputFactory;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Map;
-import java.util.Objects;
-import java.util.jar.Manifest;
 
 /**
  * Abstract OSGi unit tests which needs bundle context.
@@ -98,7 +95,8 @@ public abstract class BundleTest<I> extends UnitTest<I> implements FrameworkFact
         return registerService(type, service, null);
     }
 
-    protected <S> ServiceRegistration<? super S> registerService(Class<S> type, S service, @Nullable Dictionary<String, ?> properties) {
+    protected <S> ServiceRegistration<? super S> registerService(Class<S> type, S service,
+            @Nullable Dictionary<String, ?> properties) {
         return bundleContext.registerService(type, service, properties);
     }
 

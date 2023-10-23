@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.electric.common.openhab;
 
+import static org.openhab.binding.electric.common.Core.elvis;
+
 import java.util.Locale;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -19,8 +21,6 @@ import org.openhab.binding.electric.common.Translator;
 import org.openhab.core.i18n.LocaleProvider;
 import org.openhab.core.i18n.TranslationProvider;
 import org.osgi.framework.Bundle;
-
-import static org.openhab.binding.electric.common.Core.elvis;
 
 /**
  * OpenHAB translator.
